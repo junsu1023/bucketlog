@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">버킷로그</string>
+
+    <!-- 홈 -->
+    <string name="home_title">버킷로그</string>
+    <string name="filter_in_progress">진행 중</string>
+    <string name="filter_completed">완료</string>
+    <string name="filter_archived">접어둠</string>
+    <string name="add_goal_fab">목표 추가하기</string>
+
+    <string name="empty_in_progress">올해 하고 싶은 걸 하나 적어볼까요?</string>
+    <string name="empty_completed">완료한 것들이 여기 모여요.</string>
+    <string name="empty_archived">접어둔 목표가 아직 없어요.</string>
+
+    <string name="relative_today">오늘</string>
+    <string name="relative_yesterday">어제</string>
+    <string name="relative_days_ago">%1$d일 전</string>
+    <string name="last_recorded">마지막 기록 %1$s</string>
+    <string name="progress_count">%1$d / %2$d</string>
+
+    <string name="check_in_placeholder">지금 어때요?</string>
+    <string name="check_in_save">저장</string>
+
+    <string name="action_complete">완료했어요</string>
+    <string name="action_archive">이건 안 하기로 하기</string>
+    <string name="action_delete">삭제</string>
+    <string name="action_restore">다시 꺼내기</string>
+    <string name="cancel">취소</string>
+
+    <string name="complete_dialog_body">남기고 싶은 말이 있나요? (건너뛸 수 있어요)</string>
+
+    <string name="archive_dialog_title">이 목표를 접어둘까요?</string>
+    <string name="archive_dialog_body">보관함으로 옮겨져요. 생각이 바뀌면 언제든 다시 꺼낼 수 있어요.</string>
+    <string name="archive_reason_placeholder">왜 마음이 바뀌었나요? (선택)</string>
+
+    <string name="delete_dialog_title">이 목표를 삭제할까요?</string>
+    <string name="delete_dialog_body">기록과 사진이 모두 함께 지워지고, 되돌릴 수 없어요.</string>
+
+    <string name="error_generic">문제가 생겼어요. 다시 시도해 주세요.</string>
+
+    <!-- 목표 만들기 -->
+    <string name="add_goal_title">목표 만들기</string>
+    <string name="goal_title_label">뭘 하고 싶나요?</string>
+    <string name="goal_note_label">왜 하고 싶나요? (선택)</string>
+    <string name="goal_category_label">카테고리</string>
+    <string name="goal_type_label">유형</string>
+    <string name="goal_type_one_time">한 번 하기</string>
+    <string name="goal_type_repeatable">반복하기</string>
+    <string name="goal_target_count_label">목표 횟수</string>
+    <string name="goal_bucket_year_label">언제 할까요?</string>
+    <string name="goal_bucket_this_year">2026년</string>
+    <string name="goal_bucket_someday">언젠가</string>
+    <string name="save">저장</string>
+
+    <string name="category_travel">여행</string>
+    <string name="category_hobby">취미</string>
+    <string name="category_relationship">관계</string>
+    <string name="category_challenge">도전</string>
+    <string name="category_learning">배움</string>
+    <string name="category_health">건강</string>
+    <string name="category_other">기타</string>
+</resources>

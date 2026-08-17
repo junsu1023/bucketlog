@@ -1,0 +1,58 @@
+package com.bucketlog.presentation.addgoal
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.bucketlog.domain.model.GoalType
+import com.bucketlog.domain.usecase.AddGoalUseCase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlin.time.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+
+class AddGoalViewModel(private val addGoal: AddGoalUseCase) : ViewModel() {
+
+    val thisYear: Int = Clock.System.todayIn(TimeZone.currentSystemDefault()).year
+
+    private val _uiState = MutableStateFlow(AddGoalUiState(bucketYear = thisYear))
+    val uiState: StateFlow<AddGoalUiState> = _uiState.asStateFlow()
+
+    fun onIntent(intent: AddGoalIntent) {
+        when (intent) {
+            is AddGoalIntent.TitleChanged -> _uiState.update { it.copy(title = intent.value) }
+            is AddGoalIntent.NoteChanged -> _uiState.update { it.copy(note = intent.value) }
+            is AddGoalIntent.CategoryChanged -> _uiState.update { it.copy(category = intent.value) }
+            is AddGoalIntent.TypeChanged -> _uiState.update { it.copy(type = intent.value) }
+            is AddGoalIntent.TargetCountChanged ->
+                _uiState.update { it.copy(targetCountText = intent.value.filter(Char::isDigit)) }
+            is AddGoalIntent.BucketYearChanged -> _uiState.update { it.copy(bucketYear = intent.value) }
+            AddGoalIntent.Save -> save()
+            AddGoalIntent.DismissError -> _uiState.update { it.copy(hasError = false) }
+        }
+    }
+
+    private fun save() {
+        val state = _uiState.value
+        if (!state.canSave || state.isSaving) return
+        _uiState.update { it.copy(isSaving = true) }
+        viewModelScope.launch {
+            runCatching {
+                addGoal(
+                    title = state.title,
+                    note = state.note.ifBlank { null },
+                    category = state.category,
+                    type = state.type,
+                    targetCount = if (state.type == GoalType.REPEATABLE) state.targetCountText.toIntOrNull() else null,
+                    bucketYear = state.bucketYear,
+                )
+            }.onSuccess {
+                _uiState.update { it.copy(isSaving = false, saved = true) }
+            }.onFailure {
+                _uiState.update { it.copy(isSaving = false, hasError = true) }
+            }
+        }
+    }
+}
