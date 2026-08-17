@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.add_goal_title
@@ -72,8 +76,12 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
         },
     ) { padding ->
         Column(
-            modifier = Modifier.fillMaxWidth().padding(padding).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(padding)
+                .padding(16.dp)
+                .verticalScroll(state = rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(
                 value = state.title,
@@ -129,6 +137,7 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
                     label = { Text(stringResource(Res.string.goal_target_count_label)) },
                     modifier = Modifier.wrapContentWidth(),
                     singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
             }
 

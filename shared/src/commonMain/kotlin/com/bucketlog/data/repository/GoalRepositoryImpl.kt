@@ -19,6 +19,9 @@ class GoalRepositoryImpl(
     override fun observeByStatus(status: GoalStatus): Flow<List<Goal>> =
         goalDao.observeByStatus(status.name).map { entities -> entities.map { it.toDomain() } }
 
+    override fun observeAll(): Flow<List<Goal>> =
+        goalDao.observeAll().map { entities -> entities.map { it.toDomain() } }
+
     override fun observeById(id: String): Flow<Goal?> =
         goalDao.observeById(id).map { it?.toDomain() }
 

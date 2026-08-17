@@ -30,4 +30,7 @@ interface GoalDao {
 
     @Query("SELECT * FROM goals WHERE status = :status ORDER BY created_at DESC")
     fun observeByStatus(status: String): Flow<List<GoalEntity>>
+
+    @Query("SELECT * FROM goals ORDER BY created_at DESC")
+    fun observeAll(): Flow<List<GoalEntity>>
 }

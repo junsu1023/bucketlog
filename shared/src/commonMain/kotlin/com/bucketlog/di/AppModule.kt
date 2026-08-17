@@ -17,8 +17,10 @@ import com.bucketlog.domain.usecase.RestoreGoalUseCase
 import com.bucketlog.platform.FileStorage
 import com.bucketlog.platform.ImageProcessor
 import com.bucketlog.presentation.addgoal.AddGoalViewModel
+import com.bucketlog.presentation.archive.ArchiveViewModel
 import com.bucketlog.presentation.goaldetail.GoalDetailViewModel
 import com.bucketlog.presentation.home.HomeViewModel
+import com.bucketlog.presentation.onboarding.OnboardingViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
@@ -50,6 +52,8 @@ val appModule = module {
 
     viewModelOf(::HomeViewModel)
     viewModelOf(::AddGoalViewModel)
+    viewModelOf(::ArchiveViewModel)
+    viewModelOf(::OnboardingViewModel)
 
     // goalId는 화면 진입 시점의 런타임 파라미터라 viewModelOf(생성자 참조)로는 주입할 수 없다.
     viewModel { params ->
