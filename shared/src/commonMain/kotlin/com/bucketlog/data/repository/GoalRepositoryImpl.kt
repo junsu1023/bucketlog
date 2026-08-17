@@ -1,15 +1,21 @@
 package com.bucketlog.data.repository
 
 import com.bucketlog.data.local.dao.GoalDao
+import com.bucketlog.data.local.dao.PhotoDao
 import com.bucketlog.data.mapper.toDomain
 import com.bucketlog.data.mapper.toEntity
 import com.bucketlog.domain.model.Goal
 import com.bucketlog.domain.model.GoalStatus
 import com.bucketlog.domain.repository.GoalRepository
+import com.bucketlog.platform.FileStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class GoalRepositoryImpl(private val goalDao: GoalDao) : GoalRepository {
+class GoalRepositoryImpl(
+    private val goalDao: GoalDao,
+    private val photoDao: PhotoDao,
+    private val fileStorage: FileStorage,
+) : GoalRepository {
     override fun observeByStatus(status: GoalStatus): Flow<List<Goal>> =
         goalDao.observeByStatus(status.name).map { entities -> entities.map { it.toDomain() } }
 
@@ -22,5 +28,12 @@ class GoalRepositoryImpl(private val goalDao: GoalDao) : GoalRepository {
 
     override suspend fun update(goal: Goal) = goalDao.update(goal.toEntity())
 
-    override suspend fun delete(id: String) = goalDao.deleteById(id)
+    override suspend fun delete(id: String) {
+        val photos = photoDao.getByGoal(id)
+        goalDao.deleteById(id)
+        photos.forEach { photo ->
+            fileStorage.delete(photo.path)
+            fileStorage.delete(photo.thumbnailPath)
+        }
+    }
 }
