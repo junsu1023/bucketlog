@@ -47,6 +47,8 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
             implementation(libs.androidx.room.sqlite.wrapper)
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.exifinterface)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
