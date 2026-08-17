@@ -18,9 +18,9 @@ material3 = "1.11.0-alpha07"
 # Room 3.0 (Kotlin-first multiplatform persistence). 새 groupId(androidx.room3)에 주의.
 room = "3.0.1"
 sqlite = "2.7.0"
-# TODO: Android Studio가 동기화 시 Kotlin 2.4.10과 호환되는 KSP 버전을 제안합니다.
-# 그 버전으로 교체하세요 (형식: <kotlin버전>-<ksp버전>, 예: 2.4.10-1.0.x)
-ksp = "2.4.10-1.0.29"
+# KSP 2.3.0부터 버전 체계가 Kotlin 버전과 분리되어 "<kotlin버전>-<ksp버전>" 형식이 아님.
+# 독립 버전(예: 2.3.11)을 쓰며, Kotlin 2.4.10과 호환됨.
+ksp = "2.3.11"
 koin = "4.2.2"
 coil = "3.5.0"
 kotlinx-datetime = "0.8.0"
