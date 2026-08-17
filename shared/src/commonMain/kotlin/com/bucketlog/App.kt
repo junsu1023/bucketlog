@@ -1,6 +1,5 @@
 package com.bucketlog
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -8,7 +7,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
 import com.bucketlog.presentation.addgoal.AddGoalScreen
+import com.bucketlog.presentation.addgoal.AddGoalViewModel
 import com.bucketlog.presentation.home.HomeScreen
+import com.bucketlog.presentation.theme.BucketLogTheme
 import org.koin.compose.viewmodel.koinViewModel
 
 private sealed interface Screen {
@@ -19,16 +20,22 @@ private sealed interface Screen {
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
+    BucketLogTheme {
         var screen by remember { mutableStateOf<Screen>(Screen.Home) }
+        val addGoalViewModel: AddGoalViewModel = koinViewModel()
 
         when (screen) {
             Screen.Home -> HomeScreen(
                 viewModel = koinViewModel(),
-                onAddGoalClick = { screen = Screen.AddGoal },
+                onAddGoalClick = {
+                    // koinViewModel()이 화면 재진입마다 같은 인스턴스를 재사용하므로
+                    // 진입 직전에 폼을 초기화한다 (AddGoalViewModel.resetForm 참고).
+                    addGoalViewModel.resetForm()
+                    screen = Screen.AddGoal
+                },
             )
             Screen.AddGoal -> AddGoalScreen(
-                viewModel = koinViewModel(),
+                viewModel = addGoalViewModel,
                 onSaved = { screen = Screen.Home },
                 onCancel = { screen = Screen.Home },
             )
