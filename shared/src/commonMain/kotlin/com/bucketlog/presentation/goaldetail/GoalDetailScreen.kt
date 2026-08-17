@@ -62,6 +62,7 @@ import bucketlog.shared.generated.resources.check_in_save
 import bucketlog.shared.generated.resources.complete_dialog_body
 import bucketlog.shared.generated.resources.delete_dialog_body
 import bucketlog.shared.generated.resources.delete_dialog_title
+import bucketlog.shared.generated.resources.entry_count
 import bucketlog.shared.generated.resources.error_generic
 import bucketlog.shared.generated.resources.progress_count
 import bucketlog.shared.generated.resources.progress_dialog_title
@@ -128,9 +129,16 @@ private fun GoalDetailContent(
         if (goal == null) return@Scaffold
 
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            // D-04: 반복형은 목표치 대비 진행량(3/12), 한 번 하기는 누적 기록 수를 보여준다.
             if (goal.type == GoalType.REPEATABLE && goal.targetCount != null) {
                 Text(
                     text = stringResource(Res.string.progress_count, state.progressCount, goal.targetCount),
+                    style = MaterialTheme.typography.bodyMedium.merge(MonoLabel),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+            } else if (state.timeline.isNotEmpty()) {
+                Text(
+                    text = stringResource(Res.string.entry_count, state.timeline.size),
                     style = MaterialTheme.typography.bodyMedium.merge(MonoLabel),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 )
