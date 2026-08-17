@@ -14,6 +14,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -61,6 +62,8 @@ import com.bucketlog.domain.model.GoalType
 import com.bucketlog.domain.usecase.GoalOverview
 import com.bucketlog.presentation.common.filterLabelRes
 import com.bucketlog.presentation.common.labelRes
+import com.bucketlog.presentation.theme.LocalExtraColors
+import com.bucketlog.presentation.theme.MonoLabel
 import kotlin.time.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -132,11 +135,22 @@ private fun StatusFilterRow(selected: GoalStatus, onSelect: (GoalStatus) -> Unit
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        val extraColors = LocalExtraColors.current
         GoalStatus.entries.forEach { status ->
+            // docs/DESIGN.md §4: 완료=올리브, 접어둠=중성 회색(빨강 금지). 진행중은 기본 강조색(앰버)을 쓴다.
+            val selectedColor = when (status) {
+                GoalStatus.COMPLETED -> MaterialTheme.colorScheme.tertiary
+                GoalStatus.ARCHIVED -> extraColors.archived
+                GoalStatus.IN_PROGRESS -> MaterialTheme.colorScheme.primary
+            }
             FilterChip(
                 selected = status == selected,
                 onClick = { onSelect(status) },
                 label = { Text(stringResource(status.filterLabelRes())) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = selectedColor,
+                    selectedLabelColor = MaterialTheme.colorScheme.surface,
+                ),
             )
         }
     }
@@ -179,14 +193,14 @@ private fun GoalCard(
                 overview.lastRecordedAt?.let {
                     Text(
                         text = stringResource(Res.string.last_recorded, relativeDayLabel(it)),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall.merge(MonoLabel),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 if (goal.type == GoalType.REPEATABLE && goal.targetCount != null) {
                     Text(
                         text = stringResource(Res.string.progress_count, overview.progressCount, goal.targetCount),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall.merge(MonoLabel),
                     )
                 }
             }
