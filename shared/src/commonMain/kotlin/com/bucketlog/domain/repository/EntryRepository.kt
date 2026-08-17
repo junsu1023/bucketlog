@@ -13,6 +13,9 @@ interface EntryRepository {
     /** goalId -> 가장 최근 recordedAt (홈 카드 H-03 "마지막 기록 시점") */
     fun observeLastRecordedAt(): Flow<Map<String, Instant>>
 
+    /** goalId -> 가장 최근 사진 있는 기록의 사진 전체 썸네일 경로(순서대로). docs/DATA-MODEL.md §4 coverPhoto 확장. */
+    fun observeRecentPhotoPaths(): Flow<Map<String, List<String>>>
+
     suspend fun getById(id: String): Entry?
     suspend fun add(entry: Entry)
     suspend fun update(entry: Entry)

@@ -38,8 +38,28 @@ interface EntryDao {
     // H-03 "마지막 기록 시점" — recordedAt 기준(넛지 판정용 createdAt과는 다름, docs/DATA-MODEL.md 설계 노트)
     @Query("SELECT goal_id AS goalId, MAX(recorded_at) AS lastRecordedAt FROM entries GROUP BY goal_id")
     fun observeLastRecordedAt(): Flow<List<GoalLastRecorded>>
+
+    // 대표 사진(docs/DATA-MODEL.md §4 coverPhoto) 후보. 사진이 있는 기록마다 전체 사진을
+    // 다 가져와 usecase에서 goalId별로 "가장 최근 기록의 사진 전체"만 고른다(order_index 순).
+    @Query(
+        """
+        SELECT entries.goal_id AS goalId, entries.id AS entryId, photos.thumbnail_path AS thumbnailPath,
+               photos.order_index AS orderIndex, entries.recorded_at AS recordedAt
+        FROM entries
+        INNER JOIN photos ON photos.entry_id = entries.id
+        """,
+    )
+    fun observeCoverCandidates(): Flow<List<CoverCandidate>>
 }
 
 data class GoalProgressTotal(val goalId: String, val total: Int)
 
 data class GoalLastRecorded(val goalId: String, val lastRecordedAt: Long)
+
+data class CoverCandidate(
+    val goalId: String,
+    val entryId: String,
+    val thumbnailPath: String,
+    val orderIndex: Int,
+    val recordedAt: Long,
+)

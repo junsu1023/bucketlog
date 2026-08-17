@@ -32,6 +32,7 @@ import bucketlog.shared.generated.resources.goal_bucket_this_year
 import bucketlog.shared.generated.resources.goal_bucket_year_label
 import bucketlog.shared.generated.resources.goal_category_label
 import bucketlog.shared.generated.resources.goal_note_label
+import bucketlog.shared.generated.resources.goal_photo_label
 import bucketlog.shared.generated.resources.goal_target_count_label
 import bucketlog.shared.generated.resources.goal_title_label
 import bucketlog.shared.generated.resources.goal_type_label
@@ -40,6 +41,9 @@ import bucketlog.shared.generated.resources.goal_type_repeatable
 import bucketlog.shared.generated.resources.save
 import com.bucketlog.domain.model.Category
 import com.bucketlog.domain.model.GoalType
+import com.bucketlog.platform.rememberCameraCapture
+import com.bucketlog.platform.rememberPhotoPicker
+import com.bucketlog.presentation.common.PhotoAttachRow
 import com.bucketlog.presentation.common.labelRes
 import org.jetbrains.compose.resources.stringResource
 
@@ -50,6 +54,13 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
 
     LaunchedEffect(state.saved) {
         if (state.saved) onSaved()
+    }
+
+    val launchCamera = rememberCameraCapture { bytes ->
+        if (bytes != null) viewModel.onIntent(AddGoalIntent.AddPhotos(listOf(bytes)))
+    }
+    val launchGallery = rememberPhotoPicker(maxItems = (5 - state.photoBytes.size).coerceAtLeast(1)) { photos ->
+        viewModel.onIntent(AddGoalIntent.AddPhotos(photos))
     }
 
     Scaffold(
@@ -138,6 +149,16 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
                         label = { Text(stringResource(Res.string.goal_bucket_someday)) },
                     )
                 }
+            }
+
+            Column {
+                Text(stringResource(Res.string.goal_photo_label), style = MaterialTheme.typography.labelLarge)
+                PhotoAttachRow(
+                    photoCount = state.photoBytes.size,
+                    onCameraClick = launchCamera,
+                    onGalleryClick = launchGallery,
+                    onClearClick = { viewModel.onIntent(AddGoalIntent.ClearPhotos) },
+                )
             }
 
             Button(

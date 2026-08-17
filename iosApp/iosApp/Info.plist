@@ -4,5 +4,7 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>기록에 사진을 남기려면 카메라 접근이 필요해요.</string>
 </dict>
 </plist>

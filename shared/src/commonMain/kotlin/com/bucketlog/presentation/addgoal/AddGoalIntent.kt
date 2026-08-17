@@ -10,6 +10,8 @@ sealed interface AddGoalIntent {
     data class TypeChanged(val value: GoalType) : AddGoalIntent
     data class TargetCountChanged(val value: String) : AddGoalIntent
     data class BucketYearChanged(val value: Int?) : AddGoalIntent
+    data class AddPhotos(val photoBytes: List<ByteArray>) : AddGoalIntent
+    data object ClearPhotos : AddGoalIntent
     data object Save : AddGoalIntent
     data object DismissError : AddGoalIntent
 }

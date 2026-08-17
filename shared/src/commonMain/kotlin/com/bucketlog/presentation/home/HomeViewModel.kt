@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bucketlog.domain.model.GoalStatus
 import com.bucketlog.domain.usecase.AddCheckInEntryUseCase
+import com.bucketlog.domain.usecase.AddProgressEntryUseCase
 import com.bucketlog.domain.usecase.ArchiveGoalUseCase
 import com.bucketlog.domain.usecase.CompleteGoalUseCase
 import com.bucketlog.domain.usecase.DeleteGoalUseCase
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 class HomeViewModel(
     private val observeGoalOverviews: ObserveGoalOverviewsUseCase,
     private val addCheckInEntry: AddCheckInEntryUseCase,
+    private val addProgressEntry: AddProgressEntryUseCase,
     private val completeGoal: CompleteGoalUseCase,
     private val archiveGoal: ArchiveGoalUseCase,
     private val restoreGoal: RestoreGoalUseCase,
@@ -58,7 +60,7 @@ class HomeViewModel(
 
             is HomeIntent.RequestComplete ->
                 pendingAction.value = PendingAction.ConfirmComplete(intent.goalId, intent.title)
-            is HomeIntent.ConfirmComplete -> confirmComplete(intent.retrospect)
+            is HomeIntent.ConfirmComplete -> confirmComplete(intent.retrospect, intent.photoBytes)
 
             is HomeIntent.RequestArchive ->
                 pendingAction.value = PendingAction.ConfirmArchive(intent.goalId, intent.title)
@@ -67,6 +69,11 @@ class HomeViewModel(
             is HomeIntent.RequestDelete ->
                 pendingAction.value = PendingAction.ConfirmDelete(intent.goalId, intent.title)
             HomeIntent.ConfirmDelete -> confirmDelete()
+
+            is HomeIntent.RequestAddProgress ->
+                pendingAction.value = PendingAction.AddProgress(intent.goalId, intent.title, intent.isRepeatable)
+            is HomeIntent.ConfirmAddProgress ->
+                confirmAddProgress(intent.memo, intent.photoBytes, intent.incrementCount)
 
             is HomeIntent.Restore -> run(goalId = intent.goalId) { restoreGoal(it) }
 
@@ -85,9 +92,9 @@ class HomeViewModel(
         }
     }
 
-    private fun confirmComplete(retrospect: String?) {
+    private fun confirmComplete(retrospect: String?, photoBytes: List<ByteArray>) {
         val goalId = (pendingAction.value as? PendingAction.ConfirmComplete)?.goalId ?: return
-        run(goalId = goalId) { completeGoal(it, retrospect) }
+        run(goalId = goalId) { completeGoal(it, retrospect, photoBytes) }
     }
 
     private fun confirmArchive(reason: String?) {
@@ -98,6 +105,11 @@ class HomeViewModel(
     private fun confirmDelete() {
         val goalId = (pendingAction.value as? PendingAction.ConfirmDelete)?.goalId ?: return
         run(goalId = goalId) { deleteGoal(it) }
+    }
+
+    private fun confirmAddProgress(memo: String?, photoBytes: List<ByteArray>, incrementCount: Boolean) {
+        val goalId = (pendingAction.value as? PendingAction.AddProgress)?.goalId ?: return
+        run(goalId = goalId) { addProgressEntry(it, memo, photoBytes, incrementCount) }
     }
 
     private inline fun run(goalId: String, crossinline block: suspend (String) -> Unit) {

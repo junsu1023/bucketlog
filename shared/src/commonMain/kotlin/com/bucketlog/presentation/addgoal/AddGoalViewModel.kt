@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bucketlog.domain.model.GoalType
 import com.bucketlog.domain.usecase.AddGoalUseCase
+import com.bucketlog.domain.usecase.AddProgressEntryUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +14,10 @@ import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 
-class AddGoalViewModel(private val addGoal: AddGoalUseCase) : ViewModel() {
+class AddGoalViewModel(
+    private val addGoal: AddGoalUseCase,
+    private val addProgressEntry: AddProgressEntryUseCase,
+) : ViewModel() {
 
     val thisYear: Int = Clock.System.todayIn(TimeZone.currentSystemDefault()).year
 
@@ -29,6 +33,9 @@ class AddGoalViewModel(private val addGoal: AddGoalUseCase) : ViewModel() {
             is AddGoalIntent.TargetCountChanged ->
                 _uiState.update { it.copy(targetCountText = intent.value.filter(Char::isDigit)) }
             is AddGoalIntent.BucketYearChanged -> _uiState.update { it.copy(bucketYear = intent.value) }
+            is AddGoalIntent.AddPhotos ->
+                _uiState.update { it.copy(photoBytes = (it.photoBytes + intent.photoBytes).take(5)) }
+            AddGoalIntent.ClearPhotos -> _uiState.update { it.copy(photoBytes = emptyList()) }
             AddGoalIntent.Save -> save()
             AddGoalIntent.DismissError -> _uiState.update { it.copy(hasError = false) }
         }
@@ -49,7 +56,7 @@ class AddGoalViewModel(private val addGoal: AddGoalUseCase) : ViewModel() {
         _uiState.update { it.copy(isSaving = true) }
         viewModelScope.launch {
             runCatching {
-                addGoal(
+                val goal = addGoal(
                     title = state.title,
                     note = state.note.ifBlank { null },
                     category = state.category,
@@ -57,6 +64,11 @@ class AddGoalViewModel(private val addGoal: AddGoalUseCase) : ViewModel() {
                     targetCount = if (state.type == GoalType.REPEATABLE) state.targetCountText.toIntOrNull() else null,
                     bucketYear = state.bucketYear,
                 )
+                // 사진은 Goal이 아니라 Entry에 붙는다(docs/DATA-MODEL.md) — 목표 생성 직후
+                // 첫 진행 기록(E-02)을 하나 만들어 사진을 담는다. 카운트는 올리지 않는다.
+                if (state.photoBytes.isNotEmpty()) {
+                    addProgressEntry(goal.id, memo = null, photoBytes = state.photoBytes, incrementCount = false)
+                }
             }.onSuccess {
                 _uiState.update { it.copy(isSaving = false, saved = true) }
             }.onFailure {

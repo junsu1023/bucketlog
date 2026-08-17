@@ -25,6 +25,8 @@ koin = "4.2.2"
 coil = "3.5.0"
 kotlinx-datetime = "0.8.0"
 kotlinx-serialization = "1.11.0"
+# 사진 파이프라인(2주차): 카메라/피커 결과물의 EXIF Orientation을 읽어 회전 보정 후 버린다.
+androidx-exifinterface = "1.4.2"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -60,6 +62,7 @@ coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.re
 
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version.ref = "androidx-exifinterface" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

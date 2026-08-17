@@ -7,7 +7,6 @@ import androidx.room3.Query
 import com.bucketlog.data.local.entity.PhotoEntity
 import kotlinx.coroutines.flow.Flow
 
-/** 2주차 사진 파이프라인에서 본격적으로 쓰인다. 지금은 테이블/DAO만 준비해둔다. */
 @Dao
 interface PhotoDao {
     @Insert
@@ -18,4 +17,17 @@ interface PhotoDao {
 
     @Query("SELECT * FROM photos WHERE entry_id = :entryId ORDER BY order_index")
     fun observeByEntry(entryId: String): Flow<List<PhotoEntity>>
+
+    @Query("SELECT * FROM photos WHERE entry_id = :entryId ORDER BY order_index")
+    suspend fun getByEntry(entryId: String): List<PhotoEntity>
+
+    // 목표 삭제 시 파일까지 정리하기 위해 entries를 거쳐 goalId로 조회한다.
+    @Query(
+        """
+        SELECT photos.* FROM photos
+        INNER JOIN entries ON photos.entry_id = entries.id
+        WHERE entries.goal_id = :goalId
+        """,
+    )
+    suspend fun getByGoal(goalId: String): List<PhotoEntity>
 }

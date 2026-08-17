@@ -10,6 +10,7 @@ data class AddGoalUiState(
     val type: GoalType = GoalType.ONE_TIME,
     val targetCountText: String = "",
     val bucketYear: Int? = null,
+    val photoBytes: List<ByteArray> = emptyList(),
     val isSaving: Boolean = false,
     val hasError: Boolean = false,
     val saved: Boolean = false,
