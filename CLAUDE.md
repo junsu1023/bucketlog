@@ -60,11 +60,11 @@
 
 | 항목 | 값 |
 |---|---|
-| 단계 | **Phase 0 (MVP) 진행 중** — KMP 스캐폴딩 완료, 의존성(Room/Koin/Coil3/kotlinx-datetime/serialization) 연결 완료, `domain/model` 3종 생성 완료 |
+| 단계 | **Phase 0 (MVP) 진행 중** — 1주차 완료: Room DB(엔티티/DAO/매퍼), `domain/repository`·`domain/usecase`(텍스트 기준), 홈 화면 + 목표 생성 + 퀵 체크인 화면. 목표 생성→체크인→완료→되돌리기 라운드트립을 Android 에뮬레이터에서 실기기 검증함 |
 | 앱 이름 | **가칭** BucketLog / 버킷로그 |
 | 백엔드 | **없음** (MVP는 로컬 전용. Phase 1에 도입) |
 | 로그인 | **없음** (Phase 1) |
-| 다음 작업 | `docs/MVP-SCOPE.md` §4의 1주차 — Room DB 스키마, `domain/repository`/`domain/usecase`(텍스트 기준), 목표 CRUD + 퀵 체크인 화면. **사진 파이프라인은 2주차로 미뤄졌지만 타임라인 UI(3주차) 착수 전 필수** |
+| 다음 작업 | `docs/MVP-SCOPE.md` §4의 2주차 — 사진 파이프라인 PoC(촬영→압축→로컬 저장→렌더링), expect/actual 경계 확정, 1주차 텍스트 플로우에 사진 첨부 연결. **3주차 타임라인 UI 착수 전 반드시 완료** |
 
 > 미확정 항목에 대해 코드를 생성해야 하면 **임의로 결정하지 말고 먼저 물어보세요.**
 

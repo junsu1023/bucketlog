@@ -258,10 +258,11 @@ A-03은 "올해 내가 뭘 했지"를 한 화면에 담는 뷰입니다. 개발�
           Room/Koin/Coil3/kotlinx-datetime/serialization 의존성 연결 ·
           domain/model 3종 (Goal/Entry/Photo) — 완료
 
-1주차  Room DB 스키마 (DAO·엔티티·매퍼) · domain/repository·usecase (텍스트 기준) ·
-       목표 CRUD 화면 · 퀵 체크인(텍스트만) 화면
-       └─ 목표 생성 → 체크인 → 완료가 사진 없이 막힘없이 도는 상태까지.
-          Room + Compose Multiplatform이 양 플랫폼에서 정상 동작하는지 여기서 확인.
+✅ 1주차  Room DB 스키마 (DAO·엔티티·매퍼) · domain/repository·usecase (텍스트 기준) ·
+          목표 CRUD 화면 · 퀵 체크인(텍스트만) 화면 — 완료
+          └─ 목표 생성 → 체크인 → 완료 → 되돌리기가 사진 없이 막힘없이 도는 상태까지 확인함.
+             Android 에뮬레이터 실기기 검증 완료. Room + Compose Multiplatform이 정상 동작.
+             iOS 시뮬레이터 타겟은 컴파일까지만 확인(실행 검증은 미실시).
 
 2주차  사진 파이프라인 PoC (촬영 → 압축 → 로컬 저장 → 렌더링) ·
        expect/actual 경계 확정 (ARCHITECTURE.md §3) ·
