@@ -16,4 +16,5 @@ sealed interface PendingAction {
     data class ConfirmComplete(val goalId: String, val title: String) : PendingAction
     data class ConfirmArchive(val goalId: String, val title: String) : PendingAction
     data class ConfirmDelete(val goalId: String, val title: String) : PendingAction
+    data class AddProgress(val goalId: String, val title: String, val isRepeatable: Boolean) : PendingAction
 }
