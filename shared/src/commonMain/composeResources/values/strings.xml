@@ -8,10 +8,16 @@
     <string name="filter_completed">완료</string>
     <string name="filter_archived">접어둠</string>
     <string name="add_goal_fab">목표 추가하기</string>
+    <string name="archive_nav_button">보관함</string>
 
     <string name="empty_in_progress">올해 하고 싶은 걸 하나 적어볼까요?</string>
     <string name="empty_completed">완료한 것들이 여기 모여요.</string>
     <string name="empty_archived">접어둔 목표가 아직 없어요.</string>
+
+    <string name="home_summary_year">%1$d년 · %2$d개 중 %3$d개 완료</string>
+    <string name="home_summary_someday">언젠가 · %1$d개</string>
+    <string name="year_chip">%1$d년</string>
+    <string name="empty_state_preset_hint">이런 건 어때요?</string>
 
     <string name="relative_today">오늘</string>
     <string name="relative_yesterday">어제</string>
@@ -79,4 +85,43 @@
     <string name="category_learning">배움</string>
     <string name="category_health">건강</string>
     <string name="category_other">기타</string>
+
+    <!-- 프리셋 목표 (docs/MVP-SCOPE.md §2.7) -->
+    <string name="preset_travel_1">혼자 여행 가보기</string>
+    <string name="preset_travel_2">국내 섬 3곳 가보기</string>
+    <string name="preset_travel_3">야간열차 타보기</string>
+    <string name="preset_travel_4">한 달 살기 해보기</string>
+    <string name="preset_travel_5">가보지 않은 국내 여행지 5곳 가보기</string>
+
+    <string name="preset_hobby_1">필름카메라로 한 롤 찍기</string>
+    <string name="preset_hobby_2">도자기 클래스 들어보기</string>
+    <string name="preset_hobby_3">악기 하나 배워보기</string>
+    <string name="preset_hobby_4">나만의 레시피 만들어보기</string>
+    <string name="preset_hobby_5">캘리그라피 배워보기</string>
+
+    <string name="preset_relationship_1">부모님과 사진관에서 사진 찍기</string>
+    <string name="preset_relationship_2">오래된 친구에게 편지 쓰기</string>
+    <string name="preset_relationship_3">가족과 여행 가기</string>
+    <string name="preset_relationship_4">친구에게 깜짝 선물하기</string>
+
+    <string name="preset_challenge_1">5km 달리기</string>
+    <string name="preset_challenge_2">새벽 등산 해보기</string>
+    <string name="preset_challenge_3">번지점프 해보기</string>
+    <string name="preset_challenge_4">서핑 배워보기</string>
+    <string name="preset_challenge_5">마라톤 완주하기</string>
+
+    <string name="preset_learning_1">책 12권 읽기</string>
+    <string name="preset_learning_2">자격증 하나 따기</string>
+    <string name="preset_learning_3">새로운 언어 배워보기</string>
+    <string name="preset_learning_4">온라인 강의 하나 완주하기</string>
+
+    <string name="preset_health_1">건강검진 받기</string>
+    <string name="preset_health_2">아침형 인간 일주일 살기</string>
+    <string name="preset_health_3">필라테스 클래스 등록해서 다녀보기</string>
+    <string name="preset_health_4">한 달 금주 해보기</string>
+
+    <string name="preset_other_1">새로운 카페 20곳 가보기</string>
+    <string name="preset_other_2">미뤄뒀던 정리 끝내기</string>
+    <string name="preset_other_3">낯선 동네 하루 탐방하기</string>
+    <string name="preset_other_4">나만의 버킷리스트 만들어보기</string>
 </resources>
