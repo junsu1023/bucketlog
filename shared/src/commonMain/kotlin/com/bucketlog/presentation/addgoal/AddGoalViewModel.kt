@@ -34,6 +34,15 @@ class AddGoalViewModel(private val addGoal: AddGoalUseCase) : ViewModel() {
         }
     }
 
+    /**
+     * 화면 진입 직전에 호출한다. koinViewModel()이 이 인스턴스를 화면 재진입마다
+     * 재사용하므로(별도 백스택이 없어 ViewModelStoreOwner가 바뀌지 않음), 초기화하지
+     * 않으면 이전 입력값과 saved=true가 남아 즉시 Home으로 튕겨나간다.
+     */
+    fun resetForm() {
+        _uiState.value = AddGoalUiState(bucketYear = thisYear)
+    }
+
     private fun save() {
         val state = _uiState.value
         if (!state.canSave || state.isSaving) return
