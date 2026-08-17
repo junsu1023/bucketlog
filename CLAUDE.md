@@ -64,7 +64,7 @@
 | 앱 이름 | **가칭** BucketLog / 버킷로그 |
 | 백엔드 | **없음** (MVP는 로컬 전용. Phase 1에 도입) |
 | 로그인 | **없음** (Phase 1) |
-| 다음 작업 | `docs/ROADMAP.md`의 0~1주차 — 사진 파이프라인 PoC, Room DB 스키마, `domain/repository`/`domain/usecase` |
+| 다음 작업 | `docs/MVP-SCOPE.md` §4의 1주차 — Room DB 스키마, `domain/repository`/`domain/usecase`(텍스트 기준), 목표 CRUD + 퀵 체크인 화면. **사진 파이프라인은 2주차로 미뤄졌지만 타임라인 UI(3주차) 착수 전 필수** |
 
 > 미확정 항목에 대해 코드를 생성해야 하면 **임의로 결정하지 말고 먼저 물어보세요.**
 
