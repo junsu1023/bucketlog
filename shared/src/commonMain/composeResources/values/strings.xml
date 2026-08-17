@@ -50,6 +50,13 @@
 
     <string name="error_generic">문제가 생겼어요. 다시 시도해 주세요.</string>
 
+    <!-- 목표 상세 -->
+    <string name="back">뒤로가기</string>
+    <string name="timeline_empty">아직 기록이 없어요.\n한 줄이라도 남겨두면 나중에 반가워요.</string>
+    <string name="timeline_goal_created">목표 만듦</string>
+    <string name="entry_count">%1$d개 기록</string>
+    <string name="retrospect_label">회고</string>
+
     <!-- 목표 만들기 -->
     <string name="add_goal_title">목표 만들기</string>
     <string name="goal_title_label">뭘 하고 싶나요?</string>

@@ -14,11 +14,14 @@ import com.bucketlog.domain.usecase.CompleteGoalUseCase
 import com.bucketlog.domain.usecase.DeleteGoalUseCase
 import com.bucketlog.domain.usecase.ObserveGoalOverviewsUseCase
 import com.bucketlog.domain.usecase.RestoreGoalUseCase
+import com.bucketlog.platform.FileStorage
 import com.bucketlog.platform.ImageProcessor
 import com.bucketlog.presentation.addgoal.AddGoalViewModel
+import com.bucketlog.presentation.goaldetail.GoalDetailViewModel
 import com.bucketlog.presentation.home.HomeViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
@@ -47,6 +50,22 @@ val appModule = module {
 
     viewModelOf(::HomeViewModel)
     viewModelOf(::AddGoalViewModel)
+
+    // goalId는 화면 진입 시점의 런타임 파라미터라 viewModelOf(생성자 참조)로는 주입할 수 없다.
+    viewModel { params ->
+        GoalDetailViewModel(
+            goalId = params.get(),
+            goalRepository = get(),
+            entryRepository = get(),
+            fileStorage = get<FileStorage>(),
+            addCheckInEntry = get(),
+            addProgressEntry = get(),
+            completeGoal = get(),
+            archiveGoal = get(),
+            restoreGoal = get(),
+            deleteGoal = get(),
+        )
+    }
 }
 
 /** 플랫폼 진입점(Android Application / iOS MainViewController)에서 한 번만 호출한다. */
