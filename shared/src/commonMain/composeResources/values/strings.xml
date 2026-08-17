@@ -86,6 +86,10 @@
     <string name="category_health">건강</string>
     <string name="category_other">기타</string>
 
+    <!-- 보관함 -->
+    <string name="archive_title">보관함</string>
+    <string name="archive_reason_label">이유</string>
+
     <!-- 프리셋 목표 (docs/MVP-SCOPE.md §2.7) -->
     <string name="preset_travel_1">혼자 여행 가보기</string>
     <string name="preset_travel_2">국내 섬 3곳 가보기</string>
