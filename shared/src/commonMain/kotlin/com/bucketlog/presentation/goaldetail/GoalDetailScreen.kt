@@ -64,7 +64,6 @@ import bucketlog.shared.generated.resources.back
 import bucketlog.shared.generated.resources.cancel
 import bucketlog.shared.generated.resources.check_in_placeholder
 import bucketlog.shared.generated.resources.check_in_save
-import bucketlog.shared.generated.resources.complete_dialog_body
 import bucketlog.shared.generated.resources.delete_dialog_body
 import bucketlog.shared.generated.resources.delete_dialog_title
 import bucketlog.shared.generated.resources.entry_count
@@ -77,10 +76,12 @@ import bucketlog.shared.generated.resources.progress_save
 import bucketlog.shared.generated.resources.relative_days_ago
 import bucketlog.shared.generated.resources.relative_today
 import bucketlog.shared.generated.resources.relative_yesterday
+import bucketlog.shared.generated.resources.retrospect_another_question
 import bucketlog.shared.generated.resources.retrospect_label
 import bucketlog.shared.generated.resources.timeline_empty
 import bucketlog.shared.generated.resources.timeline_goal_created
 import coil3.compose.AsyncImage
+import com.bucketlog.domain.model.Category
 import com.bucketlog.domain.model.EntryKind
 import com.bucketlog.domain.model.Goal
 import com.bucketlog.domain.model.GoalStatus
@@ -88,6 +89,7 @@ import com.bucketlog.domain.model.GoalType
 import com.bucketlog.platform.rememberCameraCapture
 import com.bucketlog.platform.rememberPhotoPicker
 import com.bucketlog.presentation.common.PhotoAttachRow
+import com.bucketlog.presentation.common.randomRetrospectQuestion
 import com.bucketlog.presentation.theme.MonoLabel
 import kotlin.time.Clock
 import kotlinx.datetime.Instant
@@ -192,7 +194,12 @@ private fun GoalDetailContent(
     }
 
     state.pendingAction?.let { pending ->
-        ActionDialog(pending = pending, goalTitle = goal?.title.orEmpty(), onIntent = onIntent)
+        ActionDialog(
+            pending = pending,
+            goalTitle = goal?.title.orEmpty(),
+            category = goal?.category ?: Category.OTHER,
+            onIntent = onIntent,
+        )
     }
 
     if (state.hasError) {
@@ -405,11 +412,18 @@ private fun relativeDayLabel(instant: Instant): String {
 }
 
 @Composable
-private fun ActionDialog(pending: PendingAction, goalTitle: String, onIntent: (GoalDetailIntent) -> Unit) {
+private fun ActionDialog(
+    pending: PendingAction,
+    goalTitle: String,
+    category: Category,
+    onIntent: (GoalDetailIntent) -> Unit,
+) {
     when (pending) {
         PendingAction.ConfirmComplete -> {
             var retrospect by remember { mutableStateOf("") }
             var photos by remember { mutableStateOf(listOf<ByteArray>()) }
+            // E-08: 완료 시 카테고리에 맞는 질문을 랜덤 제시. "다른 질문 보기"로 재추첨.
+            var question by remember { mutableStateOf(randomRetrospectQuestion(category)) }
             val launchCamera = rememberCameraCapture { bytes -> if (bytes != null) photos = (photos + bytes).take(5) }
             val launchGallery = rememberPhotoPicker(maxItems = (5 - photos.size).coerceAtLeast(1)) { newPhotos ->
                 photos = (photos + newPhotos).take(5)
@@ -422,8 +436,14 @@ private fun ActionDialog(pending: PendingAction, goalTitle: String, onIntent: (G
                         OutlinedTextField(
                             value = retrospect,
                             onValueChange = { retrospect = it },
-                            placeholder = { Text(stringResource(Res.string.complete_dialog_body)) },
+                            placeholder = { Text(stringResource(question)) },
                         )
+                        TextButton(
+                            onClick = { question = randomRetrospectQuestion(category, exclude = question) },
+                            modifier = Modifier.padding(top = 4.dp),
+                        ) {
+                            Text(stringResource(Res.string.retrospect_another_question))
+                        }
                         PhotoAttachRow(
                             photoCount = photos.size,
                             onCameraClick = launchCamera,

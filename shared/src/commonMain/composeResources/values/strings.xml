@@ -39,6 +39,17 @@
 
     <string name="complete_dialog_body">남기고 싶은 말이 있나요? (건너뛸 수 있어요)</string>
 
+    <!-- 회고 프롬프트 질문 뱅크 (E-08, docs/DESIGN.md §회고 프롬프트) -->
+    <string name="retrospect_question_common_1">가장 기억에 남는 순간은?</string>
+    <string name="retrospect_question_common_2">생각과 달랐던 점이 있나요?</string>
+    <string name="retrospect_question_common_3">누구랑 함께했나요?</string>
+    <string name="retrospect_question_common_4">이걸 하기 전의 나에게 한마디 한다면?</string>
+    <string name="retrospect_question_travel">어떤 장면이 제일 오래 남을까요?</string>
+    <string name="retrospect_question_challenge">가장 힘들었던 순간은?</string>
+    <string name="retrospect_question_learning">무엇을 새로 알게 됐나요?</string>
+    <string name="retrospect_question_relationship">어떤 이야기를 나눴나요?</string>
+    <string name="retrospect_another_question">다른 질문 보기</string>
+
     <string name="progress_dialog_title">진행 기록</string>
     <string name="progress_memo_placeholder">뭘 했는지 남겨보세요 (선택)</string>
     <string name="progress_increment_count">이번에 한 걸로 카운트할게요</string>
