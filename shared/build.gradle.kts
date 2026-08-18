@@ -49,6 +49,10 @@ kotlin {
             implementation(libs.androidx.room.sqlite.wrapper)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.exifinterface)
+
+            // BucketLog: 알림(5주차). AppSettings/NotificationScheduler(Android actual)
+            implementation(libs.androidx.datastore.preferences)
+            implementation(libs.androidx.work.runtime.ktx)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
