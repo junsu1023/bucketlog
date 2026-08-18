@@ -31,6 +31,8 @@ class GoalRepositoryImpl(
 
     override suspend fun update(goal: Goal) = goalDao.update(goal.toEntity())
 
+    override suspend fun upsert(goal: Goal) = goalDao.upsert(goal.toEntity())
+
     override suspend fun delete(id: String) {
         val photos = photoDao.getByGoal(id)
         goalDao.deleteById(id)

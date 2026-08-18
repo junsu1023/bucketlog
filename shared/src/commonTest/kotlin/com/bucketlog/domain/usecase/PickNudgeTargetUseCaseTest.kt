@@ -33,6 +33,13 @@ private class FakeGoalRepository(initial: List<Goal>) : GoalRepository {
         goals.value = goals.value.map { if (it.id == goal.id) goal else it }
     }
     override suspend fun delete(id: String) { goals.value = goals.value.filterNot { it.id == id } }
+    override suspend fun upsert(goal: Goal) {
+        goals.value = if (goals.value.any { it.id == goal.id }) {
+            goals.value.map { if (it.id == goal.id) goal else it }
+        } else {
+            goals.value + goal
+        }
+    }
 }
 
 private class FakeEntryRepository(private val lastRecordedAt: Map<String, Instant>) : EntryRepository {
@@ -45,6 +52,8 @@ private class FakeEntryRepository(private val lastRecordedAt: Map<String, Instan
     override suspend fun update(entry: Entry) = Unit
     override suspend fun delete(id: String) = Unit
     override suspend fun demoteCompletionEntry(goalId: String) = false
+    override suspend fun getAll(): List<Entry> = emptyList()
+    override suspend fun upsert(entry: Entry) = Unit
 }
 
 class PickNudgeTargetUseCaseTest {
