@@ -26,7 +26,8 @@ private sealed interface Screen {
     data object Loading : Screen
     data object Onboarding : Screen
     data object Home : Screen
-    data object AddGoal : Screen
+    /** [editingGoalId]가 있으면 수정 모드(G-05). [returnTo]는 저장/취소 후 돌아갈 화면. */
+    data class AddGoal(val editingGoalId: String? = null, val returnTo: Screen = Home) : Screen
     data object Archive : Screen
     data object Settings : Screen
     /** [from]으로 돌아가야 뒤로가기가 진입 경로(홈/보관함)에 맞게 동작한다.
@@ -62,6 +63,7 @@ fun App() {
         AppBackHandler(enabled = screen != Screen.Home && screen != Screen.Loading) {
             screen = when (val s = screen) {
                 is Screen.GoalDetail -> s.from
+                is Screen.AddGoal -> s.returnTo
                 else -> Screen.Home
             }
         }
@@ -72,7 +74,7 @@ fun App() {
                 viewModel = onboardingViewModel,
                 onCustomInput = {
                     addGoalViewModel.resetForm()
-                    screen = Screen.AddGoal
+                    screen = Screen.AddGoal()
                 },
                 onDone = { screen = Screen.Home },
             )
@@ -82,16 +84,16 @@ fun App() {
                     // koinViewModel()이 화면 재진입마다 같은 인스턴스를 재사용하므로
                     // 진입 직전에 폼을 초기화한다 (AddGoalViewModel.resetForm 참고).
                     addGoalViewModel.resetForm()
-                    screen = Screen.AddGoal
+                    screen = Screen.AddGoal()
                 },
                 onGoalClick = { goalId -> screen = Screen.GoalDetail(goalId, from = Screen.Home) },
                 onArchiveClick = { screen = Screen.Archive },
                 onSettingsClick = { screen = Screen.Settings },
             )
-            Screen.AddGoal -> AddGoalScreen(
+            is Screen.AddGoal -> AddGoalScreen(
                 viewModel = addGoalViewModel,
-                onSaved = { screen = Screen.Home },
-                onCancel = { screen = Screen.Home },
+                onSaved = { screen = current.returnTo },
+                onCancel = { screen = current.returnTo },
             )
             Screen.Archive -> ArchiveScreen(
                 viewModel = koinViewModel(),
@@ -106,6 +108,10 @@ fun App() {
                 // goalId가 바뀌면(다른 목표 상세로 재진입) key로 새 ViewModel 인스턴스를 만든다.
                 viewModel = koinViewModel(key = current.goalId) { parametersOf(current.goalId) },
                 onBack = { screen = current.from },
+                onEditClick = { goal ->
+                    addGoalViewModel.loadForEdit(goal)
+                    screen = Screen.AddGoal(editingGoalId = goal.id, returnTo = current)
+                },
                 focusCheckIn = current.focusCheckIn,
             )
         }

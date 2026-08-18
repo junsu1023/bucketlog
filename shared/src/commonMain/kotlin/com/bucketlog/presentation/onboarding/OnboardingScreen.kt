@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -49,7 +50,9 @@ fun OnboardingScreen(viewModel: OnboardingViewModel, onCustomInput: () -> Unit, 
 
     Scaffold(
         bottomBar = {
-            Surface(tonalElevation = 3.dp) {
+            // edge-to-edge에서 Scaffold가 bottomBar 내부 인셋을 자동 처리하지 않는다 —
+            // 3버튼 내비게이션 모드에서 "시작하기" 버튼이 가려지는 걸 막는다.
+            Surface(tonalElevation = 3.dp, modifier = Modifier.navigationBarsPadding()) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),

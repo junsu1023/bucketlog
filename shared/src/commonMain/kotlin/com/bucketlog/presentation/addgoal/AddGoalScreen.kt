@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.add_goal_title
 import bucketlog.shared.generated.resources.cancel
+import bucketlog.shared.generated.resources.edit_goal_title
 import bucketlog.shared.generated.resources.error_generic
 import bucketlog.shared.generated.resources.goal_bucket_someday
 import bucketlog.shared.generated.resources.goal_bucket_this_year
@@ -71,10 +72,14 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
         viewModel.onIntent(AddGoalIntent.AddPhotos(photos))
     }
 
+    val isEditMode = state.editingGoalId != null
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.add_goal_title)) },
+                title = {
+                    Text(stringResource(if (isEditMode) Res.string.edit_goal_title else Res.string.add_goal_title))
+                },
                 navigationIcon = { TextButton(onClick = onCancel) { Text(stringResource(Res.string.cancel)) } },
             )
         },
@@ -164,14 +169,17 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
                 }
             }
 
-            Column {
-                Text(stringResource(Res.string.goal_photo_label), style = MaterialTheme.typography.labelLarge)
-                PhotoAttachRow(
-                    photoCount = state.photoBytes.size,
-                    onCameraClick = launchCamera,
-                    onGalleryClick = launchGallery,
-                    onClearClick = { viewModel.onIntent(AddGoalIntent.ClearPhotos) },
-                )
+            // 사진은 Goal이 아니라 Entry에 붙는 개념이라(docs/DATA-MODEL.md) 수정 모드에서는 안 보여준다.
+            if (!isEditMode) {
+                Column {
+                    Text(stringResource(Res.string.goal_photo_label), style = MaterialTheme.typography.labelLarge)
+                    PhotoAttachRow(
+                        photoCount = state.photoBytes.size,
+                        onCameraClick = launchCamera,
+                        onGalleryClick = launchGallery,
+                        onClearClick = { viewModel.onIntent(AddGoalIntent.ClearPhotos) },
+                    )
+                }
             }
 
             Button(

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -54,6 +55,7 @@ import bucketlog.shared.generated.resources.action_add_progress
 import bucketlog.shared.generated.resources.action_archive
 import bucketlog.shared.generated.resources.action_complete
 import bucketlog.shared.generated.resources.action_delete
+import bucketlog.shared.generated.resources.action_edit
 import bucketlog.shared.generated.resources.action_restore
 import bucketlog.shared.generated.resources.archive_dialog_body
 import bucketlog.shared.generated.resources.archive_dialog_title
@@ -62,7 +64,6 @@ import bucketlog.shared.generated.resources.back
 import bucketlog.shared.generated.resources.cancel
 import bucketlog.shared.generated.resources.check_in_placeholder
 import bucketlog.shared.generated.resources.check_in_save
-import bucketlog.shared.generated.resources.complete_dialog_body
 import bucketlog.shared.generated.resources.delete_dialog_body
 import bucketlog.shared.generated.resources.delete_dialog_title
 import bucketlog.shared.generated.resources.entry_count
@@ -75,10 +76,12 @@ import bucketlog.shared.generated.resources.progress_save
 import bucketlog.shared.generated.resources.relative_days_ago
 import bucketlog.shared.generated.resources.relative_today
 import bucketlog.shared.generated.resources.relative_yesterday
+import bucketlog.shared.generated.resources.retrospect_another_question
 import bucketlog.shared.generated.resources.retrospect_label
 import bucketlog.shared.generated.resources.timeline_empty
 import bucketlog.shared.generated.resources.timeline_goal_created
 import coil3.compose.AsyncImage
+import com.bucketlog.domain.model.Category
 import com.bucketlog.domain.model.EntryKind
 import com.bucketlog.domain.model.Goal
 import com.bucketlog.domain.model.GoalStatus
@@ -86,6 +89,7 @@ import com.bucketlog.domain.model.GoalType
 import com.bucketlog.platform.rememberCameraCapture
 import com.bucketlog.platform.rememberPhotoPicker
 import com.bucketlog.presentation.common.PhotoAttachRow
+import com.bucketlog.presentation.common.randomRetrospectQuestion
 import com.bucketlog.presentation.theme.MonoLabel
 import kotlin.time.Clock
 import kotlinx.datetime.Instant
@@ -95,14 +99,25 @@ import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GoalDetailScreen(viewModel: GoalDetailViewModel, onBack: () -> Unit, focusCheckIn: Boolean = false) {
+fun GoalDetailScreen(
+    viewModel: GoalDetailViewModel,
+    onBack: () -> Unit,
+    onEditClick: (Goal) -> Unit,
+    focusCheckIn: Boolean = false,
+) {
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(state.deleted) {
         if (state.deleted) onBack()
     }
 
-    GoalDetailContent(state = state, onIntent = viewModel::onIntent, onBack = onBack, focusCheckIn = focusCheckIn)
+    GoalDetailContent(
+        state = state,
+        onIntent = viewModel::onIntent,
+        onBack = onBack,
+        onEditClick = onEditClick,
+        focusCheckIn = focusCheckIn,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -111,6 +126,7 @@ private fun GoalDetailContent(
     state: GoalDetailUiState,
     onIntent: (GoalDetailIntent) -> Unit,
     onBack: () -> Unit,
+    onEditClick: (Goal) -> Unit,
     focusCheckIn: Boolean,
 ) {
     val goal = state.goal
@@ -121,6 +137,11 @@ private fun GoalDetailContent(
                 title = { Text(goal?.title.orEmpty(), maxLines = 1) },
                 navigationIcon = {
                     TextButton(onClick = onBack) { Text(stringResource(Res.string.back)) }
+                },
+                actions = {
+                    if (goal != null) {
+                        TextButton(onClick = { onEditClick(goal) }) { Text(stringResource(Res.string.action_edit)) }
+                    }
                 },
             )
         },
@@ -173,7 +194,12 @@ private fun GoalDetailContent(
     }
 
     state.pendingAction?.let { pending ->
-        ActionDialog(pending = pending, goalTitle = goal?.title.orEmpty(), onIntent = onIntent)
+        ActionDialog(
+            pending = pending,
+            goalTitle = goal?.title.orEmpty(),
+            category = goal?.category ?: Category.OTHER,
+            onIntent = onIntent,
+        )
     }
 
     if (state.hasError) {
@@ -208,7 +234,9 @@ private fun GoalDetailBottomBar(
         }
     }
 
-    Surface(tonalElevation = 3.dp) {
+    // edge-to-edge에서는 Scaffold가 bottomBar 내부까지 시스템 내비게이션 바 인셋을 자동으로
+    // 처리해주지 않는다 — 직접 안 하면 3버튼 내비게이션 모드에서 액션 버튼(특히 삭제)이 가려진다.
+    Surface(tonalElevation = 3.dp, modifier = Modifier.navigationBarsPadding()) {
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
             when (goal.status) {
                 GoalStatus.IN_PROGRESS -> {
@@ -384,11 +412,18 @@ private fun relativeDayLabel(instant: Instant): String {
 }
 
 @Composable
-private fun ActionDialog(pending: PendingAction, goalTitle: String, onIntent: (GoalDetailIntent) -> Unit) {
+private fun ActionDialog(
+    pending: PendingAction,
+    goalTitle: String,
+    category: Category,
+    onIntent: (GoalDetailIntent) -> Unit,
+) {
     when (pending) {
         PendingAction.ConfirmComplete -> {
             var retrospect by remember { mutableStateOf("") }
             var photos by remember { mutableStateOf(listOf<ByteArray>()) }
+            // E-08: 완료 시 카테고리에 맞는 질문을 랜덤 제시. "다른 질문 보기"로 재추첨.
+            var question by remember { mutableStateOf(randomRetrospectQuestion(category)) }
             val launchCamera = rememberCameraCapture { bytes -> if (bytes != null) photos = (photos + bytes).take(5) }
             val launchGallery = rememberPhotoPicker(maxItems = (5 - photos.size).coerceAtLeast(1)) { newPhotos ->
                 photos = (photos + newPhotos).take(5)
@@ -401,8 +436,14 @@ private fun ActionDialog(pending: PendingAction, goalTitle: String, onIntent: (G
                         OutlinedTextField(
                             value = retrospect,
                             onValueChange = { retrospect = it },
-                            placeholder = { Text(stringResource(Res.string.complete_dialog_body)) },
+                            placeholder = { Text(stringResource(question)) },
                         )
+                        TextButton(
+                            onClick = { question = randomRetrospectQuestion(category, exclude = question) },
+                            modifier = Modifier.padding(top = 4.dp),
+                        ) {
+                            Text(stringResource(Res.string.retrospect_another_question))
+                        }
                         PhotoAttachRow(
                             photoCount = photos.size,
                             onCameraClick = launchCamera,
