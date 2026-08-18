@@ -42,6 +42,10 @@ import bucketlog.shared.generated.resources.goal_title_label
 import bucketlog.shared.generated.resources.goal_type_label
 import bucketlog.shared.generated.resources.goal_type_one_time
 import bucketlog.shared.generated.resources.goal_type_repeatable
+import bucketlog.shared.generated.resources.notification_permission_allow
+import bucketlog.shared.generated.resources.notification_permission_body
+import bucketlog.shared.generated.resources.notification_permission_deny
+import bucketlog.shared.generated.resources.notification_permission_title
 import bucketlog.shared.generated.resources.save
 import com.bucketlog.domain.model.Category
 import com.bucketlog.domain.model.GoalType
@@ -187,6 +191,25 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
             confirmButton = {
                 TextButton(onClick = { viewModel.onIntent(AddGoalIntent.DismissError) }) {
                     Text(stringResource(Res.string.cancel))
+                }
+            },
+        )
+    }
+
+    // O-03: 첫 목표 등록 직후에만 알림 권한을 묻는다. 거절해도 앱은 그대로 동작하고 재요청은 없다.
+    if (state.showNotificationPermissionPrompt) {
+        AlertDialog(
+            onDismissRequest = { viewModel.onIntent(AddGoalIntent.SkipNotificationPermission) },
+            title = { Text(stringResource(Res.string.notification_permission_title, state.savedGoalTitle)) },
+            text = { Text(stringResource(Res.string.notification_permission_body)) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.onIntent(AddGoalIntent.RequestNotificationPermission) }) {
+                    Text(stringResource(Res.string.notification_permission_allow))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.onIntent(AddGoalIntent.SkipNotificationPermission) }) {
+                    Text(stringResource(Res.string.notification_permission_deny))
                 }
             },
         )

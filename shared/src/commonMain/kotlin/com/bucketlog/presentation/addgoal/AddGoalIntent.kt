@@ -14,4 +14,7 @@ sealed interface AddGoalIntent {
     data object ClearPhotos : AddGoalIntent
     data object Save : AddGoalIntent
     data object DismissError : AddGoalIntent
+
+    data object RequestNotificationPermission : AddGoalIntent
+    data object SkipNotificationPermission : AddGoalIntent
 }

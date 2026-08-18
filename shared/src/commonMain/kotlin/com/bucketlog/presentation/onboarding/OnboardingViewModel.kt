@@ -6,6 +6,7 @@ import com.bucketlog.domain.model.Category
 import com.bucketlog.domain.model.GoalType
 import com.bucketlog.domain.repository.GoalRepository
 import com.bucketlog.domain.usecase.AddGoalUseCase
+import com.bucketlog.platform.NotificationScheduler
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,6 +24,7 @@ import kotlinx.datetime.todayIn
 class OnboardingViewModel(
     private val goalRepository: GoalRepository,
     private val addGoal: AddGoalUseCase,
+    private val notificationScheduler: NotificationScheduler,
 ) : ViewModel() {
 
     val thisYear: Int = Clock.System.todayIn(TimeZone.currentSystemDefault()).year
@@ -33,9 +35,19 @@ class OnboardingViewModel(
 
     private val addedTitles = MutableStateFlow<Set<String>>(emptySet())
     private val hasError = MutableStateFlow(false)
+    // O-03: 온보딩에서 프리셋을 탭해 첫 목표가 만들어진 순간에도 물어봐야 한다 —
+    // AddGoalScreen 경로(직접 입력)만 물어보면 대부분의 첫 목표(프리셋 탭)를 놓친다.
+    private val permissionPromptGoalTitle = MutableStateFlow<String?>(null)
 
-    val uiState: StateFlow<OnboardingUiState> = combine(addedTitles, hasError) { titles, error ->
-        OnboardingUiState(addedTitles = titles, hasError = error)
+    val uiState: StateFlow<OnboardingUiState> = combine(
+        addedTitles, hasError, permissionPromptGoalTitle,
+    ) { titles, error, promptTitle ->
+        OnboardingUiState(
+            addedTitles = titles,
+            hasError = error,
+            showNotificationPermissionPrompt = promptTitle != null,
+            permissionPromptGoalTitle = promptTitle.orEmpty(),
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), OnboardingUiState())
 
     init {
@@ -48,6 +60,8 @@ class OnboardingViewModel(
         when (intent) {
             is OnboardingIntent.AddPreset -> addPreset(intent.title, intent.category)
             OnboardingIntent.DismissError -> hasError.value = false
+            OnboardingIntent.RequestNotificationPermission -> requestNotificationPermission()
+            OnboardingIntent.SkipNotificationPermission -> permissionPromptGoalTitle.value = null
         }
     }
 
@@ -63,8 +77,20 @@ class OnboardingViewModel(
                     targetCount = null,
                     bucketYear = thisYear,
                 )
-            }.onSuccess { addedTitles.update { it + title } }
-                .onFailure { hasError.value = true }
+            }.onSuccess {
+                addedTitles.update { it + title }
+                // docs/NOTIFICATIONS.md §4: 첫 목표 등록 직후에만 — 두 번째 프리셋부턴 안 묻는다.
+                if (goalRepository.observeAll().first().size == 1) {
+                    permissionPromptGoalTitle.value = title
+                }
+            }.onFailure { hasError.value = true }
+        }
+    }
+
+    private fun requestNotificationPermission() {
+        viewModelScope.launch {
+            runCatching { notificationScheduler.requestPermission() }
+            permissionPromptGoalTitle.value = null
         }
     }
 }

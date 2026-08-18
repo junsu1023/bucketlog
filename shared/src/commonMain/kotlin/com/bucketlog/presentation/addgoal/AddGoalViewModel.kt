@@ -3,20 +3,25 @@ package com.bucketlog.presentation.addgoal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bucketlog.domain.model.GoalType
+import com.bucketlog.domain.repository.GoalRepository
 import com.bucketlog.domain.usecase.AddGoalUseCase
 import com.bucketlog.domain.usecase.AddProgressEntryUseCase
+import com.bucketlog.platform.NotificationScheduler
+import kotlin.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 
 class AddGoalViewModel(
     private val addGoal: AddGoalUseCase,
     private val addProgressEntry: AddProgressEntryUseCase,
+    private val goalRepository: GoalRepository,
+    private val notificationScheduler: NotificationScheduler,
 ) : ViewModel() {
 
     val thisYear: Int = Clock.System.todayIn(TimeZone.currentSystemDefault()).year
@@ -38,6 +43,9 @@ class AddGoalViewModel(
             AddGoalIntent.ClearPhotos -> _uiState.update { it.copy(photoBytes = emptyList()) }
             AddGoalIntent.Save -> save()
             AddGoalIntent.DismissError -> _uiState.update { it.copy(hasError = false) }
+            AddGoalIntent.RequestNotificationPermission -> requestNotificationPermission()
+            AddGoalIntent.SkipNotificationPermission ->
+                _uiState.update { it.copy(showNotificationPermissionPrompt = false, saved = true) }
         }
     }
 
@@ -69,11 +77,27 @@ class AddGoalViewModel(
                 if (state.photoBytes.isNotEmpty()) {
                     addProgressEntry(goal.id, memo = null, photoBytes = state.photoBytes, incrementCount = false)
                 }
-            }.onSuccess {
-                _uiState.update { it.copy(isSaving = false, saved = true) }
+                goal
+            }.onSuccess { goal ->
+                // O-03: 첫 실행이 아니라 첫 목표 등록 직후에만 알림 권한을 묻는다(docs/NOTIFICATIONS.md §4).
+                val isFirstGoal = goalRepository.observeAll().first().size == 1
+                if (isFirstGoal) {
+                    _uiState.update {
+                        it.copy(isSaving = false, showNotificationPermissionPrompt = true, savedGoalTitle = goal.title)
+                    }
+                } else {
+                    _uiState.update { it.copy(isSaving = false, saved = true) }
+                }
             }.onFailure {
                 _uiState.update { it.copy(isSaving = false, hasError = true) }
             }
+        }
+    }
+
+    private fun requestNotificationPermission() {
+        viewModelScope.launch {
+            runCatching { notificationScheduler.requestPermission() }
+            _uiState.update { it.copy(showNotificationPermissionPrompt = false, saved = true) }
         }
     }
 }

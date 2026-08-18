@@ -105,6 +105,10 @@
     <string name="settings_nudge">오래된 목표 살펴보기</string>
     <string name="settings_notification_hour">알림 받을 시각</string>
     <string name="settings_hour_format">%1$d:00</string>
+    <string name="notification_permission_title">%1$s 잊지 않게 가끔 알려드릴까요?</string>
+    <string name="notification_permission_body">한 달에 한두 번이면 충분해요.</string>
+    <string name="notification_permission_allow">알려주세요</string>
+    <string name="notification_permission_deny">괜찮아요</string>
 
     <!-- 프리셋 목표 (docs/MVP-SCOPE.md §2.7) -->
     <string name="preset_travel_1">혼자 여행 가보기</string>
