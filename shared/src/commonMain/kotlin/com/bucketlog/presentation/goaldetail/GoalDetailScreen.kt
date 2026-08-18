@@ -55,6 +55,7 @@ import bucketlog.shared.generated.resources.action_add_progress
 import bucketlog.shared.generated.resources.action_archive
 import bucketlog.shared.generated.resources.action_complete
 import bucketlog.shared.generated.resources.action_delete
+import bucketlog.shared.generated.resources.action_edit
 import bucketlog.shared.generated.resources.action_restore
 import bucketlog.shared.generated.resources.archive_dialog_body
 import bucketlog.shared.generated.resources.archive_dialog_title
@@ -96,14 +97,25 @@ import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GoalDetailScreen(viewModel: GoalDetailViewModel, onBack: () -> Unit, focusCheckIn: Boolean = false) {
+fun GoalDetailScreen(
+    viewModel: GoalDetailViewModel,
+    onBack: () -> Unit,
+    onEditClick: (Goal) -> Unit,
+    focusCheckIn: Boolean = false,
+) {
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(state.deleted) {
         if (state.deleted) onBack()
     }
 
-    GoalDetailContent(state = state, onIntent = viewModel::onIntent, onBack = onBack, focusCheckIn = focusCheckIn)
+    GoalDetailContent(
+        state = state,
+        onIntent = viewModel::onIntent,
+        onBack = onBack,
+        onEditClick = onEditClick,
+        focusCheckIn = focusCheckIn,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -112,6 +124,7 @@ private fun GoalDetailContent(
     state: GoalDetailUiState,
     onIntent: (GoalDetailIntent) -> Unit,
     onBack: () -> Unit,
+    onEditClick: (Goal) -> Unit,
     focusCheckIn: Boolean,
 ) {
     val goal = state.goal
@@ -122,6 +135,11 @@ private fun GoalDetailContent(
                 title = { Text(goal?.title.orEmpty(), maxLines = 1) },
                 navigationIcon = {
                     TextButton(onClick = onBack) { Text(stringResource(Res.string.back)) }
+                },
+                actions = {
+                    if (goal != null) {
+                        TextButton(onClick = { onEditClick(goal) }) { Text(stringResource(Res.string.action_edit)) }
+                    }
                 },
             )
         },

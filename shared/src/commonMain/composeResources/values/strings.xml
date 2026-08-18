@@ -32,6 +32,7 @@
     <string name="action_complete">완료했어요</string>
     <string name="action_archive">이건 안 하기로 하기</string>
     <string name="action_delete">삭제</string>
+    <string name="action_edit">수정</string>
     <string name="action_restore">다시 꺼내기</string>
     <string name="action_add_progress">기록 추가</string>
     <string name="cancel">취소</string>
@@ -66,6 +67,7 @@
 
     <!-- 목표 만들기 -->
     <string name="add_goal_title">목표 만들기</string>
+    <string name="edit_goal_title">목표 수정</string>
     <string name="goal_title_label">뭘 하고 싶나요?</string>
     <string name="goal_note_label">왜 하고 싶나요? (선택)</string>
     <string name="goal_category_label">카테고리</string>

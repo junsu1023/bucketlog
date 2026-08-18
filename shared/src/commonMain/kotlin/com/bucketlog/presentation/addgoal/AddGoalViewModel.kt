@@ -2,6 +2,7 @@ package com.bucketlog.presentation.addgoal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bucketlog.domain.model.Goal
 import com.bucketlog.domain.model.GoalType
 import com.bucketlog.domain.repository.GoalRepository
 import com.bucketlog.domain.usecase.AddGoalUseCase
@@ -58,10 +59,53 @@ class AddGoalViewModel(
         _uiState.value = AddGoalUiState(bucketYear = thisYear)
     }
 
+    /** G-05 목표 수정 진입 시 호출 — 기존 목표 값을 폼에 채운다. */
+    fun loadForEdit(goal: Goal) {
+        _uiState.value = AddGoalUiState(
+            title = goal.title,
+            note = goal.note.orEmpty(),
+            category = goal.category,
+            type = goal.type,
+            targetCountText = goal.targetCount?.toString().orEmpty(),
+            bucketYear = goal.bucketYear,
+            editingGoalId = goal.id,
+        )
+    }
+
     private fun save() {
         val state = _uiState.value
         if (!state.canSave || state.isSaving) return
         _uiState.update { it.copy(isSaving = true) }
+        if (state.editingGoalId != null) {
+            saveEdit(state.editingGoalId, state)
+        } else {
+            saveNew(state)
+        }
+    }
+
+    private fun saveEdit(goalId: String, state: AddGoalUiState) {
+        viewModelScope.launch {
+            runCatching {
+                val original = requireNotNull(goalRepository.getById(goalId)) { "goal not found: $goalId" }
+                goalRepository.update(
+                    original.copy(
+                        title = state.title,
+                        note = state.note.ifBlank { null },
+                        category = state.category,
+                        type = state.type,
+                        targetCount = if (state.type == GoalType.REPEATABLE) state.targetCountText.toIntOrNull() else null,
+                        bucketYear = state.bucketYear,
+                    ),
+                )
+            }.onSuccess {
+                _uiState.update { it.copy(isSaving = false, saved = true) }
+            }.onFailure {
+                _uiState.update { it.copy(isSaving = false, hasError = true) }
+            }
+        }
+    }
+
+    private fun saveNew(state: AddGoalUiState) {
         viewModelScope.launch {
             runCatching {
                 val goal = addGoal(
