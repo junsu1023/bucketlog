@@ -1,5 +1,7 @@
 package com.bucketlog.di
 
+import bucketlog.shared.generated.resources.Res
+import bucketlog.shared.generated.resources.nudge_notification_body
 import com.bucketlog.data.local.AppDatabase
 import com.bucketlog.data.local.DatabaseFactory
 import com.bucketlog.data.repository.EntryRepositoryImpl
@@ -13,14 +15,23 @@ import com.bucketlog.domain.usecase.ArchiveGoalUseCase
 import com.bucketlog.domain.usecase.CompleteGoalUseCase
 import com.bucketlog.domain.usecase.DeleteGoalUseCase
 import com.bucketlog.domain.usecase.ObserveGoalOverviewsUseCase
+import com.bucketlog.domain.usecase.PickNudgeTargetUseCase
 import com.bucketlog.domain.usecase.RestoreGoalUseCase
+import com.bucketlog.domain.usecase.ScheduleNudgeUseCase
+import com.bucketlog.notification.AppSettingsStore
+import com.bucketlog.notification.NotificationBudget
+import com.bucketlog.notification.SettingsStore
+import com.bucketlog.platform.AppSettings
 import com.bucketlog.platform.FileStorage
 import com.bucketlog.platform.ImageProcessor
+import com.bucketlog.platform.NotificationScheduler
 import com.bucketlog.presentation.addgoal.AddGoalViewModel
 import com.bucketlog.presentation.archive.ArchiveViewModel
 import com.bucketlog.presentation.goaldetail.GoalDetailViewModel
 import com.bucketlog.presentation.home.HomeViewModel
 import com.bucketlog.presentation.onboarding.OnboardingViewModel
+import com.bucketlog.presentation.settings.SettingsViewModel
+import org.jetbrains.compose.resources.getString
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
@@ -41,6 +52,11 @@ val appModule = module {
     single<GoalRepository> { GoalRepositoryImpl(get(), get(), get()) }
     single<EntryRepository> { EntryRepositoryImpl(get(), get(), get()) }
 
+    // BucketLog: 알림(5주차). AppSettings/NotificationScheduler는 Android/iOS 생성자가 달라
+    // platformModule에서 각각 등록한다(FileStorage와 동일한 패턴).
+    single<SettingsStore> { AppSettingsStore(get<AppSettings>()) }
+    single { val scheduler = get<NotificationScheduler>(); NotificationBudget(get()) { scheduler.schedule(it) } }
+
     factory { AddGoalUseCase(get()) }
     factory { DeleteGoalUseCase(get()) }
     factory { CompleteGoalUseCase(get(), get(), get(), get()) }
@@ -49,11 +65,18 @@ val appModule = module {
     factory { AddCheckInEntryUseCase(get()) }
     factory { AddProgressEntryUseCase(get(), get(), get()) }
     factory { ObserveGoalOverviewsUseCase(get(), get()) }
+    factory { PickNudgeTargetUseCase(get(), get()) }
+    factory {
+        ScheduleNudgeUseCase(get(), get(), get(), get(), get()) { days ->
+            getString(Res.string.nudge_notification_body, days)
+        }
+    }
 
     viewModelOf(::HomeViewModel)
     viewModelOf(::AddGoalViewModel)
     viewModelOf(::ArchiveViewModel)
     viewModelOf(::OnboardingViewModel)
+    viewModelOf(::SettingsViewModel)
 
     // goalId는 화면 진입 시점의 런타임 파라미터라 viewModelOf(생성자 참조)로는 주입할 수 없다.
     viewModel { params ->
