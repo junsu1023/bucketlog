@@ -3,6 +3,7 @@ package com.bucketlog.data.local.dao
 import androidx.room3.Dao
 import androidx.room3.Delete
 import androidx.room3.Insert
+import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import androidx.room3.Transaction
 import androidx.room3.Update
@@ -14,6 +15,10 @@ import kotlinx.coroutines.flow.Flow
 interface EntryDao {
     @Insert
     suspend fun insert(entry: EntryEntity)
+
+    // 백업 복원(M-02)용 — id 충돌 시 백업이 이긴다(docs/DATA-MODEL.md §7).
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(entry: EntryEntity)
 
     @Update
     suspend fun update(entry: EntryEntity)
@@ -27,6 +32,11 @@ interface EntryDao {
     @Transaction
     @Query("SELECT * FROM entries WHERE goal_id = :goalId ORDER BY recorded_at DESC")
     fun observeByGoal(goalId: String): Flow<List<EntryWithPhotos>>
+
+    // 백업 내보내기(M-02)용 — 상태 무관 전체 기록 + 사진.
+    @Transaction
+    @Query("SELECT * FROM entries")
+    suspend fun getAllWithPhotos(): List<EntryWithPhotos>
 
     @Query("SELECT * FROM entries WHERE goal_id = :goalId AND kind = 'COMPLETION' LIMIT 1")
     suspend fun findCompletionEntry(goalId: String): EntryEntity?

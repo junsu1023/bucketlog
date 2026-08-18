@@ -16,6 +16,7 @@ import com.bucketlog.presentation.goaldetail.GoalDetailScreen
 import com.bucketlog.presentation.home.HomeScreen
 import com.bucketlog.presentation.onboarding.OnboardingScreen
 import com.bucketlog.presentation.onboarding.OnboardingViewModel
+import com.bucketlog.presentation.settings.SettingsScreen
 import com.bucketlog.presentation.theme.BucketLogTheme
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -27,8 +28,10 @@ private sealed interface Screen {
     data object Home : Screen
     data object AddGoal : Screen
     data object Archive : Screen
-    /** [from]으로 돌아가야 뒤로가기가 진입 경로(홈/보관함)에 맞게 동작한다. */
-    data class GoalDetail(val goalId: String, val from: Screen) : Screen
+    data object Settings : Screen
+    /** [from]으로 돌아가야 뒤로가기가 진입 경로(홈/보관함)에 맞게 동작한다.
+     *  [focusCheckIn]은 스마트 넛지 딥링크(focus=checkin)로 들어왔을 때만 true. */
+    data class GoalDetail(val goalId: String, val from: Screen, val focusCheckIn: Boolean = false) : Screen
 }
 
 @Composable
@@ -44,6 +47,15 @@ fun App() {
             if (screen == Screen.Loading && shouldShowOnboarding != null) {
                 screen = if (shouldShowOnboarding == true) Screen.Onboarding else Screen.Home
             }
+        }
+
+        val pendingDeepLink by DeepLinkHolder.pending.collectAsState()
+        LaunchedEffect(pendingDeepLink) {
+            val uri = pendingDeepLink ?: return@LaunchedEffect
+            parseGoalDeepLink(uri)?.let { (goalId, focusCheckIn) ->
+                screen = Screen.GoalDetail(goalId, from = Screen.Home, focusCheckIn = focusCheckIn)
+            }
+            DeepLinkHolder.consume()
         }
 
         // 상세/추가/보관함/온보딩 화면에서는 시스템 뒤로가기가 앱 종료가 아니라 이전 화면으로 돌아가야 한다.
@@ -74,6 +86,7 @@ fun App() {
                 },
                 onGoalClick = { goalId -> screen = Screen.GoalDetail(goalId, from = Screen.Home) },
                 onArchiveClick = { screen = Screen.Archive },
+                onSettingsClick = { screen = Screen.Settings },
             )
             Screen.AddGoal -> AddGoalScreen(
                 viewModel = addGoalViewModel,
@@ -85,10 +98,15 @@ fun App() {
                 onBack = { screen = Screen.Home },
                 onGoalClick = { goalId -> screen = Screen.GoalDetail(goalId, from = Screen.Archive) },
             )
+            Screen.Settings -> SettingsScreen(
+                viewModel = koinViewModel(),
+                onBack = { screen = Screen.Home },
+            )
             is Screen.GoalDetail -> GoalDetailScreen(
                 // goalId가 바뀌면(다른 목표 상세로 재진입) key로 새 ViewModel 인스턴스를 만든다.
                 viewModel = koinViewModel(key = current.goalId) { parametersOf(current.goalId) },
                 onBack = { screen = current.from },
+                focusCheckIn = current.focusCheckIn,
             )
         }
     }

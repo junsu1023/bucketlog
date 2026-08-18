@@ -53,6 +53,7 @@ import bucketlog.shared.generated.resources.progress_count
 import bucketlog.shared.generated.resources.relative_days_ago
 import bucketlog.shared.generated.resources.relative_today
 import bucketlog.shared.generated.resources.relative_yesterday
+import bucketlog.shared.generated.resources.settings_nav_button
 import bucketlog.shared.generated.resources.year_chip
 import coil3.compose.AsyncImage
 import com.bucketlog.domain.model.GoalStatus
@@ -70,7 +71,13 @@ import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: HomeViewModel, onAddGoalClick: () -> Unit, onGoalClick: (String) -> Unit, onArchiveClick: () -> Unit) {
+fun HomeScreen(
+    viewModel: HomeViewModel,
+    onAddGoalClick: () -> Unit,
+    onGoalClick: (String) -> Unit,
+    onArchiveClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+) {
     val state by viewModel.uiState.collectAsState()
     HomeContent(
         state = state,
@@ -78,6 +85,7 @@ fun HomeScreen(viewModel: HomeViewModel, onAddGoalClick: () -> Unit, onGoalClick
         onAddGoalClick = onAddGoalClick,
         onGoalClick = onGoalClick,
         onArchiveClick = onArchiveClick,
+        onSettingsClick = onSettingsClick,
     )
 }
 
@@ -89,12 +97,14 @@ private fun HomeContent(
     onAddGoalClick: () -> Unit,
     onGoalClick: (String) -> Unit,
     onArchiveClick: () -> Unit,
+    onSettingsClick: () -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(Res.string.home_title)) },
                 actions = {
+                    TextButton(onClick = onSettingsClick) { Text(stringResource(Res.string.settings_nav_button)) }
                     TextButton(onClick = onArchiveClick) { Text(stringResource(Res.string.archive_nav_button)) }
                 },
             )

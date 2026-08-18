@@ -23,4 +23,10 @@ interface EntryRepository {
 
     /** 완료 되돌리기(G-08)용: COMPLETION Entry를 찾아 kind만 PROGRESS로 강등한다. 메모/사진은 보존. */
     suspend fun demoteCompletionEntry(goalId: String): Boolean
+
+    /** 백업 내보내기(M-02)용 — 상태 무관 전체 기록. */
+    suspend fun getAll(): List<Entry>
+
+    /** 백업 복원(M-02)용 — id가 이미 있으면 덮어쓴다(백업이 이긴다). photos도 같이 upsert. */
+    suspend fun upsert(entry: Entry)
 }

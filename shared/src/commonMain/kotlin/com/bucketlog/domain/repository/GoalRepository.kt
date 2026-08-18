@@ -13,4 +13,7 @@ interface GoalRepository {
     suspend fun add(goal: Goal)
     suspend fun update(goal: Goal)
     suspend fun delete(id: String)
+
+    /** 백업 복원(M-02)용 — id가 이미 있으면 덮어쓴다(백업이 이긴다). */
+    suspend fun upsert(goal: Goal)
 }

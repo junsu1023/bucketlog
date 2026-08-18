@@ -14,6 +14,9 @@ data class AddGoalUiState(
     val isSaving: Boolean = false,
     val hasError: Boolean = false,
     val saved: Boolean = false,
+    /** O-03: 유저의 첫 목표를 저장한 직후에만 켜진다. docs/NOTIFICATIONS.md §4. */
+    val showNotificationPermissionPrompt: Boolean = false,
+    val savedGoalTitle: String = "",
 ) {
     val canSave: Boolean
         get() = title.isNotBlank() && (type == GoalType.ONE_TIME || targetCountText.toIntOrNull()?.let { it > 0 } == true)

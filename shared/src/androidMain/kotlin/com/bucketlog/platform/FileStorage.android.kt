@@ -29,4 +29,17 @@ actual class FileStorage(private val context: Context) {
 
     actual fun resolveAbsolutePath(relativePath: String): String =
         File(context.filesDir, relativePath).absolutePath
+
+    actual suspend fun readBytes(relativePath: String): ByteArray? = withContext(Dispatchers.IO) {
+        val file = File(context.filesDir, relativePath)
+        if (file.exists()) file.readBytes() else null
+    }
+
+    actual suspend fun writeBytes(relativePath: String, bytes: ByteArray) {
+        withContext(Dispatchers.IO) {
+            val file = File(context.filesDir, relativePath)
+            file.parentFile?.let { if (!it.exists()) it.mkdirs() }
+            file.writeBytes(bytes)
+        }
+    }
 }

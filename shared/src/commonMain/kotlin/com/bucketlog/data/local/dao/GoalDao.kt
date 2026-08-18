@@ -3,6 +3,7 @@ package com.bucketlog.data.local.dao
 import androidx.room3.Dao
 import androidx.room3.Delete
 import androidx.room3.Insert
+import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import androidx.room3.Update
 import com.bucketlog.data.local.entity.GoalEntity
@@ -12,6 +13,10 @@ import kotlinx.coroutines.flow.Flow
 interface GoalDao {
     @Insert
     suspend fun insert(goal: GoalEntity)
+
+    // 백업 복원(M-02)용 — id 충돌 시 백업이 이긴다(docs/DATA-MODEL.md §7).
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(goal: GoalEntity)
 
     @Update
     suspend fun update(goal: GoalEntity)

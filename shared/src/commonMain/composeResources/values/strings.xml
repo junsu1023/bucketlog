@@ -9,6 +9,7 @@
     <string name="filter_archived">접어둠</string>
     <string name="add_goal_fab">목표 추가하기</string>
     <string name="archive_nav_button">보관함</string>
+    <string name="settings_nav_button">설정</string>
 
     <string name="empty_in_progress">올해 하고 싶은 걸 하나 적어볼까요?</string>
     <string name="empty_completed">완료한 것들이 여기 모여요.</string>
@@ -96,6 +97,32 @@
     <string name="onboarding_added">추가됨</string>
     <string name="onboarding_custom_input">직접 입력</string>
     <string name="onboarding_start">시작하기</string>
+
+    <!-- 알림 (5주차) -->
+    <string name="nudge_notification_body">마지막 기록 후 %1$d일이 지났어요. 요즘 어때요?</string>
+    <string name="settings_title">알림</string>
+    <string name="settings_all_notifications">전체 알림</string>
+    <string name="settings_nudge">오래된 목표 살펴보기</string>
+    <string name="settings_notification_hour">알림 받을 시각</string>
+    <string name="settings_hour_format">%1$d:00</string>
+    <string name="notification_permission_title">%1$s 잊지 않게 가끔 알려드릴까요?</string>
+    <string name="notification_permission_body">한 달에 한두 번이면 충분해요.</string>
+    <string name="notification_permission_allow">알려주세요</string>
+    <string name="notification_permission_deny">괜찮아요</string>
+
+    <!-- 백업/복원 (M-02) -->
+    <string name="settings_backup_section">백업 및 복원</string>
+    <string name="settings_backup_export">지금 백업하기</string>
+    <string name="settings_backup_restore">백업 파일에서 복원하기</string>
+    <string name="backup_restore_confirm_title">복원하시겠어요?</string>
+    <string name="backup_restore_confirm_body">기존 기록은 그대로 남고, 백업 파일 내용이 합쳐져요.</string>
+    <string name="backup_restore_confirm_action">복원하기</string>
+    <string name="backup_result_export_success">백업이 저장되었어요.</string>
+    <string name="backup_result_export_failed">백업을 저장하지 못했어요. 다시 시도해 주세요.</string>
+    <string name="backup_result_restore_success">목표 %1$d개, 기록 %2$d개를 불러왔어요.</string>
+    <string name="backup_result_restore_schema_too_new">이 백업은 최신 버전의 앱에서 만들어졌어요. 앱을 업데이트한 뒤 다시 시도해 주세요.</string>
+    <string name="backup_result_restore_failed">백업 파일을 읽을 수 없어요.</string>
+    <string name="backup_result_confirm">확인</string>
 
     <!-- 프리셋 목표 (docs/MVP-SCOPE.md §2.7) -->
     <string name="preset_travel_1">혼자 여행 가보기</string>

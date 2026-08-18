@@ -27,6 +27,10 @@ import androidx.compose.ui.unit.dp
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.cancel
 import bucketlog.shared.generated.resources.error_generic
+import bucketlog.shared.generated.resources.notification_permission_allow
+import bucketlog.shared.generated.resources.notification_permission_body
+import bucketlog.shared.generated.resources.notification_permission_deny
+import bucketlog.shared.generated.resources.notification_permission_title
 import bucketlog.shared.generated.resources.onboarding_added
 import bucketlog.shared.generated.resources.onboarding_custom_input
 import bucketlog.shared.generated.resources.onboarding_start
@@ -94,6 +98,25 @@ fun OnboardingScreen(viewModel: OnboardingViewModel, onCustomInput: () -> Unit, 
             confirmButton = {
                 TextButton(onClick = { viewModel.onIntent(OnboardingIntent.DismissError) }) {
                     Text(stringResource(Res.string.cancel))
+                }
+            },
+        )
+    }
+
+    // O-03: 프리셋 탭으로 첫 목표가 만들어진 직후에만. 거절해도 계속 프리셋을 고를 수 있다.
+    if (state.showNotificationPermissionPrompt) {
+        AlertDialog(
+            onDismissRequest = { viewModel.onIntent(OnboardingIntent.SkipNotificationPermission) },
+            title = { Text(stringResource(Res.string.notification_permission_title, state.permissionPromptGoalTitle)) },
+            text = { Text(stringResource(Res.string.notification_permission_body)) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.onIntent(OnboardingIntent.RequestNotificationPermission) }) {
+                    Text(stringResource(Res.string.notification_permission_allow))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.onIntent(OnboardingIntent.SkipNotificationPermission) }) {
+                    Text(stringResource(Res.string.notification_permission_deny))
                 }
             },
         )

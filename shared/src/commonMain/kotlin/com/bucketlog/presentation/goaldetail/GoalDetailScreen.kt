@@ -42,8 +42,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import bucketlog.shared.generated.resources.Res
@@ -92,14 +95,14 @@ import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GoalDetailScreen(viewModel: GoalDetailViewModel, onBack: () -> Unit) {
+fun GoalDetailScreen(viewModel: GoalDetailViewModel, onBack: () -> Unit, focusCheckIn: Boolean = false) {
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(state.deleted) {
         if (state.deleted) onBack()
     }
 
-    GoalDetailContent(state = state, onIntent = viewModel::onIntent, onBack = onBack)
+    GoalDetailContent(state = state, onIntent = viewModel::onIntent, onBack = onBack, focusCheckIn = focusCheckIn)
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -108,6 +111,7 @@ private fun GoalDetailContent(
     state: GoalDetailUiState,
     onIntent: (GoalDetailIntent) -> Unit,
     onBack: () -> Unit,
+    focusCheckIn: Boolean,
 ) {
     val goal = state.goal
 
@@ -122,7 +126,7 @@ private fun GoalDetailContent(
         },
         bottomBar = {
             if (goal != null) {
-                GoalDetailBottomBar(goal = goal, state = state, onIntent = onIntent)
+                GoalDetailBottomBar(goal = goal, state = state, onIntent = onIntent, focusCheckIn = focusCheckIn)
             }
         },
     ) { padding ->
@@ -191,7 +195,19 @@ private fun GoalDetailBottomBar(
     goal: Goal,
     state: GoalDetailUiState,
     onIntent: (GoalDetailIntent) -> Unit,
+    focusCheckIn: Boolean,
 ) {
+    val checkInFocusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    // N-02 스마트 넛지 딥링크(focus=checkin) — "탭 후 경험이 이 기능의 전부"(docs/NOTIFICATIONS.md §2).
+    LaunchedEffect(focusCheckIn, goal.status) {
+        if (focusCheckIn && goal.status == GoalStatus.IN_PROGRESS) {
+            checkInFocusRequester.requestFocus()
+            keyboardController?.show()
+        }
+    }
+
     Surface(tonalElevation = 3.dp) {
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
             when (goal.status) {
@@ -201,7 +217,7 @@ private fun GoalDetailBottomBar(
                             value = state.checkInDraft,
                             onValueChange = { onIntent(GoalDetailIntent.CheckInTextChanged(it)) },
                             placeholder = { Text(stringResource(Res.string.check_in_placeholder)) },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.weight(1f).focusRequester(checkInFocusRequester),
                             singleLine = true,
                         )
                         TextButton(onClick = { onIntent(GoalDetailIntent.SubmitCheckIn) }) {

@@ -74,4 +74,11 @@ class EntryRepositoryImpl(
         entryDao.update(completion.copy(kind = EntryKind.PROGRESS.name))
         return true
     }
+
+    override suspend fun getAll(): List<Entry> = entryDao.getAllWithPhotos().map { it.toDomain() }
+
+    override suspend fun upsert(entry: Entry) {
+        entryDao.upsert(entry.toEntity())
+        entry.photos.forEach { photo -> photoDao.upsert(photo.toEntity()) }
+    }
 }

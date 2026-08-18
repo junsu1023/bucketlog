@@ -14,4 +14,8 @@ expect class FileStorage {
     suspend fun writePhoto(photoId: String, display: ByteArray, thumbnail: ByteArray): PhotoPaths
     suspend fun delete(relativePath: String)
     fun resolveAbsolutePath(relativePath: String): String
+
+    // 백업/복원(M-02)용. writePhoto와 달리 경로를 새로 만들지 않고 주어진 상대 경로 그대로 읽고 쓴다.
+    suspend fun readBytes(relativePath: String): ByteArray?
+    suspend fun writeBytes(relativePath: String, bytes: ByteArray)
 }
