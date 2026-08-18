@@ -13,8 +13,8 @@ actual class FileStorage {
             ensurePhotosDirectory()
             val displayName = "$photoId.jpg"
             val thumbnailName = "${photoId}_thumb.jpg"
-            writeBytes(display, "${photosDirectory()}/$displayName")
-            writeBytes(thumbnail, "${photosDirectory()}/$thumbnailName")
+            writeFileBytes(display, "${photosDirectory()}/$displayName")
+            writeFileBytes(thumbnail, "${photosDirectory()}/$thumbnailName")
             PhotoPaths(displayPath = "photos/$displayName", thumbnailPath = "photos/$thumbnailName")
         }
 
@@ -28,8 +28,34 @@ actual class FileStorage {
     actual fun resolveAbsolutePath(relativePath: String): String = absolutePath(relativePath)
 
     @OptIn(ExperimentalForeignApi::class)
-    private fun writeBytes(bytes: ByteArray, path: String) {
+    actual suspend fun readBytes(relativePath: String): ByteArray? = withContext(Dispatchers.Default) {
+        val path = absolutePath(relativePath)
+        if (!NSFileManager.defaultManager.fileExistsAtPath(path)) return@withContext null
+        NSFileManager.defaultManager.contentsAtPath(path)?.toByteArray()
+    }
+
+    actual suspend fun writeBytes(relativePath: String, bytes: ByteArray) {
+        withContext(Dispatchers.Default) {
+            val path = absolutePath(relativePath)
+            ensureParentDirectory(path)
+            writeFileBytes(bytes, path)
+        }
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    private fun writeFileBytes(bytes: ByteArray, path: String) {
         NSFileManager.defaultManager.createFileAtPath(path, contents = bytes.toNSData(), attributes = null)
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    private fun ensureParentDirectory(path: String) {
+        val parent = path.substringBeforeLast("/")
+        NSFileManager.defaultManager.createDirectoryAtPath(
+            parent,
+            withIntermediateDirectories = true,
+            attributes = null,
+            error = null,
+        )
     }
 
     @OptIn(ExperimentalForeignApi::class)
