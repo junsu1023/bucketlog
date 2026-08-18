@@ -2,6 +2,9 @@ package com.bucketlog.presentation.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bucketlog.domain.usecase.ExportBackupUseCase
+import com.bucketlog.domain.usecase.RestoreBackupUseCase
+import com.bucketlog.domain.usecase.RestoreResult
 import com.bucketlog.notification.NotificationSettingsKeys
 import com.bucketlog.notification.SettingsStore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,8 +13,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** N-06 알림 설정. 이번 범위에 실제로 쓰이는 종류(전체/넛지)만 노출한다. */
-class SettingsViewModel(private val settings: SettingsStore) : ViewModel() {
+/** N-06 알림 설정 + M-02 백업/복원. */
+class SettingsViewModel(
+    private val settings: SettingsStore,
+    private val exportBackup: ExportBackupUseCase,
+    private val restoreBackup: RestoreBackupUseCase,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -46,6 +53,40 @@ class SettingsViewModel(private val settings: SettingsStore) : ViewModel() {
                     settings.setLong(NotificationSettingsKeys.NOTIFICATION_HOUR, intent.hour.toLong())
                 }
             }
+
+            SettingsIntent.ExportBackup -> {
+                _uiState.update { it.copy(isBackupBusy = true) }
+                viewModelScope.launch {
+                    val file = exportBackup()
+                    _uiState.update { it.copy(isBackupBusy = false, pendingExport = file) }
+                }
+            }
+            SettingsIntent.ExportLaunched -> _uiState.update { it.copy(pendingExport = null) }
+            is SettingsIntent.ExportFinished -> _uiState.update {
+                it.copy(backupResult = if (intent.success) BackupResultMessage.ExportSuccess else BackupResultMessage.ExportFailed)
+            }
+
+            SettingsIntent.RequestRestore -> _uiState.update { it.copy(showRestoreConfirm = true) }
+            SettingsIntent.CancelRestore -> _uiState.update { it.copy(showRestoreConfirm = false) }
+            SettingsIntent.ConfirmRestore -> _uiState.update {
+                it.copy(showRestoreConfirm = false, pendingImportLaunch = true)
+            }
+            SettingsIntent.ImportLaunched -> _uiState.update { it.copy(pendingImportLaunch = false) }
+            is SettingsIntent.RestoreBackup -> {
+                val bytes = intent.bytes
+                if (bytes == null) return
+                _uiState.update { it.copy(isBackupBusy = true) }
+                viewModelScope.launch {
+                    val result = restoreBackup(bytes)
+                    val message = when (result) {
+                        is RestoreResult.Success -> BackupResultMessage.RestoreSuccess(result.goalCount, result.entryCount)
+                        RestoreResult.SchemaTooNew -> BackupResultMessage.RestoreSchemaTooNew
+                        RestoreResult.CorruptFile -> BackupResultMessage.RestoreFailed
+                    }
+                    _uiState.update { it.copy(isBackupBusy = false, backupResult = message) }
+                }
+            }
+            SettingsIntent.DismissBackupResult -> _uiState.update { it.copy(backupResult = null) }
         }
     }
 

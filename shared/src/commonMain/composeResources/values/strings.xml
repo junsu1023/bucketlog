@@ -110,6 +110,20 @@
     <string name="notification_permission_allow">알려주세요</string>
     <string name="notification_permission_deny">괜찮아요</string>
 
+    <!-- 백업/복원 (M-02) -->
+    <string name="settings_backup_section">백업 및 복원</string>
+    <string name="settings_backup_export">지금 백업하기</string>
+    <string name="settings_backup_restore">백업 파일에서 복원하기</string>
+    <string name="backup_restore_confirm_title">복원하시겠어요?</string>
+    <string name="backup_restore_confirm_body">기존 기록은 그대로 남고, 백업 파일 내용이 합쳐져요.</string>
+    <string name="backup_restore_confirm_action">복원하기</string>
+    <string name="backup_result_export_success">백업이 저장되었어요.</string>
+    <string name="backup_result_export_failed">백업을 저장하지 못했어요. 다시 시도해 주세요.</string>
+    <string name="backup_result_restore_success">목표 %1$d개, 기록 %2$d개를 불러왔어요.</string>
+    <string name="backup_result_restore_schema_too_new">이 백업은 최신 버전의 앱에서 만들어졌어요. 앱을 업데이트한 뒤 다시 시도해 주세요.</string>
+    <string name="backup_result_restore_failed">백업 파일을 읽을 수 없어요.</string>
+    <string name="backup_result_confirm">확인</string>
+
     <!-- 프리셋 목표 (docs/MVP-SCOPE.md §2.7) -->
     <string name="preset_travel_1">혼자 여행 가보기</string>
     <string name="preset_travel_2">국내 섬 3곳 가보기</string>
