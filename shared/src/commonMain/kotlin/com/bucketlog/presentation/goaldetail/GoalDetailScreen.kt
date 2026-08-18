@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -208,7 +209,9 @@ private fun GoalDetailBottomBar(
         }
     }
 
-    Surface(tonalElevation = 3.dp) {
+    // edge-to-edge에서는 Scaffold가 bottomBar 내부까지 시스템 내비게이션 바 인셋을 자동으로
+    // 처리해주지 않는다 — 직접 안 하면 3버튼 내비게이션 모드에서 액션 버튼(특히 삭제)이 가려진다.
+    Surface(tonalElevation = 3.dp, modifier = Modifier.navigationBarsPadding()) {
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
             when (goal.status) {
                 GoalStatus.IN_PROGRESS -> {
