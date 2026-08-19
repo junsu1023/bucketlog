@@ -1,6 +1,8 @@
 package com.bucketlog.di
 
 import bucketlog.shared.generated.resources.Res
+import bucketlog.shared.generated.resources.app_name
+import bucketlog.shared.generated.resources.monthly_recap_notification_body
 import bucketlog.shared.generated.resources.nudge_notification_body
 import com.bucketlog.data.local.AppDatabase
 import com.bucketlog.data.local.DatabaseFactory
@@ -19,6 +21,7 @@ import com.bucketlog.domain.usecase.ObserveGoalOverviewsUseCase
 import com.bucketlog.domain.usecase.PickNudgeTargetUseCase
 import com.bucketlog.domain.usecase.RestoreBackupUseCase
 import com.bucketlog.domain.usecase.RestoreGoalUseCase
+import com.bucketlog.domain.usecase.ScheduleMonthlyRecapUseCase
 import com.bucketlog.domain.usecase.ScheduleNudgeUseCase
 import com.bucketlog.notification.AppSettingsStore
 import com.bucketlog.notification.NotificationBudget
@@ -77,6 +80,17 @@ val appModule = module {
         ScheduleNudgeUseCase(get(), get(), get(), get(), get()) { days ->
             getString(Res.string.nudge_notification_body, days)
         }
+    }
+    factory {
+        val scheduler = get<NotificationScheduler>()
+        ScheduleMonthlyRecapUseCase(
+            entryRepository = get(),
+            notificationBudget = get(),
+            settings = get(),
+            cancelNotification = { id -> scheduler.cancel(id) },
+            recapTitle = { getString(Res.string.app_name) },
+            recapBody = { month -> getString(Res.string.monthly_recap_notification_body, month) },
+        )
     }
     factory { ExportBackupUseCase(get(), get(), get(), get()) }
     factory { RestoreBackupUseCase(get(), get(), get(), get()) }

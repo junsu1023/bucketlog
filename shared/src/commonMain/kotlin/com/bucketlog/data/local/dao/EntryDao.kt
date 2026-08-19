@@ -1,14 +1,18 @@
 package com.bucketlog.data.local.dao
 
+import androidx.room3.ColumnInfo
 import androidx.room3.Dao
 import androidx.room3.Delete
+import androidx.room3.Embedded
 import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
+import androidx.room3.Relation
 import androidx.room3.Transaction
 import androidx.room3.Update
 import com.bucketlog.data.local.entity.EntryEntity
 import com.bucketlog.data.local.entity.EntryWithPhotos
+import com.bucketlog.data.local.entity.PhotoEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -60,7 +64,25 @@ interface EntryDao {
         """,
     )
     fun observeCoverCandidates(): Flow<List<CoverCandidate>>
+
+    // N-01 월간 회고 / 보관함 "이번 달" 탭 — 기간 내 기록을 목표 제목과 함께 시간순으로.
+    @Transaction
+    @Query(
+        """
+        SELECT entries.*, goals.title AS goal_title FROM entries
+        INNER JOIN goals ON goals.id = entries.goal_id
+        WHERE entries.recorded_at >= :startMillis AND entries.recorded_at < :endMillis
+        ORDER BY entries.recorded_at DESC
+        """,
+    )
+    fun observeEntriesInRange(startMillis: Long, endMillis: Long): Flow<List<EntryWithGoalTitle>>
 }
+
+data class EntryWithGoalTitle(
+    @Embedded val entry: EntryEntity,
+    @Relation(parentColumns = ["id"], entityColumns = ["entry_id"]) val photos: List<PhotoEntity>,
+    @ColumnInfo(name = "goal_title") val goalTitle: String,
+)
 
 data class GoalProgressTotal(val goalId: String, val total: Int)
 

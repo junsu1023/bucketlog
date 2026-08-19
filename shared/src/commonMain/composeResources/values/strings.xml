@@ -7,6 +7,7 @@
     <string name="filter_in_progress">진행 중</string>
     <string name="filter_completed">완료</string>
     <string name="filter_archived">접어둠</string>
+    <string name="filter_monthly">이번 달</string>
     <string name="add_goal_fab">목표 추가하기</string>
     <string name="archive_nav_button">보관함</string>
     <string name="settings_nav_button">설정</string>
@@ -14,6 +15,7 @@
     <string name="empty_in_progress">올해 하고 싶은 걸 하나 적어볼까요?</string>
     <string name="empty_completed">완료한 것들이 여기 모여요.</string>
     <string name="empty_archived">접어둔 목표가 아직 없어요.</string>
+    <string name="empty_monthly">이번 달엔 아직 기록이 없어요.</string>
 
     <string name="home_summary_year">%1$d년 · %2$d개 중 %3$d개 완료</string>
     <string name="home_summary_someday">언젠가 · %1$d개</string>
@@ -113,6 +115,7 @@
 
     <!-- 알림 (5주차) -->
     <string name="nudge_notification_body">마지막 기록 후 %1$d일이 지났어요. 요즘 어때요?</string>
+    <string name="monthly_recap_notification_body">%1$d월이 지나갔어요. 이번 달엔 어떤 걸 했나요?</string>
     <string name="settings_title">알림</string>
     <string name="settings_all_notifications">전체 알림</string>
     <string name="settings_nudge">오래된 목표 살펴보기</string>

@@ -1,5 +1,6 @@
 package com.bucketlog.data.mapper
 
+import com.bucketlog.data.local.dao.EntryWithGoalTitle
 import com.bucketlog.data.local.entity.EntryEntity
 import com.bucketlog.data.local.entity.EntryWithPhotos
 import com.bucketlog.data.local.entity.PhotoEntity
@@ -29,6 +30,17 @@ fun Photo.toEntity(): PhotoEntity = PhotoEntity(
 )
 
 fun EntryWithPhotos.toDomain(): Entry = Entry(
+    id = entry.id,
+    goalId = entry.goalId,
+    kind = EntryKind.valueOf(entry.kind),
+    memo = entry.memo,
+    photos = photos.sortedBy { it.orderIndex }.map { it.toDomain() },
+    countDelta = entry.countDelta,
+    recordedAt = Instant.fromEpochMilliseconds(entry.recordedAt),
+    createdAt = Instant.fromEpochMilliseconds(entry.createdAt),
+)
+
+fun EntryWithGoalTitle.toDomain(): Entry = Entry(
     id = entry.id,
     goalId = entry.goalId,
     kind = EntryKind.valueOf(entry.kind),

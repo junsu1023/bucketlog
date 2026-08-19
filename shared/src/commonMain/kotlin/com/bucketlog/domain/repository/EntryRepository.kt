@@ -29,4 +29,9 @@ interface EntryRepository {
 
     /** 백업 복원(M-02)용 — id가 이미 있으면 덮어쓴다(백업이 이긴다). photos도 같이 upsert. */
     suspend fun upsert(entry: Entry)
+
+    /** N-01 월간 회고 / 보관함 "이번 달" 탭용 — 해당 월(1~12) 기록을 목표 제목·사진 경로와 함께. */
+    fun observeEntriesInMonth(year: Int, month: Int): Flow<List<MonthlyEntry>>
 }
+
+data class MonthlyEntry(val entry: Entry, val goalTitle: String, val photoPaths: List<String>)
