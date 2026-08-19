@@ -76,8 +76,14 @@
 ## 7. 알림 (N) — `docs/NOTIFICATIONS.md`
 
 - [x] ✅ N-02 스마트 넛지 — 30일 이상 방치된 목표 중 가장 오래된 것 1개를 골라 알림. 탭 → 딥링크 → 목표 상세 퀵체크인 필드 포커스+키보드까지 실기기 확인. WorkManager 실제 OS 잡 등록(`dumpsys jobscheduler`)도 확인
-- [ ] N-01 월간 회고 — ⚠️ 미구현 (의도적으로 이번 범위에서 제외)
-- [ ] N-03 목표별 리마인더 — ⚠️ 미구현
+- [x] ✅ N-01 월간 회고 — 이번 달 기록이 있으면 말일에 예약, 0건이면 예약 안 하고 기존 예약 취소.
+      딥링크(`bucketlog://archive?month=yyyy-MM`) 탭 시 보관함 "이번 달" 탭으로 정확히 진입,
+      해당 월 기록(메모+목표 제목+상대 날짜)이 뜨는 것까지 실기기 확인
+- [x] ✅ N-03 목표별 리마인더 — 목표 수정 화면에서 리마인더 토글 on → 주1회/2주1회/월1회 칩
+      노출(매일 옵션 없음) 확인. 저장 → DB에 reminder_interval/reminder_enabled 반영 확인.
+      평가 로직(가장 오래 밀린 목표 하나 선정, 예산 소비 후 목표별리마인더 > 넛지 우선순위)은
+      유닛 테스트로 검증(EvaluateNotificationsUseCaseTest, ScheduleGoalRemindersUseCaseTest) —
+      실기기에서 실제 알림 발송까지는 미검증(N-02와 달리 이번엔 시간을 앞당겨 트리거하지 않음)
 - [ ] N-04 마감 임박 — ⚠️ 미구현 (G-09 마감일 UI가 없어서 선행 조건도 없음)
 - [ ] N-05 연말 회고 — ⚠️ 미구현
 - [x] ✅ N-06 알림 설정 — 전체 on/off, 넛지 on/off, 알림 시각(9/12/18/20시) 선택 화면 확인. 예산 엔진(주 1회 상한, 21~09시 조용한 시간 연기, 유저 off 시 차단) 유닛 테스트 7개 통과(`NotificationBudgetTest`)
@@ -127,6 +133,8 @@
 | `PickNudgeTargetUseCaseTest` | 7 | N-02 스마트 넛지 대상 선정 로직 |
 | `NotificationBudgetTest` | 7 | 알림 예산(주 1회 상한, 조용한 시간, on/off) |
 | `PlanRestoreTest` | 5 | M-02 복원 머지 판단 로직 |
+| `ScheduleGoalRemindersUseCaseTest` | 8 | N-03 목표별 리마인더 대상 선정·발송 시각 갱신 |
+| `EvaluateNotificationsUseCaseTest` | 4 | N-01/N-03/N-02 우선순위 중재(월간회고 > 목표별리마인더 > 넛지) |
 
 `ZipArchiver`(Android/iOS 각각의 실제 zip 압축/해제)와 `Export/RestoreBackupUseCase`는 플랫폼 I/O(파일, DB)에 의존해 순수 유닛 테스트로 못 덮었습니다 — 위 10번 항목의 실기기 확인이 이 부분의 유일한 검증입니다.
 
