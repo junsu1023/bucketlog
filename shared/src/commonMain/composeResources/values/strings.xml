@@ -8,6 +8,8 @@
     <string name="filter_completed">완료</string>
     <string name="filter_archived">접어둠</string>
     <string name="filter_monthly">이번 달</string>
+    <string name="filter_all">전체</string>
+    <string name="filter_stats">통계</string>
     <string name="add_goal_fab">목표 추가하기</string>
     <string name="archive_nav_button">보관함</string>
     <string name="settings_nav_button">설정</string>
@@ -16,11 +18,20 @@
     <string name="empty_completed">완료한 것들이 여기 모여요.</string>
     <string name="empty_archived">접어둔 목표가 아직 없어요.</string>
     <string name="empty_monthly">이번 달엔 아직 기록이 없어요.</string>
+    <string name="empty_timeline">아직 기록이 없어요.</string>
 
     <string name="home_summary_year">%1$d년 · %2$d개 중 %3$d개 완료</string>
     <string name="home_summary_someday">언젠가 · %1$d개</string>
     <string name="year_chip">%1$d년</string>
     <string name="empty_state_preset_hint">이런 건 어때요?</string>
+
+    <string name="throwback_year_ago">1년 전 오늘, "%1$s" 기록이 있었어요</string>
+    <string name="throwback_month_ago">한 달 전 오늘, "%1$s" 기록이 있었어요</string>
+
+    <string name="stats_total_completed">완료한 목표 %1$d개</string>
+    <string name="stats_by_category">카테고리별</string>
+    <string name="stats_by_month">월별 완료 추이</string>
+    <string name="stats_empty">아직 완료한 목표가 없어요</string>
 
     <string name="relative_today">오늘</string>
     <string name="relative_yesterday">어제</string>

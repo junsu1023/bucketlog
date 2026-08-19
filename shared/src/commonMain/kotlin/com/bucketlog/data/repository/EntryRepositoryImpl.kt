@@ -1,6 +1,7 @@
 package com.bucketlog.data.repository
 
 import com.bucketlog.data.local.dao.EntryDao
+import com.bucketlog.data.local.dao.EntryWithGoalTitle
 import com.bucketlog.data.local.dao.PhotoDao
 import com.bucketlog.data.mapper.toDomain
 import com.bucketlog.data.mapper.toEntity
@@ -15,6 +16,8 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.plus
 
 class EntryRepositoryImpl(
     private val entryDao: EntryDao,
@@ -91,15 +94,23 @@ class EntryRepositoryImpl(
         val start = LocalDate(year, month, 1).atStartOfDayIn(zone).toEpochMilliseconds()
         val nextMonthFirstDay = if (month == 12) LocalDate(year + 1, 1, 1) else LocalDate(year, month + 1, 1)
         val end = nextMonthFirstDay.atStartOfDayIn(zone).toEpochMilliseconds()
-        return entryDao.observeEntriesInRange(start, end).map { rows ->
-            rows.map { row ->
-                MonthlyEntry(
-                    entry = row.toDomain(),
-                    goalTitle = row.goalTitle,
-                    photoPaths = row.photos.sortedBy { it.orderIndex }
-                        .map { "file://" + fileStorage.resolveAbsolutePath(it.thumbnailPath) },
-                )
-            }
-        }
+        return entryDao.observeEntriesInRange(start, end).map { rows -> rows.map { it.toMonthlyEntry() } }
     }
+
+    override fun observeEntriesOnDate(date: LocalDate): Flow<List<MonthlyEntry>> {
+        val zone = TimeZone.currentSystemDefault()
+        val start = date.atStartOfDayIn(zone).toEpochMilliseconds()
+        val end = date.plus(DatePeriod(days = 1)).atStartOfDayIn(zone).toEpochMilliseconds()
+        return entryDao.observeEntriesInRange(start, end).map { rows -> rows.map { it.toMonthlyEntry() } }
+    }
+
+    override fun observeAllEntries(): Flow<List<MonthlyEntry>> =
+        entryDao.observeEntriesInRange(0L, Long.MAX_VALUE).map { rows -> rows.map { it.toMonthlyEntry() } }
+
+    private fun EntryWithGoalTitle.toMonthlyEntry() = MonthlyEntry(
+        entry = toDomain(),
+        goalTitle = goalTitle,
+        photoPaths = photos.sortedBy { it.orderIndex }
+            .map { "file://" + fileStorage.resolveAbsolutePath(it.thumbnailPath) },
+    )
 }
