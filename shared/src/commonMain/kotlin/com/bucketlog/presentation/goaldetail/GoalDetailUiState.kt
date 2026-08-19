@@ -18,7 +18,13 @@ data class GoalDetailUiState(
 /** Entry + 사진의 절대(file://) 경로. FileStorage 해석은 ViewModel(플랫폼 접근 가능 계층)에서 미리 끝내둔다. */
 data class TimelineEntry(
     val entry: Entry,
-    val photoPaths: List<String>,
+    val photos: List<TimelinePhoto>,
+)
+
+/** [thumbnailPath]는 타임라인 인라인 표시용, [displayPath]는 D-05 전체화면 뷰어의 원본 화질용. */
+data class TimelinePhoto(
+    val thumbnailPath: String,
+    val displayPath: String,
 )
 
 sealed interface PendingAction {
