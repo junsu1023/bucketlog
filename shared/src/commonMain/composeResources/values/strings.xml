@@ -92,6 +92,10 @@
     <string name="goal_bucket_this_year">2026년</string>
     <string name="goal_bucket_someday">언젠가</string>
     <string name="goal_photo_label">사진 (선택)</string>
+    <string name="goal_reminder_label">리마인더</string>
+    <string name="goal_reminder_interval_weekly">주 1회</string>
+    <string name="goal_reminder_interval_biweekly">2주 1회</string>
+    <string name="goal_reminder_interval_monthly">월 1회</string>
     <string name="save">저장</string>
 
     <string name="category_travel">여행</string>
@@ -116,6 +120,7 @@
     <!-- 알림 (5주차) -->
     <string name="nudge_notification_body">마지막 기록 후 %1$d일이 지났어요. 요즘 어때요?</string>
     <string name="monthly_recap_notification_body">%1$d월이 지나갔어요. 이번 달엔 어떤 걸 했나요?</string>
+    <string name="goal_reminder_notification_body">지금 어때요?</string>
     <string name="settings_title">알림</string>
     <string name="settings_all_notifications">전체 알림</string>
     <string name="settings_nudge">오래된 목표 살펴보기</string>

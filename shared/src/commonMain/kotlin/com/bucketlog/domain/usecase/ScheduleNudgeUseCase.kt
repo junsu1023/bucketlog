@@ -10,14 +10,6 @@ import com.bucketlog.platform.NotificationType
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlinx.coroutines.flow.first
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.plus
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
 
 /**
  * N-02 스마트 넛지 1건 평가·예약. docs/ARCHITECTURE.md §7 — 주 1회 백그라운드 작업 +
@@ -65,11 +57,4 @@ class ScheduleNudgeUseCase(
             goalRepository.update(goal.copy(nudgeSnoozedUntil = now + 28.days))
         }
     }
-}
-
-private fun nextOccurrenceOfHour(now: Instant, hour: Int): Instant {
-    val zone = TimeZone.currentSystemDefault()
-    val today = now.toLocalDateTime(zone).date
-    val candidate = LocalDateTime(today, LocalTime(hour, 0)).toInstant(zone)
-    return if (candidate > now) candidate else candidate.plus(1, DateTimeUnit.DAY, zone)
 }

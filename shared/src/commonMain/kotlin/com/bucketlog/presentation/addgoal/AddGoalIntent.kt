@@ -2,6 +2,7 @@ package com.bucketlog.presentation.addgoal
 
 import com.bucketlog.domain.model.Category
 import com.bucketlog.domain.model.GoalType
+import com.bucketlog.domain.model.ReminderInterval
 
 sealed interface AddGoalIntent {
     data class TitleChanged(val value: String) : AddGoalIntent
@@ -17,4 +18,7 @@ sealed interface AddGoalIntent {
 
     data object RequestNotificationPermission : AddGoalIntent
     data object SkipNotificationPermission : AddGoalIntent
+
+    data class ReminderEnabledChanged(val value: Boolean) : AddGoalIntent
+    data class ReminderIntervalChanged(val value: ReminderInterval) : AddGoalIntent
 }

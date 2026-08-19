@@ -2,6 +2,7 @@ package com.bucketlog.di
 
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.app_name
+import bucketlog.shared.generated.resources.goal_reminder_notification_body
 import bucketlog.shared.generated.resources.monthly_recap_notification_body
 import bucketlog.shared.generated.resources.nudge_notification_body
 import com.bucketlog.data.local.AppDatabase
@@ -21,6 +22,7 @@ import com.bucketlog.domain.usecase.ObserveGoalOverviewsUseCase
 import com.bucketlog.domain.usecase.PickNudgeTargetUseCase
 import com.bucketlog.domain.usecase.RestoreBackupUseCase
 import com.bucketlog.domain.usecase.RestoreGoalUseCase
+import com.bucketlog.domain.usecase.ScheduleGoalRemindersUseCase
 import com.bucketlog.domain.usecase.ScheduleMonthlyRecapUseCase
 import com.bucketlog.domain.usecase.ScheduleNudgeUseCase
 import com.bucketlog.notification.AppSettingsStore
@@ -91,6 +93,11 @@ val appModule = module {
             recapTitle = { getString(Res.string.app_name) },
             recapBody = { month -> getString(Res.string.monthly_recap_notification_body, month) },
         )
+    }
+    factory {
+        ScheduleGoalRemindersUseCase(get(), get(), get()) {
+            getString(Res.string.goal_reminder_notification_body)
+        }
     }
     factory { ExportBackupUseCase(get(), get(), get(), get()) }
     factory { RestoreBackupUseCase(get(), get(), get(), get()) }
