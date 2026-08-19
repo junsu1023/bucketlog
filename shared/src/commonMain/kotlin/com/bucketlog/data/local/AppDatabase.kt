@@ -13,7 +13,7 @@ import com.bucketlog.data.local.entity.PhotoEntity
 
 @Database(
     entities = [GoalEntity::class, EntryEntity::class, PhotoEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 @ConstructedBy(AppDatabaseConstructor::class)

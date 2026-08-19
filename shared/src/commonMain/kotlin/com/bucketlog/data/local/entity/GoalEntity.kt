@@ -32,4 +32,6 @@ data class GoalEntity(
     @ColumnInfo(name = "archived_at") val archivedAt: Long?,
     @ColumnInfo(name = "archive_reason") val archiveReason: String?,
     @ColumnInfo(name = "nudge_snoozed_until") val nudgeSnoozedUntil: Long?,
+    /** N-03 목표별 리마인더 — 다음 발송 시각 계산 기준(마지막 발송 시각). v2에서 추가. */
+    @ColumnInfo(name = "reminder_last_sent_at") val reminderLastSentAt: Long?,
 )

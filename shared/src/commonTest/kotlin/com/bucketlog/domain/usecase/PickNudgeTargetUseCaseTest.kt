@@ -84,6 +84,7 @@ class PickNudgeTargetUseCaseTest {
         archivedAt = null,
         archiveReason = null,
         nudgeSnoozedUntil = nudgeSnoozedUntil,
+        reminderLastSentAt = null,
     )
 
     @Test

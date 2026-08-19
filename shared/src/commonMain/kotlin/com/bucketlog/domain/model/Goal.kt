@@ -25,6 +25,7 @@ data class Goal(
     val archivedAt: Instant?,
     val archiveReason: String?,      // 접어둔 이유
     val nudgeSnoozedUntil: Instant?, // 넛지 무응답 시 제외 기간
+    val reminderLastSentAt: Instant?, // N-03 목표별 리마인더 마지막 발송 시각
 )
 
 enum class GoalType { ONE_TIME, REPEATABLE }

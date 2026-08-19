@@ -35,6 +35,7 @@ data class GoalDto(
     val archivedAt: Long?,
     val archiveReason: String?,
     val nudgeSnoozedUntil: Long?,
+    val reminderLastSentAt: Long?,
 )
 
 @Serializable
