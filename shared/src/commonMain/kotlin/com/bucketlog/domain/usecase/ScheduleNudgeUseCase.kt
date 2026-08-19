@@ -27,9 +27,9 @@ class ScheduleNudgeUseCase(
     private val settings: SettingsStore,
     private val nudgeBody: suspend (daysSinceLastEntry: Int) -> String,
 ) {
-    suspend operator fun invoke() {
+    suspend operator fun invoke(): Boolean {
         val now = Clock.System.now()
-        val goal = pickNudgeTarget(now) ?: return
+        val goal = pickNudgeTarget(now) ?: return false
 
         // PickNudgeTargetUseCase와 동일한 규칙: 기록이 하나도 없으면 목표 생성 시점을 기준으로 삼는다.
         val lastEntryAt = entryRepository.observeLastRecordedAt().first()[goal.id] ?: goal.createdAt
@@ -56,5 +56,6 @@ class ScheduleNudgeUseCase(
             // 아직 없어 이번 범위에선 "같은 목표 연속 넛지"만 우선 막는다.
             goalRepository.update(goal.copy(nudgeSnoozedUntil = now + 28.days))
         }
+        return sent
     }
 }

@@ -3,7 +3,7 @@ package com.bucketlog
 import androidx.compose.ui.window.ComposeUIViewController
 import com.bucketlog.data.local.DatabaseFactory
 import com.bucketlog.di.initKoin
-import com.bucketlog.domain.usecase.ScheduleNudgeUseCase
+import com.bucketlog.domain.usecase.EvaluateNotificationsUseCase
 import com.bucketlog.platform.AppSettings
 import com.bucketlog.platform.FileStorage
 import com.bucketlog.platform.NotificationScheduler
@@ -25,7 +25,7 @@ private fun ensureKoinStarted() {
     )
     // docs/ARCHITECTURE.md §7: iOS는 백그라운드 실행이 보장되지 않아 앱 실행 시점에 1회 평가한다.
     CoroutineScope(Dispatchers.Default).launch {
-        KoinPlatformTools.defaultContext().get().get<ScheduleNudgeUseCase>().invoke()
+        KoinPlatformTools.defaultContext().get().get<EvaluateNotificationsUseCase>().invoke()
     }
 }
 

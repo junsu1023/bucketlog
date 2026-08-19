@@ -17,6 +17,7 @@ import com.bucketlog.domain.usecase.AddProgressEntryUseCase
 import com.bucketlog.domain.usecase.ArchiveGoalUseCase
 import com.bucketlog.domain.usecase.CompleteGoalUseCase
 import com.bucketlog.domain.usecase.DeleteGoalUseCase
+import com.bucketlog.domain.usecase.EvaluateNotificationsUseCase
 import com.bucketlog.domain.usecase.ExportBackupUseCase
 import com.bucketlog.domain.usecase.ObserveGoalOverviewsUseCase
 import com.bucketlog.domain.usecase.PickNudgeTargetUseCase
@@ -99,6 +100,7 @@ val appModule = module {
             getString(Res.string.goal_reminder_notification_body)
         }
     }
+    factory { EvaluateNotificationsUseCase(get(), get(), get()) }
     factory { ExportBackupUseCase(get(), get(), get(), get()) }
     factory { RestoreBackupUseCase(get(), get(), get(), get()) }
 

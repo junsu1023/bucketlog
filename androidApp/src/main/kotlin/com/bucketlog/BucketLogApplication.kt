@@ -4,7 +4,7 @@ import android.app.Application
 import com.bucketlog.background.schedulePeriodicNudgeEvaluation
 import com.bucketlog.data.local.DatabaseFactory
 import com.bucketlog.di.initKoin
-import com.bucketlog.domain.usecase.ScheduleNudgeUseCase
+import com.bucketlog.domain.usecase.EvaluateNotificationsUseCase
 import com.bucketlog.platform.AppSettings
 import com.bucketlog.platform.FileStorage
 import com.bucketlog.platform.MainActivityClassHolder
@@ -34,10 +34,11 @@ class BucketLogApplication : Application() {
             },
         )
 
-        // docs/ARCHITECTURE.md §7: 넛지 평가는 주 1회 백그라운드 + 앱 실행 시에도 1회.
+        // docs/ARCHITECTURE.md §7: 알림 평가(월간회고/목표별리마인더/넛지)는 주 1회 백그라운드 +
+        // 앱 실행 시에도 1회. docs/NOTIFICATIONS.md §1 우선순위는 EvaluateNotificationsUseCase가 중재한다.
         schedulePeriodicNudgeEvaluation(this)
         CoroutineScope(Dispatchers.Default).launch {
-            KoinPlatformTools.defaultContext().get().get<ScheduleNudgeUseCase>().invoke()
+            KoinPlatformTools.defaultContext().get().get<EvaluateNotificationsUseCase>().invoke()
         }
     }
 }
