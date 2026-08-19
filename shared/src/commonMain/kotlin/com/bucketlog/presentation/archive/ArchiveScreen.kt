@@ -44,12 +44,19 @@ import bucketlog.shared.generated.resources.back
 import bucketlog.shared.generated.resources.empty_archived
 import bucketlog.shared.generated.resources.empty_completed
 import bucketlog.shared.generated.resources.empty_monthly
+import bucketlog.shared.generated.resources.empty_timeline
+import bucketlog.shared.generated.resources.filter_all
 import bucketlog.shared.generated.resources.filter_archived
 import bucketlog.shared.generated.resources.filter_completed
 import bucketlog.shared.generated.resources.filter_monthly
+import bucketlog.shared.generated.resources.filter_stats
 import bucketlog.shared.generated.resources.relative_days_ago
 import bucketlog.shared.generated.resources.relative_today
 import bucketlog.shared.generated.resources.relative_yesterday
+import bucketlog.shared.generated.resources.stats_by_category
+import bucketlog.shared.generated.resources.stats_by_month
+import bucketlog.shared.generated.resources.stats_empty
+import bucketlog.shared.generated.resources.stats_total_completed
 import coil3.compose.AsyncImage
 import com.bucketlog.domain.repository.MonthlyEntry
 import com.bucketlog.domain.usecase.GoalOverview
@@ -97,7 +104,7 @@ private fun ArchiveContent(
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 FilterChip(
@@ -115,12 +122,32 @@ private fun ArchiveContent(
                     onClick = { onIntent(ArchiveIntent.ShowMonth(MonthKey.current())) },
                     label = { Text(stringResource(Res.string.filter_monthly)) },
                 )
+                FilterChip(
+                    selected = state.tab == ArchiveTab.ALL,
+                    onClick = { onIntent(ArchiveIntent.SelectTab(ArchiveTab.ALL)) },
+                    label = { Text(stringResource(Res.string.filter_all)) },
+                )
+                FilterChip(
+                    selected = state.tab == ArchiveTab.STATS,
+                    onClick = { onIntent(ArchiveIntent.SelectTab(ArchiveTab.STATS)) },
+                    label = { Text(stringResource(Res.string.filter_stats)) },
+                )
             }
 
             when (state.tab) {
                 ArchiveTab.COMPLETED -> CompletedGrid(state.completed, onGoalClick)
                 ArchiveTab.ARCHIVED -> ArchivedList(state.archived, onGoalClick)
-                ArchiveTab.MONTHLY -> MonthlyEntriesList(state.monthlyEntries)
+                ArchiveTab.MONTHLY -> MonthlyEntriesList(
+                    entries = state.monthlyEntries,
+                    emptyText = stringResource(Res.string.empty_monthly),
+                    onGoalClick = onGoalClick,
+                )
+                ArchiveTab.ALL -> MonthlyEntriesList(
+                    entries = state.allEntries,
+                    emptyText = stringResource(Res.string.empty_timeline),
+                    onGoalClick = onGoalClick,
+                )
+                ArchiveTab.STATS -> StatsSection(state.stats)
             }
         }
     }
@@ -221,11 +248,11 @@ private fun ArchivedRow(overview: GoalOverview, onClick: () -> Unit) {
     }
 }
 
-/** N-01 월간 회고 딥링크 도착지 · A-03 전체 타임라인으로 확장하기 쉽도록 월 필터만 걸어둔 형태. */
+/** N-01 월간 회고 딥링크 도착지("이번 달") · A-03 전체 타임라인이 함께 쓴다. */
 @Composable
-private fun MonthlyEntriesList(entries: List<MonthlyEntry>) {
+private fun MonthlyEntriesList(entries: List<MonthlyEntry>, emptyText: String, onGoalClick: (String) -> Unit) {
     if (entries.isEmpty()) {
-        EmptyMessage(stringResource(Res.string.empty_monthly))
+        EmptyMessage(emptyText)
         return
     }
     LazyColumn(
@@ -234,15 +261,15 @@ private fun MonthlyEntriesList(entries: List<MonthlyEntry>) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         items(entries, key = { it.entry.id }) { monthlyEntry ->
-            MonthlyEntryRow(monthlyEntry)
+            MonthlyEntryRow(monthlyEntry, onClick = { onGoalClick(monthlyEntry.entry.goalId) })
         }
     }
 }
 
 @Composable
-private fun MonthlyEntryRow(monthlyEntry: MonthlyEntry) {
+private fun MonthlyEntryRow(monthlyEntry: MonthlyEntry, onClick: () -> Unit) {
     val entry = monthlyEntry.entry
-    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+    OutlinedCard(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 Text(text = monthlyEntry.goalTitle, style = MaterialTheme.typography.titleMedium)
@@ -284,6 +311,43 @@ private fun relativeDayLabel(instant: Instant): String {
         days <= 0 -> stringResource(Res.string.relative_today)
         days == 1 -> stringResource(Res.string.relative_yesterday)
         else -> stringResource(Res.string.relative_days_ago, days)
+    }
+}
+
+/** A-04 간단 통계 — 차트 없이 숫자/텍스트로("간단 통계"라는 스펙 표현, docs/DESIGN.md 절제된 톤). */
+@Composable
+private fun StatsSection(stats: ArchiveStats) {
+    if (stats.totalCompleted == 0) {
+        EmptyMessage(stringResource(Res.string.stats_empty))
+        return
+    }
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Text(
+            text = stringResource(Res.string.stats_total_completed, stats.totalCompleted),
+            style = MaterialTheme.typography.headlineSmall,
+        )
+        Text(
+            text = stringResource(Res.string.stats_by_category),
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
+        )
+        stats.byCategory.forEach { (category, count) ->
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(text = stringResource(category.labelRes()), style = MaterialTheme.typography.bodyMedium)
+                Text(text = "$count", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        Text(
+            text = stringResource(Res.string.stats_by_month),
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
+        )
+        stats.byMonth.forEach { (month, count) ->
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(text = month.toString(), style = MaterialTheme.typography.bodyMedium)
+                Text(text = "$count", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
     }
 }
 

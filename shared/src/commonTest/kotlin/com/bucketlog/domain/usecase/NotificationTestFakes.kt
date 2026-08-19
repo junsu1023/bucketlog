@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
 
 /**
  * 알림 관련 usecase 테스트(PickNudgeTargetUseCaseTest, ScheduleGoalRemindersUseCaseTest,
@@ -50,6 +51,8 @@ internal class FakeEntryRepository(
     override suspend fun getAll(): List<Entry> = emptyList()
     override suspend fun upsert(entry: Entry) = Unit
     override fun observeEntriesInMonth(year: Int, month: Int): Flow<List<MonthlyEntry>> = flowOf(monthlyEntries)
+    override fun observeEntriesOnDate(date: LocalDate): Flow<List<MonthlyEntry>> = flowOf(monthlyEntries)
+    override fun observeAllEntries(): Flow<List<MonthlyEntry>> = flowOf(monthlyEntries)
 }
 
 internal class FakeSettingsStore : SettingsStore {

@@ -3,6 +3,7 @@ package com.bucketlog.domain.repository
 import com.bucketlog.domain.model.Entry
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
 
 interface EntryRepository {
     fun observeByGoal(goalId: String): Flow<List<Entry>>
@@ -32,6 +33,12 @@ interface EntryRepository {
 
     /** N-01 월간 회고 / 보관함 "이번 달" 탭용 — 해당 월(1~12) 기록을 목표 제목·사진 경로와 함께. */
     fun observeEntriesInMonth(year: Int, month: Int): Flow<List<MonthlyEntry>>
+
+    /** H-07 작년 오늘 배너용 — 특정 날짜 하루치 기록. */
+    fun observeEntriesOnDate(date: LocalDate): Flow<List<MonthlyEntry>>
+
+    /** A-03 전체 타임라인용 — 목표 구분 없이 모든 기록을 시간순으로. */
+    fun observeAllEntries(): Flow<List<MonthlyEntry>>
 }
 
 data class MonthlyEntry(val entry: Entry, val goalTitle: String, val photoPaths: List<String>)

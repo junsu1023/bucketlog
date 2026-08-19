@@ -54,6 +54,8 @@ import bucketlog.shared.generated.resources.relative_days_ago
 import bucketlog.shared.generated.resources.relative_today
 import bucketlog.shared.generated.resources.relative_yesterday
 import bucketlog.shared.generated.resources.settings_nav_button
+import bucketlog.shared.generated.resources.throwback_month_ago
+import bucketlog.shared.generated.resources.throwback_year_ago
 import bucketlog.shared.generated.resources.year_chip
 import coil3.compose.AsyncImage
 import com.bucketlog.domain.model.GoalStatus
@@ -116,6 +118,9 @@ private fun HomeContent(
         },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            state.throwback?.let { banner ->
+                ThrowbackBannerCard(banner = banner, onClick = { onGoalClick(banner.goalId) })
+            }
             YearFilterRow(
                 selected = state.yearFilter,
                 availableYears = state.availableYears,
@@ -180,6 +185,24 @@ private fun YearFilterRow(
                 selectedContainerColor = MaterialTheme.colorScheme.primary,
                 selectedLabelColor = MaterialTheme.colorScheme.surface,
             ),
+        )
+    }
+}
+
+/** H-07 작년 오늘 — 유저가 아무것도 안 해도 앱이 먼저 과거 기록을 꺼내 보여준다. 달성률 언급 없음. */
+@Composable
+private fun ThrowbackBannerCard(banner: ThrowbackBanner, onClick: () -> Unit) {
+    val text = when (banner.kind) {
+        ThrowbackKind.YEAR_AGO -> stringResource(Res.string.throwback_year_ago, banner.goalTitle)
+        ThrowbackKind.MONTH_AGO -> stringResource(Res.string.throwback_month_ago, banner.goalTitle)
+    }
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).clickable(onClick = onClick),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(16.dp),
         )
     }
 }
