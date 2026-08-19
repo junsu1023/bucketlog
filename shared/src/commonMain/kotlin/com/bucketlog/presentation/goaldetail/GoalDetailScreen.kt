@@ -2,6 +2,7 @@ package com.bucketlog.presentation.goaldetail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +22,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
@@ -68,6 +71,8 @@ import bucketlog.shared.generated.resources.delete_dialog_body
 import bucketlog.shared.generated.resources.delete_dialog_title
 import bucketlog.shared.generated.resources.entry_count
 import bucketlog.shared.generated.resources.error_generic
+import bucketlog.shared.generated.resources.photo_viewer_close
+import bucketlog.shared.generated.resources.photo_viewer_count
 import bucketlog.shared.generated.resources.progress_count
 import bucketlog.shared.generated.resources.progress_dialog_title
 import bucketlog.shared.generated.resources.progress_increment_count
@@ -86,6 +91,7 @@ import com.bucketlog.domain.model.EntryKind
 import com.bucketlog.domain.model.Goal
 import com.bucketlog.domain.model.GoalStatus
 import com.bucketlog.domain.model.GoalType
+import com.bucketlog.platform.AppBackHandler
 import com.bucketlog.platform.rememberCameraCapture
 import com.bucketlog.platform.rememberPhotoPicker
 import com.bucketlog.presentation.common.PhotoAttachRow
@@ -130,6 +136,8 @@ private fun GoalDetailContent(
     focusCheckIn: Boolean,
 ) {
     val goal = state.goal
+    // D-05: 뷰어 열림 상태는 비즈니스 로직이 없는 순수 UI 네비게이션 관심사라 로컬로 둔다.
+    var viewerRequest by remember { mutableStateOf<PhotoViewerRequest?>(null) }
 
     Scaffold(
         topBar = {
@@ -183,7 +191,16 @@ private fun GoalDetailContent(
                     contentPadding = PaddingValues(16.dp),
                 ) {
                     items(state.timeline, key = { it.entry.id }) { timelineEntry ->
-                        TimelineNode(timelineEntry = timelineEntry, retrospect = goal.retrospect)
+                        TimelineNode(
+                            timelineEntry = timelineEntry,
+                            retrospect = goal.retrospect,
+                            onPhotoClick = { index ->
+                                viewerRequest = PhotoViewerRequest(
+                                    displayPaths = timelineEntry.photos.map { it.displayPath },
+                                    initialIndex = index,
+                                )
+                            },
+                        )
                     }
                     item(key = "goal-created") {
                         TimelineCreatedNode(createdAt = goal.createdAt, isLast = true)
@@ -212,6 +229,10 @@ private fun GoalDetailContent(
                 }
             },
         )
+    }
+
+    viewerRequest?.let { request ->
+        PhotoViewerOverlay(request = request, onDismiss = { viewerRequest = null })
     }
 }
 
@@ -287,7 +308,11 @@ private fun GoalDetailBottomBar(
 
 /** docs/DESIGN.md §4 타임라인: 퀵 체크인=작은 점, 진행 기록=큰 점, 완료=채워진 원+체크 */
 @Composable
-private fun TimelineNode(timelineEntry: TimelineEntry, retrospect: String?) {
+private fun TimelineNode(
+    timelineEntry: TimelineEntry,
+    retrospect: String?,
+    onPhotoClick: (index: Int) -> Unit,
+) {
     val entry = timelineEntry.entry
 
     Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
@@ -322,17 +347,20 @@ private fun TimelineNode(timelineEntry: TimelineEntry, retrospect: String?) {
                     modifier = Modifier.padding(top = 2.dp),
                 )
             }
-            if (timelineEntry.photoPaths.isNotEmpty()) {
+            if (timelineEntry.photos.isNotEmpty()) {
                 // LazyRow는 IntrinsicSize.Min 부모(TimelineRail 세로선) 안에서 측정할 수 없어 일반 Row로 스크롤한다.
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp).horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    timelineEntry.photoPaths.forEach { path ->
+                    timelineEntry.photos.forEachIndexed { index, photo ->
                         AsyncImage(
-                            model = path,
+                            model = photo.thumbnailPath,
                             contentDescription = entry.memo,
-                            modifier = Modifier.size(96.dp).clip(MaterialTheme.shapes.small),
+                            modifier = Modifier
+                                .size(96.dp)
+                                .clip(MaterialTheme.shapes.small)
+                                .clickable { onPhotoClick(index) },
                             contentScale = ContentScale.Crop,
                         )
                     }
@@ -549,6 +577,46 @@ private fun ActionDialog(
                     TextButton(onClick = { onIntent(GoalDetailIntent.DismissDialog) }) { Text(stringResource(Res.string.cancel)) }
                 },
             )
+        }
+    }
+}
+
+private data class PhotoViewerRequest(val displayPaths: List<String>, val initialIndex: Int)
+
+/** D-05 사진 전체화면 뷰어. docs/DESIGN.md "사진이 주인공, UI는 배경으로 물러남" — 크롬 최소화. */
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+private fun PhotoViewerOverlay(request: PhotoViewerRequest, onDismiss: () -> Unit) {
+    AppBackHandler(enabled = true, onBack = onDismiss)
+    val pagerState = rememberPagerState(initialPage = request.initialIndex) { request.displayPaths.size }
+
+    Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+            AsyncImage(
+                model = request.displayPaths[page],
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit,
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (request.displayPaths.size > 1) {
+                Text(
+                    text = stringResource(Res.string.photo_viewer_count, pagerState.currentPage + 1, request.displayPaths.size),
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            } else {
+                Box(modifier = Modifier.width(1.dp))
+            }
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(Res.string.photo_viewer_close), color = Color.White)
+            }
         }
     }
 }

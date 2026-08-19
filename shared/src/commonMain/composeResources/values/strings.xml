@@ -77,6 +77,8 @@
     <string name="timeline_goal_created">목표 만듦</string>
     <string name="entry_count">%1$d개 기록</string>
     <string name="retrospect_label">회고</string>
+    <string name="photo_viewer_close">닫기</string>
+    <string name="photo_viewer_count">%1$d / %2$d</string>
 
     <!-- 목표 만들기 -->
     <string name="add_goal_title">목표 만들기</string>

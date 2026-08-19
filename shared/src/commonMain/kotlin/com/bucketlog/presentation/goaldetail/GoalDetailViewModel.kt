@@ -50,7 +50,12 @@ class GoalDetailViewModel(
             timeline = entries.map { entry ->
                 TimelineEntry(
                     entry = entry,
-                    photoPaths = entry.photos.map { "file://" + fileStorage.resolveAbsolutePath(it.thumbnailPath) },
+                    photos = entry.photos.map { photo ->
+                        TimelinePhoto(
+                            thumbnailPath = "file://" + fileStorage.resolveAbsolutePath(photo.thumbnailPath),
+                            displayPath = "file://" + fileStorage.resolveAbsolutePath(photo.path),
+                        )
+                    },
                 )
             },
             progressCount = entries.sumOf { it.countDelta },
