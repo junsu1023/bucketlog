@@ -29,6 +29,7 @@ class PlanRestoreTest {
         archivedAt = null,
         archiveReason = null,
         nudgeSnoozedUntil = null,
+        reminderLastSentAt = null,
     )
 
     private fun photoDto(id: String) = PhotoDto(

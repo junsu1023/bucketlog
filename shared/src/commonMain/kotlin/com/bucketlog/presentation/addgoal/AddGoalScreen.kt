@@ -17,6 +17,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -38,6 +39,10 @@ import bucketlog.shared.generated.resources.goal_bucket_year_label
 import bucketlog.shared.generated.resources.goal_category_label
 import bucketlog.shared.generated.resources.goal_note_label
 import bucketlog.shared.generated.resources.goal_photo_label
+import bucketlog.shared.generated.resources.goal_reminder_interval_biweekly
+import bucketlog.shared.generated.resources.goal_reminder_interval_monthly
+import bucketlog.shared.generated.resources.goal_reminder_interval_weekly
+import bucketlog.shared.generated.resources.goal_reminder_label
 import bucketlog.shared.generated.resources.goal_target_count_label
 import bucketlog.shared.generated.resources.goal_title_label
 import bucketlog.shared.generated.resources.goal_type_label
@@ -50,6 +55,7 @@ import bucketlog.shared.generated.resources.notification_permission_title
 import bucketlog.shared.generated.resources.save
 import com.bucketlog.domain.model.Category
 import com.bucketlog.domain.model.GoalType
+import com.bucketlog.domain.model.ReminderInterval
 import com.bucketlog.platform.rememberCameraCapture
 import com.bucketlog.platform.rememberPhotoPicker
 import com.bucketlog.presentation.common.PhotoAttachRow
@@ -179,6 +185,45 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
                         onGalleryClick = launchGallery,
                         onClearClick = { viewModel.onIntent(AddGoalIntent.ClearPhotos) },
                     )
+                }
+            }
+
+            // N-03 목표별 리마인더 — 생성 시점엔 컨텍스트가 약해 수정 모드에서만 노출한다.
+            if (isEditMode) {
+                Column {
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                    ) {
+                        Text(stringResource(Res.string.goal_reminder_label), style = MaterialTheme.typography.labelLarge)
+                        Switch(
+                            checked = state.reminderEnabled,
+                            onCheckedChange = { viewModel.onIntent(AddGoalIntent.ReminderEnabledChanged(it)) },
+                        )
+                    }
+                    if (state.reminderEnabled) {
+                        androidx.compose.foundation.layout.Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(top = 8.dp),
+                        ) {
+                            FilterChip(
+                                selected = state.reminderInterval == ReminderInterval.WEEKLY,
+                                onClick = { viewModel.onIntent(AddGoalIntent.ReminderIntervalChanged(ReminderInterval.WEEKLY)) },
+                                label = { Text(stringResource(Res.string.goal_reminder_interval_weekly)) },
+                            )
+                            FilterChip(
+                                selected = state.reminderInterval == ReminderInterval.BIWEEKLY,
+                                onClick = { viewModel.onIntent(AddGoalIntent.ReminderIntervalChanged(ReminderInterval.BIWEEKLY)) },
+                                label = { Text(stringResource(Res.string.goal_reminder_interval_biweekly)) },
+                            )
+                            FilterChip(
+                                selected = state.reminderInterval == ReminderInterval.MONTHLY,
+                                onClick = { viewModel.onIntent(AddGoalIntent.ReminderIntervalChanged(ReminderInterval.MONTHLY)) },
+                                label = { Text(stringResource(Res.string.goal_reminder_interval_monthly)) },
+                            )
+                        }
+                    }
                 }
             }
 

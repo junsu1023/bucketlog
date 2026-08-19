@@ -10,14 +10,6 @@ import com.bucketlog.platform.NotificationType
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlinx.coroutines.flow.first
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.plus
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
 
 /**
  * N-02 스마트 넛지 1건 평가·예약. docs/ARCHITECTURE.md §7 — 주 1회 백그라운드 작업 +
@@ -35,9 +27,9 @@ class ScheduleNudgeUseCase(
     private val settings: SettingsStore,
     private val nudgeBody: suspend (daysSinceLastEntry: Int) -> String,
 ) {
-    suspend operator fun invoke() {
+    suspend operator fun invoke(): Boolean {
         val now = Clock.System.now()
-        val goal = pickNudgeTarget(now) ?: return
+        val goal = pickNudgeTarget(now) ?: return false
 
         // PickNudgeTargetUseCase와 동일한 규칙: 기록이 하나도 없으면 목표 생성 시점을 기준으로 삼는다.
         val lastEntryAt = entryRepository.observeLastRecordedAt().first()[goal.id] ?: goal.createdAt
@@ -64,12 +56,6 @@ class ScheduleNudgeUseCase(
             // 아직 없어 이번 범위에선 "같은 목표 연속 넛지"만 우선 막는다.
             goalRepository.update(goal.copy(nudgeSnoozedUntil = now + 28.days))
         }
+        return sent
     }
-}
-
-private fun nextOccurrenceOfHour(now: Instant, hour: Int): Instant {
-    val zone = TimeZone.currentSystemDefault()
-    val today = now.toLocalDateTime(zone).date
-    val candidate = LocalDateTime(today, LocalTime(hour, 0)).toInstant(zone)
-    return if (candidate > now) candidate else candidate.plus(1, DateTimeUnit.DAY, zone)
 }

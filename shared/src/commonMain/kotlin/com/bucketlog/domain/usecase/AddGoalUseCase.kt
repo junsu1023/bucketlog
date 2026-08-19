@@ -40,6 +40,7 @@ class AddGoalUseCase(private val goalRepository: GoalRepository) {
             archivedAt = null,
             archiveReason = null,
             nudgeSnoozedUntil = null,
+            reminderLastSentAt = null,
         )
         goalRepository.add(goal)
         return goal

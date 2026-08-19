@@ -1,60 +1,18 @@
 package com.bucketlog.domain.usecase
 
 import com.bucketlog.domain.model.Category
-import com.bucketlog.domain.model.Entry
 import com.bucketlog.domain.model.Goal
 import com.bucketlog.domain.model.GoalStatus
 import com.bucketlog.domain.model.GoalType
-import com.bucketlog.domain.repository.EntryRepository
-import com.bucketlog.domain.repository.GoalRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.days
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
-
-private class FakeGoalRepository(initial: List<Goal>) : GoalRepository {
-    private val goals = MutableStateFlow(initial)
-    override fun observeByStatus(status: GoalStatus): Flow<List<Goal>> =
-        goals.map { list -> list.filter { it.status == status } }
-    override fun observeAll(): Flow<List<Goal>> = goals
-    override fun observeById(id: String): Flow<Goal?> = goals.map { list -> list.find { it.id == id } }
-    override suspend fun getById(id: String): Goal? = goals.value.find { it.id == id }
-    override suspend fun add(goal: Goal) { goals.value = goals.value + goal }
-    override suspend fun update(goal: Goal) {
-        goals.value = goals.value.map { if (it.id == goal.id) goal else it }
-    }
-    override suspend fun delete(id: String) { goals.value = goals.value.filterNot { it.id == id } }
-    override suspend fun upsert(goal: Goal) {
-        goals.value = if (goals.value.any { it.id == goal.id }) {
-            goals.value.map { if (it.id == goal.id) goal else it }
-        } else {
-            goals.value + goal
-        }
-    }
-}
-
-private class FakeEntryRepository(private val lastRecordedAt: Map<String, Instant>) : EntryRepository {
-    override fun observeByGoal(goalId: String): Flow<List<Entry>> = flowOf(emptyList())
-    override fun observeProgressTotals(): Flow<Map<String, Int>> = flowOf(emptyMap())
-    override fun observeLastRecordedAt(): Flow<Map<String, Instant>> = flowOf(lastRecordedAt)
-    override fun observeRecentPhotoPaths(): Flow<Map<String, List<String>>> = flowOf(emptyMap())
-    override suspend fun getById(id: String): Entry? = null
-    override suspend fun add(entry: Entry) = Unit
-    override suspend fun update(entry: Entry) = Unit
-    override suspend fun delete(id: String) = Unit
-    override suspend fun demoteCompletionEntry(goalId: String) = false
-    override suspend fun getAll(): List<Entry> = emptyList()
-    override suspend fun upsert(entry: Entry) = Unit
-}
 
 class PickNudgeTargetUseCaseTest {
 
@@ -84,6 +42,7 @@ class PickNudgeTargetUseCaseTest {
         archivedAt = null,
         archiveReason = null,
         nudgeSnoozedUntil = nudgeSnoozedUntil,
+        reminderLastSentAt = null,
     )
 
     @Test

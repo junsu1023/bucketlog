@@ -7,10 +7,14 @@ import com.bucketlog.data.mapper.toEntity
 import com.bucketlog.domain.model.Entry
 import com.bucketlog.domain.model.EntryKind
 import com.bucketlog.domain.repository.EntryRepository
+import com.bucketlog.domain.repository.MonthlyEntry
 import com.bucketlog.platform.FileStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 
 class EntryRepositoryImpl(
     private val entryDao: EntryDao,
@@ -80,5 +84,22 @@ class EntryRepositoryImpl(
     override suspend fun upsert(entry: Entry) {
         entryDao.upsert(entry.toEntity())
         entry.photos.forEach { photo -> photoDao.upsert(photo.toEntity()) }
+    }
+
+    override fun observeEntriesInMonth(year: Int, month: Int): Flow<List<MonthlyEntry>> {
+        val zone = TimeZone.currentSystemDefault()
+        val start = LocalDate(year, month, 1).atStartOfDayIn(zone).toEpochMilliseconds()
+        val nextMonthFirstDay = if (month == 12) LocalDate(year + 1, 1, 1) else LocalDate(year, month + 1, 1)
+        val end = nextMonthFirstDay.atStartOfDayIn(zone).toEpochMilliseconds()
+        return entryDao.observeEntriesInRange(start, end).map { rows ->
+            rows.map { row ->
+                MonthlyEntry(
+                    entry = row.toDomain(),
+                    goalTitle = row.goalTitle,
+                    photoPaths = row.photos.sortedBy { it.orderIndex }
+                        .map { "file://" + fileStorage.resolveAbsolutePath(it.thumbnailPath) },
+                )
+            }
+        }
     }
 }

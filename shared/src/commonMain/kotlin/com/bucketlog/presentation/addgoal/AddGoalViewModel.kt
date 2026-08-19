@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bucketlog.domain.model.Goal
 import com.bucketlog.domain.model.GoalType
+import com.bucketlog.domain.model.ReminderInterval
+import com.bucketlog.domain.model.ReminderRule
 import com.bucketlog.domain.repository.GoalRepository
 import com.bucketlog.domain.usecase.AddGoalUseCase
 import com.bucketlog.domain.usecase.AddProgressEntryUseCase
@@ -47,6 +49,8 @@ class AddGoalViewModel(
             AddGoalIntent.RequestNotificationPermission -> requestNotificationPermission()
             AddGoalIntent.SkipNotificationPermission ->
                 _uiState.update { it.copy(showNotificationPermissionPrompt = false, saved = true) }
+            is AddGoalIntent.ReminderEnabledChanged -> _uiState.update { it.copy(reminderEnabled = intent.value) }
+            is AddGoalIntent.ReminderIntervalChanged -> _uiState.update { it.copy(reminderInterval = intent.value) }
         }
     }
 
@@ -69,6 +73,8 @@ class AddGoalViewModel(
             targetCountText = goal.targetCount?.toString().orEmpty(),
             bucketYear = goal.bucketYear,
             editingGoalId = goal.id,
+            reminderEnabled = goal.reminderRule?.enabled ?: false,
+            reminderInterval = goal.reminderRule?.interval ?: ReminderInterval.WEEKLY,
         )
     }
 
@@ -95,6 +101,11 @@ class AddGoalViewModel(
                         type = state.type,
                         targetCount = if (state.type == GoalType.REPEATABLE) state.targetCountText.toIntOrNull() else null,
                         bucketYear = state.bucketYear,
+                        reminderRule = if (state.reminderEnabled) {
+                            ReminderRule(interval = state.reminderInterval, enabled = true)
+                        } else {
+                            null
+                        },
                     ),
                 )
             }.onSuccess {

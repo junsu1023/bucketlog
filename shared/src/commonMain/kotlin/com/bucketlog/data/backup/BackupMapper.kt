@@ -31,6 +31,7 @@ fun Goal.toDto(): GoalDto = GoalDto(
     archivedAt = archivedAt?.toEpochMilliseconds(),
     archiveReason = archiveReason,
     nudgeSnoozedUntil = nudgeSnoozedUntil?.toEpochMilliseconds(),
+    reminderLastSentAt = reminderLastSentAt?.toEpochMilliseconds(),
 )
 
 fun GoalDto.toDomain(): Goal = Goal(
@@ -51,6 +52,7 @@ fun GoalDto.toDomain(): Goal = Goal(
     archivedAt = archivedAt?.let { Instant.fromEpochMilliseconds(it) },
     archiveReason = archiveReason,
     nudgeSnoozedUntil = nudgeSnoozedUntil?.let { Instant.fromEpochMilliseconds(it) },
+    reminderLastSentAt = reminderLastSentAt?.let { Instant.fromEpochMilliseconds(it) },
 )
 
 fun Entry.toDto(): EntryDto = EntryDto(

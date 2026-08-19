@@ -30,6 +30,7 @@ fun GoalEntity.toDomain(): Goal = Goal(
     archivedAt = archivedAt?.let(Instant::fromEpochMilliseconds),
     archiveReason = archiveReason,
     nudgeSnoozedUntil = nudgeSnoozedUntil?.let(Instant::fromEpochMilliseconds),
+    reminderLastSentAt = reminderLastSentAt?.let(Instant::fromEpochMilliseconds),
 )
 
 fun Goal.toEntity(): GoalEntity = GoalEntity(
@@ -51,4 +52,5 @@ fun Goal.toEntity(): GoalEntity = GoalEntity(
     archivedAt = archivedAt?.toEpochMilliseconds(),
     archiveReason = archiveReason,
     nudgeSnoozedUntil = nudgeSnoozedUntil?.toEpochMilliseconds(),
+    reminderLastSentAt = reminderLastSentAt?.toEpochMilliseconds(),
 )

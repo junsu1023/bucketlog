@@ -15,6 +15,7 @@ import com.bucketlog.presentation.archive.ArchiveScreen
 import com.bucketlog.presentation.goaldetail.GoalDetailScreen
 import com.bucketlog.presentation.home.HomeScreen
 import com.bucketlog.presentation.onboarding.OnboardingScreen
+import com.bucketlog.presentation.common.MonthKey
 import com.bucketlog.presentation.onboarding.OnboardingViewModel
 import com.bucketlog.presentation.settings.SettingsScreen
 import com.bucketlog.presentation.theme.BucketLogTheme
@@ -28,7 +29,8 @@ private sealed interface Screen {
     data object Home : Screen
     /** [editingGoalId]가 있으면 수정 모드(G-05). [returnTo]는 저장/취소 후 돌아갈 화면. */
     data class AddGoal(val editingGoalId: String? = null, val returnTo: Screen = Home) : Screen
-    data object Archive : Screen
+    /** [targetMonth]가 있으면 N-01 딥링크로 진입한 것 — "이번 달" 탭이 그 달을 보여준다. */
+    data class Archive(val targetMonth: MonthKey? = null) : Screen
     data object Settings : Screen
     /** [from]으로 돌아가야 뒤로가기가 진입 경로(홈/보관함)에 맞게 동작한다.
      *  [focusCheckIn]은 스마트 넛지 딥링크(focus=checkin)로 들어왔을 때만 true. */
@@ -55,6 +57,9 @@ fun App() {
             val uri = pendingDeepLink ?: return@LaunchedEffect
             parseGoalDeepLink(uri)?.let { (goalId, focusCheckIn) ->
                 screen = Screen.GoalDetail(goalId, from = Screen.Home, focusCheckIn = focusCheckIn)
+            }
+            parseArchiveMonthDeepLink(uri)?.let { month ->
+                screen = Screen.Archive(targetMonth = month)
             }
             DeepLinkHolder.consume()
         }
@@ -87,7 +92,7 @@ fun App() {
                     screen = Screen.AddGoal()
                 },
                 onGoalClick = { goalId -> screen = Screen.GoalDetail(goalId, from = Screen.Home) },
-                onArchiveClick = { screen = Screen.Archive },
+                onArchiveClick = { screen = Screen.Archive() },
                 onSettingsClick = { screen = Screen.Settings },
             )
             is Screen.AddGoal -> AddGoalScreen(
@@ -95,10 +100,11 @@ fun App() {
                 onSaved = { screen = current.returnTo },
                 onCancel = { screen = current.returnTo },
             )
-            Screen.Archive -> ArchiveScreen(
+            is Screen.Archive -> ArchiveScreen(
                 viewModel = koinViewModel(),
                 onBack = { screen = Screen.Home },
-                onGoalClick = { goalId -> screen = Screen.GoalDetail(goalId, from = Screen.Archive) },
+                onGoalClick = { goalId -> screen = Screen.GoalDetail(goalId, from = current) },
+                targetMonth = current.targetMonth,
             )
             Screen.Settings -> SettingsScreen(
                 viewModel = koinViewModel(),
