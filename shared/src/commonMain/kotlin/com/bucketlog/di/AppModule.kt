@@ -40,6 +40,7 @@ import com.bucketlog.presentation.goaldetail.GoalDetailViewModel
 import com.bucketlog.presentation.home.HomeViewModel
 import com.bucketlog.presentation.onboarding.OnboardingViewModel
 import com.bucketlog.presentation.settings.SettingsViewModel
+import com.bucketlog.presentation.theme.ThemeModeStore
 import org.jetbrains.compose.resources.getString
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -68,6 +69,7 @@ val appModule = module {
     // BucketLog: 알림(5주차). AppSettings/NotificationScheduler는 Android/iOS 생성자가 달라
     // platformModule에서 각각 등록한다(FileStorage와 동일한 패턴).
     single<SettingsStore> { AppSettingsStore(get<AppSettings>()) }
+    single { ThemeModeStore(get()) }
     single { val scheduler = get<NotificationScheduler>(); NotificationBudget(get()) { scheduler.schedule(it) } }
 
     factory { AddGoalUseCase(get()) }

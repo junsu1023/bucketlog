@@ -2,8 +2,10 @@ package com.bucketlog.presentation.settings
 
 import com.bucketlog.domain.usecase.BackupFile
 import com.bucketlog.notification.NotificationSettingsKeys
+import com.bucketlog.presentation.theme.ThemeMode
 
 data class SettingsUiState(
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val notificationsEnabled: Boolean = true,
     val nudgeEnabled: Boolean = true,
     val notificationHour: Int = NotificationSettingsKeys.DEFAULT_NOTIFICATION_HOUR,

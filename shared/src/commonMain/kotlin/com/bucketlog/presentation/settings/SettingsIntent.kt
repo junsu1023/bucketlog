@@ -1,6 +1,9 @@
 package com.bucketlog.presentation.settings
 
+import com.bucketlog.presentation.theme.ThemeMode
+
 sealed interface SettingsIntent {
+    data class SetThemeMode(val mode: ThemeMode) : SettingsIntent
     data class SetNotificationsEnabled(val enabled: Boolean) : SettingsIntent
     data class SetNudgeEnabled(val enabled: Boolean) : SettingsIntent
     data class SetNotificationHour(val hour: Int) : SettingsIntent

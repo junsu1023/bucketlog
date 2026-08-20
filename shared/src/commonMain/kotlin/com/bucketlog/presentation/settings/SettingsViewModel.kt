@@ -7,15 +7,17 @@ import com.bucketlog.domain.usecase.RestoreBackupUseCase
 import com.bucketlog.domain.usecase.RestoreResult
 import com.bucketlog.notification.NotificationSettingsKeys
 import com.bucketlog.notification.SettingsStore
+import com.bucketlog.presentation.theme.ThemeModeStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** N-06 알림 설정 + M-02 백업/복원. */
+/** M-01 다크모드 + N-06 알림 설정 + M-02 백업/복원. */
 class SettingsViewModel(
     private val settings: SettingsStore,
+    private val themeModeStore: ThemeModeStore,
     private val exportBackup: ExportBackupUseCase,
     private val restoreBackup: RestoreBackupUseCase,
 ) : ViewModel() {
@@ -26,6 +28,7 @@ class SettingsViewModel(
     init {
         viewModelScope.launch {
             _uiState.value = SettingsUiState(
+                themeMode = themeModeStore.mode.value,
                 notificationsEnabled = settings.getBoolean(NotificationSettingsKeys.NOTIFICATIONS_ENABLED, true),
                 nudgeEnabled = settings.getBoolean(NotificationSettingsKeys.NUDGE_ENABLED, true),
                 notificationHour = settings.getLong(
@@ -39,6 +42,10 @@ class SettingsViewModel(
 
     fun onIntent(intent: SettingsIntent) {
         when (intent) {
+            is SettingsIntent.SetThemeMode -> {
+                _uiState.update { it.copy(themeMode = intent.mode) }
+                themeModeStore.setMode(intent.mode)
+            }
             is SettingsIntent.SetNotificationsEnabled -> {
                 _uiState.update { it.copy(notificationsEnabled = intent.enabled) }
                 persistBoolean(NotificationSettingsKeys.NOTIFICATIONS_ENABLED, intent.enabled)

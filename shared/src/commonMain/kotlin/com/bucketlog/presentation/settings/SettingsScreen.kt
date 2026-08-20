@@ -45,9 +45,14 @@ import bucketlog.shared.generated.resources.settings_backup_section
 import bucketlog.shared.generated.resources.settings_hour_format
 import bucketlog.shared.generated.resources.settings_notification_hour
 import bucketlog.shared.generated.resources.settings_nudge
+import bucketlog.shared.generated.resources.settings_theme_dark
+import bucketlog.shared.generated.resources.settings_theme_light
+import bucketlog.shared.generated.resources.settings_theme_section
+import bucketlog.shared.generated.resources.settings_theme_system
 import bucketlog.shared.generated.resources.settings_title
 import com.bucketlog.platform.rememberBackupExporter
 import com.bucketlog.platform.rememberBackupImporter
+import com.bucketlog.presentation.theme.ThemeMode
 import org.jetbrains.compose.resources.stringResource
 
 private val HOUR_OPTIONS = listOf(9, 12, 18, 20)
@@ -86,6 +91,31 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
         },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+            Text(
+                text = stringResource(Res.string.settings_theme_section),
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(
+                    selected = state.themeMode == ThemeMode.SYSTEM,
+                    onClick = { viewModel.onIntent(SettingsIntent.SetThemeMode(ThemeMode.SYSTEM)) },
+                    label = { Text(stringResource(Res.string.settings_theme_system)) },
+                )
+                FilterChip(
+                    selected = state.themeMode == ThemeMode.LIGHT,
+                    onClick = { viewModel.onIntent(SettingsIntent.SetThemeMode(ThemeMode.LIGHT)) },
+                    label = { Text(stringResource(Res.string.settings_theme_light)) },
+                )
+                FilterChip(
+                    selected = state.themeMode == ThemeMode.DARK,
+                    onClick = { viewModel.onIntent(SettingsIntent.SetThemeMode(ThemeMode.DARK)) },
+                    label = { Text(stringResource(Res.string.settings_theme_dark)) },
+                )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+
             SettingsRow(
                 label = stringResource(Res.string.settings_all_notifications),
                 checked = state.notificationsEnabled,
