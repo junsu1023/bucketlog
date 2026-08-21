@@ -21,12 +21,14 @@ import com.bucketlog.domain.usecase.EvaluateNotificationsUseCase
 import com.bucketlog.domain.usecase.ExportBackupUseCase
 import com.bucketlog.domain.usecase.ObserveGoalOverviewsUseCase
 import com.bucketlog.domain.usecase.PickNudgeTargetUseCase
+import com.bucketlog.domain.usecase.DeleteEntryUseCase
 import com.bucketlog.domain.usecase.ResetAllDataUseCase
 import com.bucketlog.domain.usecase.RestoreBackupUseCase
 import com.bucketlog.domain.usecase.RestoreGoalUseCase
 import com.bucketlog.domain.usecase.ScheduleGoalRemindersUseCase
 import com.bucketlog.domain.usecase.ScheduleMonthlyRecapUseCase
 import com.bucketlog.domain.usecase.ScheduleNudgeUseCase
+import com.bucketlog.domain.usecase.UpdateEntryUseCase
 import com.bucketlog.notification.AppSettingsStore
 import com.bucketlog.notification.NotificationBudget
 import com.bucketlog.notification.SettingsStore
@@ -107,6 +109,8 @@ val appModule = module {
     factory { ExportBackupUseCase(get(), get(), get(), get()) }
     factory { RestoreBackupUseCase(get(), get(), get(), get()) }
     factory { ResetAllDataUseCase(get()) }
+    factory { UpdateEntryUseCase(get()) }
+    factory { DeleteEntryUseCase(get()) }
 
     viewModelOf(::HomeViewModel)
     viewModelOf(::AddGoalViewModel)
@@ -127,6 +131,8 @@ val appModule = module {
             archiveGoal = get(),
             restoreGoal = get(),
             deleteGoal = get(),
+            updateEntry = get(),
+            deleteEntry = get(),
         )
     }
 }

@@ -28,14 +28,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -70,6 +74,9 @@ import bucketlog.shared.generated.resources.check_in_placeholder
 import bucketlog.shared.generated.resources.check_in_save
 import bucketlog.shared.generated.resources.delete_dialog_body
 import bucketlog.shared.generated.resources.delete_dialog_title
+import bucketlog.shared.generated.resources.delete_entry_dialog_body
+import bucketlog.shared.generated.resources.delete_entry_dialog_title
+import bucketlog.shared.generated.resources.edit_entry_dialog_title
 import bucketlog.shared.generated.resources.entry_count
 import bucketlog.shared.generated.resources.error_generic
 import bucketlog.shared.generated.resources.photo_viewer_close
@@ -86,6 +93,7 @@ import bucketlog.shared.generated.resources.relative_today
 import bucketlog.shared.generated.resources.relative_yesterday
 import bucketlog.shared.generated.resources.retrospect_another_question
 import bucketlog.shared.generated.resources.retrospect_label
+import bucketlog.shared.generated.resources.save
 import bucketlog.shared.generated.resources.timeline_empty
 import bucketlog.shared.generated.resources.timeline_goal_created
 import coil3.compose.AsyncImage
@@ -235,6 +243,8 @@ private fun GoalDetailContent(
                                     initialIndex = index,
                                 )
                             },
+                            onEditClick = { onIntent(GoalDetailIntent.RequestEditEntry(timelineEntry.entry.id)) },
+                            onDeleteClick = { onIntent(GoalDetailIntent.RequestDeleteEntry(timelineEntry.entry.id)) },
                         )
                     }
                     item(key = "goal-created") {
@@ -250,6 +260,7 @@ private fun GoalDetailContent(
             pending = pending,
             goalTitle = goal?.title.orEmpty(),
             category = goal?.category ?: Category.OTHER,
+            timeline = state.timeline,
             onIntent = onIntent,
         )
     }
@@ -374,6 +385,8 @@ private fun TimelineNode(
     timelineEntry: TimelineEntry,
     retrospect: String?,
     onPhotoClick: (index: Int) -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
 ) {
     val entry = timelineEntry.entry
 
@@ -425,6 +438,17 @@ private fun TimelineNode(
                                 .clickable { onPhotoClick(index) },
                             contentScale = ContentScale.Crop,
                         )
+                    }
+                }
+            }
+            // E-05: 완료 인증(COMPLETION)은 별도 화면·흐름이라 여기선 체크인/진행 기록만 수정·삭제한다.
+            if (entry.kind != EntryKind.COMPLETION) {
+                Row(modifier = Modifier.padding(top = 2.dp)) {
+                    TextButton(onClick = onEditClick, modifier = Modifier.height(32.dp)) {
+                        Text(stringResource(Res.string.action_edit), style = MaterialTheme.typography.labelMedium)
+                    }
+                    TextButton(onClick = onDeleteClick, modifier = Modifier.height(32.dp)) {
+                        Text(stringResource(Res.string.action_delete), style = MaterialTheme.typography.labelMedium)
                     }
                 }
             }
@@ -506,6 +530,7 @@ private fun ActionDialog(
     pending: PendingAction,
     goalTitle: String,
     category: Category,
+    timeline: List<TimelineEntry>,
     onIntent: (GoalDetailIntent) -> Unit,
 ) {
     when (pending) {
@@ -633,6 +658,86 @@ private fun ActionDialog(
                         enabled = memo.isNotBlank() || photos.isNotEmpty() || incrementCount,
                     ) {
                         Text(stringResource(Res.string.progress_save))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { onIntent(GoalDetailIntent.DismissDialog) }) { Text(stringResource(Res.string.cancel)) }
+                },
+            )
+        }
+        is PendingAction.EditEntry -> {
+            val entry = timeline.firstOrNull { it.entry.id == pending.entryId }?.entry ?: return
+            var memo by remember(entry.id) { mutableStateOf(entry.memo.orEmpty()) }
+            var recordedAt by remember(entry.id) { mutableStateOf(entry.recordedAt) }
+            var showDatePicker by remember { mutableStateOf(false) }
+
+            AlertDialog(
+                onDismissRequest = { onIntent(GoalDetailIntent.DismissDialog) },
+                title = { Text(stringResource(Res.string.edit_entry_dialog_title)) },
+                text = {
+                    Column {
+                        OutlinedTextField(
+                            value = memo,
+                            onValueChange = { memo = it },
+                            placeholder = { Text(stringResource(Res.string.progress_memo_placeholder)) },
+                        )
+                        // E-04: 소급 기록 — 날짜를 눌러 과거 날짜로 바꿀 수 있다.
+                        TextButton(onClick = { showDatePicker = true }, modifier = Modifier.padding(top = 4.dp)) {
+                            Text(recordedAt.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString())
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            onIntent(GoalDetailIntent.ConfirmEditEntry(entry.id, memo.ifBlank { null }, recordedAt))
+                        },
+                    ) {
+                        Text(stringResource(Res.string.save))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { onIntent(GoalDetailIntent.DismissDialog) }) { Text(stringResource(Res.string.cancel)) }
+                },
+            )
+
+            if (showDatePicker) {
+                // E-04는 "과거 날짜로 소급 기록"이 목적이라 미래 날짜는 고를 수 없게 막는다.
+                val nowMillis = remember { Clock.System.now().toEpochMilliseconds() }
+                val datePickerState = rememberDatePickerState(
+                    initialSelectedDateMillis = recordedAt.toEpochMilliseconds(),
+                    selectableDates = object : SelectableDates {
+                        override fun isSelectableDate(utcTimeMillis: Long) = utcTimeMillis <= nowMillis
+                    },
+                )
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                datePickerState.selectedDateMillis?.let { millis ->
+                                    recordedAt = Instant.fromEpochMilliseconds(millis)
+                                }
+                                showDatePicker = false
+                            },
+                        ) { Text(stringResource(Res.string.save)) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePicker = false }) { Text(stringResource(Res.string.cancel)) }
+                    },
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
+        }
+        is PendingAction.ConfirmDeleteEntry -> {
+            AlertDialog(
+                onDismissRequest = { onIntent(GoalDetailIntent.DismissDialog) },
+                title = { Text(stringResource(Res.string.delete_entry_dialog_title)) },
+                text = { Text(stringResource(Res.string.delete_entry_dialog_body)) },
+                confirmButton = {
+                    TextButton(onClick = { onIntent(GoalDetailIntent.ConfirmDeleteEntry(pending.entryId)) }) {
+                        Text(stringResource(Res.string.action_delete), color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {

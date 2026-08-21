@@ -41,6 +41,11 @@
     <string name="progress_target_reached">목표 횟수를 채웠어요.</string>
     <string name="progress_target_reached_action">완료해볼까요?</string>
 
+    <!-- 기록 수정/삭제 (E-04/E-05) -->
+    <string name="edit_entry_dialog_title">기록 수정</string>
+    <string name="delete_entry_dialog_title">이 기록을 삭제할까요?</string>
+    <string name="delete_entry_dialog_body">되돌릴 수 없어요.</string>
+
     <string name="check_in_placeholder">지금 어때요?</string>
     <string name="check_in_save">저장</string>
 

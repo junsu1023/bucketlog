@@ -8,8 +8,10 @@ import com.bucketlog.domain.usecase.AddCheckInEntryUseCase
 import com.bucketlog.domain.usecase.AddProgressEntryUseCase
 import com.bucketlog.domain.usecase.ArchiveGoalUseCase
 import com.bucketlog.domain.usecase.CompleteGoalUseCase
+import com.bucketlog.domain.usecase.DeleteEntryUseCase
 import com.bucketlog.domain.usecase.DeleteGoalUseCase
 import com.bucketlog.domain.usecase.RestoreGoalUseCase
+import com.bucketlog.domain.usecase.UpdateEntryUseCase
 import com.bucketlog.platform.FileStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
 
 /** 목표 상세 — 세로 타임라인(D-01) + 퀵 체크인(D-02) + 액션 바(D-03). MVP-SCOPE.md §2.4 */
 class GoalDetailViewModel(
@@ -31,6 +34,8 @@ class GoalDetailViewModel(
     private val archiveGoal: ArchiveGoalUseCase,
     private val restoreGoal: RestoreGoalUseCase,
     private val deleteGoal: DeleteGoalUseCase,
+    private val updateEntry: UpdateEntryUseCase,
+    private val deleteEntry: DeleteEntryUseCase,
 ) : ViewModel() {
 
     private val checkInDraft = MutableStateFlow("")
@@ -89,6 +94,11 @@ class GoalDetailViewModel(
 
             GoalDetailIntent.Restore -> run { restoreGoal(goalId) }
 
+            is GoalDetailIntent.RequestEditEntry -> pendingAction.value = PendingAction.EditEntry(intent.entryId)
+            is GoalDetailIntent.ConfirmEditEntry -> confirmEditEntry(intent.entryId, intent.memo, intent.recordedAt)
+            is GoalDetailIntent.RequestDeleteEntry -> pendingAction.value = PendingAction.ConfirmDeleteEntry(intent.entryId)
+            is GoalDetailIntent.ConfirmDeleteEntry -> confirmDeleteEntry(intent.entryId)
+
             GoalDetailIntent.DismissDialog -> pendingAction.value = null
             GoalDetailIntent.DismissError -> hasError.value = false
         }
@@ -117,6 +127,16 @@ class GoalDetailViewModel(
     private fun confirmAddProgress(memo: String?, photoBytes: List<ByteArray>, incrementCount: Boolean) {
         if (pendingAction.value !is PendingAction.AddProgress) return
         run { addProgressEntry(goalId, memo, photoBytes, incrementCount) }
+    }
+
+    private fun confirmEditEntry(entryId: String, memo: String?, recordedAt: Instant) {
+        if (pendingAction.value != PendingAction.EditEntry(entryId)) return
+        run { updateEntry(entryId, memo, recordedAt) }
+    }
+
+    private fun confirmDeleteEntry(entryId: String) {
+        if (pendingAction.value != PendingAction.ConfirmDeleteEntry(entryId)) return
+        run { deleteEntry(entryId) }
     }
 
     private fun confirmDelete() {
