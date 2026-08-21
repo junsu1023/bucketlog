@@ -43,11 +43,9 @@ actual suspend fun renderShareCard(request: ShareCardRenderRequest): ByteArray =
 
     request.photoBytes?.let { bytes ->
         val image = UIImage(data = bytes.toNSData())
-        if (image != null) {
-            val (sourceWidth, sourceHeight) = image.size.useContents { this.width to this.height }
-            if (sourceWidth > 0 && sourceHeight > 0) {
-                image.drawInRect(cropRectFor(sourceWidth, sourceHeight, width, height))
-            }
+        val (sourceWidth, sourceHeight) = image.size.useContents { this.width to this.height }
+        if (sourceWidth > 0 && sourceHeight > 0) {
+            image.drawInRect(cropRectFor(sourceWidth, sourceHeight, width, height))
         }
     }
 
