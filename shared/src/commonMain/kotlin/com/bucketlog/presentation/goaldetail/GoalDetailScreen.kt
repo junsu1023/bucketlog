@@ -79,6 +79,8 @@ import bucketlog.shared.generated.resources.progress_dialog_title
 import bucketlog.shared.generated.resources.progress_increment_count
 import bucketlog.shared.generated.resources.progress_memo_placeholder
 import bucketlog.shared.generated.resources.progress_save
+import bucketlog.shared.generated.resources.progress_target_reached
+import bucketlog.shared.generated.resources.progress_target_reached_action
 import bucketlog.shared.generated.resources.relative_days_ago
 import bucketlog.shared.generated.resources.relative_today
 import bucketlog.shared.generated.resources.relative_yesterday
@@ -184,6 +186,30 @@ private fun GoalDetailContent(
                     style = MaterialTheme.typography.bodyMedium.merge(MonoLabel),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 )
+            }
+
+            // MVP-SCOPE.md §1.1: 반복형이 목표치에 도달하면 자동 완료가 아니라 완료 제안만 띄운다.
+            if (
+                goal.status == GoalStatus.IN_PROGRESS &&
+                goal.type == GoalType.REPEATABLE &&
+                goal.targetCount != null &&
+                state.progressCount >= goal.targetCount
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(Res.string.progress_target_reached),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(onClick = { onIntent(GoalDetailIntent.RequestComplete) }) {
+                        Text(stringResource(Res.string.progress_target_reached_action))
+                    }
+                }
             }
 
             if (state.timeline.isEmpty()) {
@@ -604,7 +630,7 @@ private fun ActionDialog(
                         onClick = {
                             onIntent(GoalDetailIntent.ConfirmAddProgress(memo.ifBlank { null }, photos, incrementCount))
                         },
-                        enabled = memo.isNotBlank() || photos.isNotEmpty(),
+                        enabled = memo.isNotBlank() || photos.isNotEmpty() || incrementCount,
                     ) {
                         Text(stringResource(Res.string.progress_save))
                     }

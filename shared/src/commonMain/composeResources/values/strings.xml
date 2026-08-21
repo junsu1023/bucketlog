@@ -38,6 +38,8 @@
     <string name="relative_days_ago">%1$d일 전</string>
     <string name="last_recorded">마지막 기록 %1$s</string>
     <string name="progress_count">%1$d / %2$d</string>
+    <string name="progress_target_reached">목표 횟수를 채웠어요.</string>
+    <string name="progress_target_reached_action">완료해볼까요?</string>
 
     <string name="check_in_placeholder">지금 어때요?</string>
     <string name="check_in_save">저장</string>
