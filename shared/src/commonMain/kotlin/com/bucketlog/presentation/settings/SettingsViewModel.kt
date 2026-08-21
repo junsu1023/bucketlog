@@ -3,6 +3,7 @@ package com.bucketlog.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bucketlog.domain.usecase.ExportBackupUseCase
+import com.bucketlog.domain.usecase.ResetAllDataUseCase
 import com.bucketlog.domain.usecase.RestoreBackupUseCase
 import com.bucketlog.domain.usecase.RestoreResult
 import com.bucketlog.notification.NotificationSettingsKeys
@@ -14,12 +15,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** M-01 다크모드 + N-06 알림 설정 + M-02 백업/복원. */
+/** M-01 다크모드 + N-06 알림 설정 + M-02 백업/복원 + M-03 데이터 초기화. */
 class SettingsViewModel(
     private val settings: SettingsStore,
     private val themeModeStore: ThemeModeStore,
     private val exportBackup: ExportBackupUseCase,
     private val restoreBackup: RestoreBackupUseCase,
+    private val resetAllData: ResetAllDataUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -94,6 +96,17 @@ class SettingsViewModel(
                 }
             }
             SettingsIntent.DismissBackupResult -> _uiState.update { it.copy(backupResult = null) }
+
+            SettingsIntent.RequestReset -> _uiState.update { it.copy(showResetConfirm = true) }
+            SettingsIntent.CancelReset -> _uiState.update { it.copy(showResetConfirm = false) }
+            SettingsIntent.ConfirmReset -> {
+                _uiState.update { it.copy(showResetConfirm = false, isResetting = true) }
+                viewModelScope.launch {
+                    resetAllData()
+                    _uiState.update { it.copy(isResetting = false, resetDone = true) }
+                }
+            }
+            SettingsIntent.DismissResetResult -> _uiState.update { it.copy(resetDone = false) }
         }
     }
 

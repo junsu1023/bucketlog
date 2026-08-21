@@ -16,4 +16,7 @@ interface GoalRepository {
 
     /** 백업 복원(M-02)용 — id가 이미 있으면 덮어쓴다(백업이 이긴다). */
     suspend fun upsert(goal: Goal)
+
+    /** M-03 데이터 초기화용 — 목표/기록/사진 전부(로컬 파일 포함) 삭제. 되돌릴 수 없다. */
+    suspend fun deleteAll()
 }

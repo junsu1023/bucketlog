@@ -6,8 +6,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -38,13 +41,19 @@ import bucketlog.shared.generated.resources.backup_restore_confirm_action
 import bucketlog.shared.generated.resources.backup_restore_confirm_body
 import bucketlog.shared.generated.resources.backup_restore_confirm_title
 import bucketlog.shared.generated.resources.cancel
+import bucketlog.shared.generated.resources.reset_confirm_action
+import bucketlog.shared.generated.resources.reset_confirm_body
+import bucketlog.shared.generated.resources.reset_confirm_title
+import bucketlog.shared.generated.resources.reset_result_message
 import bucketlog.shared.generated.resources.settings_all_notifications
 import bucketlog.shared.generated.resources.settings_backup_export
 import bucketlog.shared.generated.resources.settings_backup_restore
 import bucketlog.shared.generated.resources.settings_backup_section
+import bucketlog.shared.generated.resources.settings_data_section
 import bucketlog.shared.generated.resources.settings_hour_format
 import bucketlog.shared.generated.resources.settings_notification_hour
 import bucketlog.shared.generated.resources.settings_nudge
+import bucketlog.shared.generated.resources.settings_reset_all
 import bucketlog.shared.generated.resources.settings_theme_dark
 import bucketlog.shared.generated.resources.settings_theme_light
 import bucketlog.shared.generated.resources.settings_theme_section
@@ -90,7 +99,9 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
             )
         },
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
+        ) {
             Text(
                 text = stringResource(Res.string.settings_theme_section),
                 style = MaterialTheme.typography.labelLarge,
@@ -170,6 +181,27 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                     CircularProgressIndicator()
                 }
             }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+
+            Text(
+                text = stringResource(Res.string.settings_data_section),
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(bottom = 12.dp),
+            )
+            OutlinedButton(
+                onClick = { viewModel.onIntent(SettingsIntent.RequestReset) },
+                enabled = !state.isResetting,
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(Res.string.settings_reset_all))
+            }
+            if (state.isResetting) {
+                Row(modifier = Modifier.fillMaxWidth().padding(top = 16.dp), horizontalArrangement = Arrangement.Center) {
+                    CircularProgressIndicator()
+                }
+            }
         }
     }
 
@@ -197,6 +229,36 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
             text = { Text(backupResultText(result)) },
             confirmButton = {
                 TextButton(onClick = { viewModel.onIntent(SettingsIntent.DismissBackupResult) }) {
+                    Text(stringResource(Res.string.backup_result_confirm))
+                }
+            },
+        )
+    }
+
+    if (state.showResetConfirm) {
+        AlertDialog(
+            onDismissRequest = { viewModel.onIntent(SettingsIntent.CancelReset) },
+            title = { Text(stringResource(Res.string.reset_confirm_title)) },
+            text = { Text(stringResource(Res.string.reset_confirm_body)) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.onIntent(SettingsIntent.ConfirmReset) }) {
+                    Text(stringResource(Res.string.reset_confirm_action), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.onIntent(SettingsIntent.CancelReset) }) {
+                    Text(stringResource(Res.string.cancel))
+                }
+            },
+        )
+    }
+
+    if (state.resetDone) {
+        AlertDialog(
+            onDismissRequest = { viewModel.onIntent(SettingsIntent.DismissResetResult) },
+            text = { Text(stringResource(Res.string.reset_result_message)) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.onIntent(SettingsIntent.DismissResetResult) }) {
                     Text(stringResource(Res.string.backup_result_confirm))
                 }
             },

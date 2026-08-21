@@ -17,6 +17,10 @@ data class SettingsUiState(
     val pendingExport: BackupFile? = null,
     val pendingImportLaunch: Boolean = false,
     val backupResult: BackupResultMessage? = null,
+    // M-03 데이터 초기화 — 되돌릴 수 없는 작업이라 확인 다이얼로그를 반드시 거친다.
+    val showResetConfirm: Boolean = false,
+    val isResetting: Boolean = false,
+    val resetDone: Boolean = false,
 )
 
 sealed interface BackupResultMessage {

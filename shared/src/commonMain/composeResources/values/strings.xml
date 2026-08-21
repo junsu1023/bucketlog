@@ -163,6 +163,14 @@
     <string name="backup_result_restore_success">목표 %1$d개, 기록 %2$d개를 불러왔어요.</string>
     <string name="backup_result_restore_schema_too_new">이 백업은 최신 버전의 앱에서 만들어졌어요. 앱을 업데이트한 뒤 다시 시도해 주세요.</string>
     <string name="backup_result_restore_failed">백업 파일을 읽을 수 없어요.</string>
+
+    <!-- 데이터 초기화 (M-03) -->
+    <string name="settings_data_section">데이터 관리</string>
+    <string name="settings_reset_all">전체 데이터 삭제</string>
+    <string name="reset_confirm_title">정말 모든 데이터를 삭제할까요?</string>
+    <string name="reset_confirm_body">목표, 기록, 사진이 모두 사라져요. 되돌릴 수 없으니 먼저 백업하는 걸 추천해요.</string>
+    <string name="reset_confirm_action">삭제</string>
+    <string name="reset_result_message">모든 데이터를 삭제했어요.</string>
     <string name="backup_result_confirm">확인</string>
 
     <!-- 프리셋 목표 (docs/MVP-SCOPE.md §2.7) -->

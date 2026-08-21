@@ -41,4 +41,13 @@ class GoalRepositoryImpl(
             fileStorage.delete(photo.thumbnailPath)
         }
     }
+
+    override suspend fun deleteAll() {
+        val photos = photoDao.getAll()
+        goalDao.deleteAll()
+        photos.forEach { photo ->
+            fileStorage.delete(photo.path)
+            fileStorage.delete(photo.thumbnailPath)
+        }
+    }
 }

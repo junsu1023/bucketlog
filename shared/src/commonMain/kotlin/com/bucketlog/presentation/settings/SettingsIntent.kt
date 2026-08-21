@@ -18,4 +18,10 @@ sealed interface SettingsIntent {
     data object ImportLaunched : SettingsIntent
     data class RestoreBackup(val bytes: ByteArray?) : SettingsIntent
     data object DismissBackupResult : SettingsIntent
+
+    // 데이터 초기화(M-03)
+    data object RequestReset : SettingsIntent
+    data object ConfirmReset : SettingsIntent
+    data object CancelReset : SettingsIntent
+    data object DismissResetResult : SettingsIntent
 }
