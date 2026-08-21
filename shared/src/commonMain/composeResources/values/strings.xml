@@ -48,6 +48,9 @@
     <string name="action_edit">수정</string>
     <string name="action_restore">다시 꺼내기</string>
     <string name="action_add_progress">기록 추가</string>
+    <string name="action_share">공유</string>
+    <string name="share_card_date">%1$d년 %2$d월</string>
+    <string name="share_dialog_share">공유하기</string>
     <string name="cancel">취소</string>
 
     <string name="complete_dialog_body">남기고 싶은 말이 있나요? (건너뛸 수 있어요)</string>

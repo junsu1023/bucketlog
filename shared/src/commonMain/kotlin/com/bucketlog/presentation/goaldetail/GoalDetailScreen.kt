@@ -60,6 +60,7 @@ import bucketlog.shared.generated.resources.action_complete
 import bucketlog.shared.generated.resources.action_delete
 import bucketlog.shared.generated.resources.action_edit
 import bucketlog.shared.generated.resources.action_restore
+import bucketlog.shared.generated.resources.action_share
 import bucketlog.shared.generated.resources.archive_dialog_body
 import bucketlog.shared.generated.resources.archive_dialog_title
 import bucketlog.shared.generated.resources.archive_reason_placeholder
@@ -138,6 +139,8 @@ private fun GoalDetailContent(
     val goal = state.goal
     // D-05: 뷰어 열림 상태는 비즈니스 로직이 없는 순수 UI 네비게이션 관심사라 로컬로 둔다.
     var viewerRequest by remember { mutableStateOf<PhotoViewerRequest?>(null) }
+    // S-01: 공유 카드 오버레이도 같은 이유로 로컬 상태.
+    var showShareCard by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -155,7 +158,13 @@ private fun GoalDetailContent(
         },
         bottomBar = {
             if (goal != null) {
-                GoalDetailBottomBar(goal = goal, state = state, onIntent = onIntent, focusCheckIn = focusCheckIn)
+                GoalDetailBottomBar(
+                    goal = goal,
+                    state = state,
+                    onIntent = onIntent,
+                    focusCheckIn = focusCheckIn,
+                    onShareClick = { showShareCard = true },
+                )
             }
         },
     ) { padding ->
@@ -234,6 +243,19 @@ private fun GoalDetailContent(
     viewerRequest?.let { request ->
         PhotoViewerOverlay(request = request, onDismiss = { viewerRequest = null })
     }
+
+    if (showShareCard && goal != null) {
+        val completionPhoto = state.timeline
+            .firstOrNull { it.entry.kind == EntryKind.COMPLETION }
+            ?.photos?.firstOrNull()?.displayPath
+        ShareCardOverlay(
+            goalTitle = goal.title,
+            completedAt = goal.completedAt,
+            retrospect = goal.retrospect,
+            photoPath = completionPhoto,
+            onDismiss = { showShareCard = false },
+        )
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -243,6 +265,7 @@ private fun GoalDetailBottomBar(
     state: GoalDetailUiState,
     onIntent: (GoalDetailIntent) -> Unit,
     focusCheckIn: Boolean,
+    onShareClick: () -> Unit,
 ) {
     val checkInFocusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -291,7 +314,20 @@ private fun GoalDetailBottomBar(
                         }
                     }
                 }
-                GoalStatus.COMPLETED, GoalStatus.ARCHIVED -> {
+                GoalStatus.COMPLETED -> {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        TextButton(onClick = onShareClick) {
+                            Text(stringResource(Res.string.action_share))
+                        }
+                        TextButton(onClick = { onIntent(GoalDetailIntent.Restore) }) {
+                            Text(stringResource(Res.string.action_restore))
+                        }
+                        TextButton(onClick = { onIntent(GoalDetailIntent.RequestDelete) }) {
+                            Text(stringResource(Res.string.action_delete), color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
+                GoalStatus.ARCHIVED -> {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                         TextButton(onClick = { onIntent(GoalDetailIntent.Restore) }) {
                             Text(stringResource(Res.string.action_restore))

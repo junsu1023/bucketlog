@@ -42,4 +42,9 @@ actual class FileStorage(private val context: Context) {
             file.writeBytes(bytes)
         }
     }
+
+    actual suspend fun readAbsoluteBytes(absolutePath: String): ByteArray? = withContext(Dispatchers.IO) {
+        val file = File(absolutePath)
+        if (file.exists()) file.readBytes() else null
+    }
 }
