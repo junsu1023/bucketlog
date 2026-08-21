@@ -33,6 +33,7 @@ internal class FakeGoalRepository(initial: List<Goal> = emptyList()) : GoalRepos
     }
     override suspend fun delete(id: String) { goals.value = goals.value.filterNot { it.id == id } }
     override suspend fun upsert(goal: Goal) = update(goal)
+    override suspend fun deleteAll() { goals.value = emptyList() }
 }
 
 internal class FakeEntryRepository(

@@ -3,21 +3,25 @@ package com.bucketlog.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bucketlog.domain.usecase.ExportBackupUseCase
+import com.bucketlog.domain.usecase.ResetAllDataUseCase
 import com.bucketlog.domain.usecase.RestoreBackupUseCase
 import com.bucketlog.domain.usecase.RestoreResult
 import com.bucketlog.notification.NotificationSettingsKeys
 import com.bucketlog.notification.SettingsStore
+import com.bucketlog.presentation.theme.ThemeModeStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** N-06 알림 설정 + M-02 백업/복원. */
+/** M-01 다크모드 + N-06 알림 설정 + M-02 백업/복원 + M-03 데이터 초기화. */
 class SettingsViewModel(
     private val settings: SettingsStore,
+    private val themeModeStore: ThemeModeStore,
     private val exportBackup: ExportBackupUseCase,
     private val restoreBackup: RestoreBackupUseCase,
+    private val resetAllData: ResetAllDataUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -26,6 +30,7 @@ class SettingsViewModel(
     init {
         viewModelScope.launch {
             _uiState.value = SettingsUiState(
+                themeMode = themeModeStore.mode.value,
                 notificationsEnabled = settings.getBoolean(NotificationSettingsKeys.NOTIFICATIONS_ENABLED, true),
                 nudgeEnabled = settings.getBoolean(NotificationSettingsKeys.NUDGE_ENABLED, true),
                 notificationHour = settings.getLong(
@@ -39,6 +44,10 @@ class SettingsViewModel(
 
     fun onIntent(intent: SettingsIntent) {
         when (intent) {
+            is SettingsIntent.SetThemeMode -> {
+                _uiState.update { it.copy(themeMode = intent.mode) }
+                themeModeStore.setMode(intent.mode)
+            }
             is SettingsIntent.SetNotificationsEnabled -> {
                 _uiState.update { it.copy(notificationsEnabled = intent.enabled) }
                 persistBoolean(NotificationSettingsKeys.NOTIFICATIONS_ENABLED, intent.enabled)
@@ -87,6 +96,17 @@ class SettingsViewModel(
                 }
             }
             SettingsIntent.DismissBackupResult -> _uiState.update { it.copy(backupResult = null) }
+
+            SettingsIntent.RequestReset -> _uiState.update { it.copy(showResetConfirm = true) }
+            SettingsIntent.CancelReset -> _uiState.update { it.copy(showResetConfirm = false) }
+            SettingsIntent.ConfirmReset -> {
+                _uiState.update { it.copy(showResetConfirm = false, isResetting = true) }
+                viewModelScope.launch {
+                    resetAllData()
+                    _uiState.update { it.copy(isResetting = false, resetDone = true) }
+                }
+            }
+            SettingsIntent.DismissResetResult -> _uiState.update { it.copy(resetDone = false) }
         }
     }
 

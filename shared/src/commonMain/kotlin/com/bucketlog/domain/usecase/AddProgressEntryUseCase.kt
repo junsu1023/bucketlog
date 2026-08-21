@@ -10,7 +10,8 @@ import kotlin.time.Clock
 
 /**
  * MVP-SCOPE.md E-02: 진행 기록 — 메모 + 사진(0~5장) + 날짜.
- * 규칙 3(CLAUDE.md): 메모만, 사진만, 둘 다 허용 — 다만 아예 빈 기록은 막는다.
+ * 규칙 3(CLAUDE.md): 메모만, 사진만, 둘 다 허용 — 카운트 증가만으로도 유효한 기록이라 허용한다.
+ * 셋 다 없는 완전히 빈 기록만 막는다.
  */
 class AddProgressEntryUseCase(
     private val entryRepository: EntryRepository,
@@ -25,7 +26,7 @@ class AddProgressEntryUseCase(
     ) {
         require(photoBytes.size <= 5) { "사진은 최대 5장까지" }
         val trimmedMemo = memo?.trim()?.ifBlank { null }
-        require(trimmedMemo != null || photoBytes.isNotEmpty()) { "메모나 사진 중 하나는 있어야 함" }
+        require(trimmedMemo != null || photoBytes.isNotEmpty() || incrementCount) { "메모, 사진, 카운트 중 하나는 있어야 함" }
 
         val entryId = newId()
         val photos = processPhotosForEntry(entryId, photoBytes, imageProcessor, fileStorage)

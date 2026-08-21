@@ -18,4 +18,7 @@ expect class FileStorage {
     // 백업/복원(M-02)용. writePhoto와 달리 경로를 새로 만들지 않고 주어진 상대 경로 그대로 읽고 쓴다.
     suspend fun readBytes(relativePath: String): ByteArray?
     suspend fun writeBytes(relativePath: String, bytes: ByteArray)
+
+    // S-01 완료 카드용. resolveAbsolutePath로 이미 절대경로가 된 값을 그대로 읽는다.
+    suspend fun readAbsoluteBytes(absolutePath: String): ByteArray?
 }

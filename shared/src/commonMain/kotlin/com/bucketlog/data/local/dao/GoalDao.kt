@@ -27,6 +27,10 @@ interface GoalDao {
     @Query("DELETE FROM goals WHERE id = :id")
     suspend fun deleteById(id: String)
 
+    // M-03 데이터 초기화용 — entries/photos는 FK CASCADE로 함께 삭제된다(파일은 별도 정리 필요).
+    @Query("DELETE FROM goals")
+    suspend fun deleteAll()
+
     @Query("SELECT * FROM goals WHERE id = :id")
     suspend fun getById(id: String): GoalEntity?
 

@@ -35,4 +35,8 @@ interface PhotoDao {
         """,
     )
     suspend fun getByGoal(goalId: String): List<PhotoEntity>
+
+    // M-03 데이터 초기화용 — goals를 지우기 전에 파일 경로를 먼저 전부 확보해둔다.
+    @Query("SELECT * FROM photos")
+    suspend fun getAll(): List<PhotoEntity>
 }

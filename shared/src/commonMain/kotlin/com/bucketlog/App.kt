@@ -1,5 +1,6 @@
 package com.bucketlog
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -19,6 +20,9 @@ import com.bucketlog.presentation.common.MonthKey
 import com.bucketlog.presentation.onboarding.OnboardingViewModel
 import com.bucketlog.presentation.settings.SettingsScreen
 import com.bucketlog.presentation.theme.BucketLogTheme
+import com.bucketlog.presentation.theme.ThemeMode
+import com.bucketlog.presentation.theme.ThemeModeStore
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -40,7 +44,15 @@ private sealed interface Screen {
 @Composable
 @Preview
 fun App() {
-    BucketLogTheme {
+    val themeModeStore: ThemeModeStore = koinInject()
+    val themeMode by themeModeStore.mode.collectAsState()
+    val darkTheme = when (themeMode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+
+    BucketLogTheme(darkTheme = darkTheme) {
         var screen by remember { mutableStateOf<Screen>(Screen.Loading) }
         val addGoalViewModel: AddGoalViewModel = koinViewModel()
         val onboardingViewModel: OnboardingViewModel = koinViewModel()

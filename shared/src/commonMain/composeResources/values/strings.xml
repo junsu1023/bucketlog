@@ -38,6 +38,13 @@
     <string name="relative_days_ago">%1$d일 전</string>
     <string name="last_recorded">마지막 기록 %1$s</string>
     <string name="progress_count">%1$d / %2$d</string>
+    <string name="progress_target_reached">목표 횟수를 채웠어요.</string>
+    <string name="progress_target_reached_action">완료해볼까요?</string>
+
+    <!-- 기록 수정/삭제 (E-04/E-05) -->
+    <string name="edit_entry_dialog_title">기록 수정</string>
+    <string name="delete_entry_dialog_title">이 기록을 삭제할까요?</string>
+    <string name="delete_entry_dialog_body">되돌릴 수 없어요.</string>
 
     <string name="check_in_placeholder">지금 어때요?</string>
     <string name="check_in_save">저장</string>
@@ -48,6 +55,9 @@
     <string name="action_edit">수정</string>
     <string name="action_restore">다시 꺼내기</string>
     <string name="action_add_progress">기록 추가</string>
+    <string name="action_share">공유</string>
+    <string name="share_card_date">%1$d년 %2$d월</string>
+    <string name="share_dialog_share">공유하기</string>
     <string name="cancel">취소</string>
 
     <string name="complete_dialog_body">남기고 싶은 말이 있나요? (건너뛸 수 있어요)</string>
@@ -134,7 +144,11 @@
     <string name="nudge_notification_body">마지막 기록 후 %1$d일이 지났어요. 요즘 어때요?</string>
     <string name="monthly_recap_notification_body">%1$d월이 지나갔어요. 이번 달엔 어떤 걸 했나요?</string>
     <string name="goal_reminder_notification_body">지금 어때요?</string>
-    <string name="settings_title">알림</string>
+    <string name="settings_title">설정</string>
+    <string name="settings_theme_section">화면</string>
+    <string name="settings_theme_system">시스템 설정</string>
+    <string name="settings_theme_light">라이트</string>
+    <string name="settings_theme_dark">다크</string>
     <string name="settings_all_notifications">전체 알림</string>
     <string name="settings_nudge">오래된 목표 살펴보기</string>
     <string name="settings_notification_hour">알림 받을 시각</string>
@@ -156,6 +170,14 @@
     <string name="backup_result_restore_success">목표 %1$d개, 기록 %2$d개를 불러왔어요.</string>
     <string name="backup_result_restore_schema_too_new">이 백업은 최신 버전의 앱에서 만들어졌어요. 앱을 업데이트한 뒤 다시 시도해 주세요.</string>
     <string name="backup_result_restore_failed">백업 파일을 읽을 수 없어요.</string>
+
+    <!-- 데이터 초기화 (M-03) -->
+    <string name="settings_data_section">데이터 관리</string>
+    <string name="settings_reset_all">전체 데이터 삭제</string>
+    <string name="reset_confirm_title">정말 모든 데이터를 삭제할까요?</string>
+    <string name="reset_confirm_body">목표, 기록, 사진이 모두 사라져요. 되돌릴 수 없으니 먼저 백업하는 걸 추천해요.</string>
+    <string name="reset_confirm_action">삭제</string>
+    <string name="reset_result_message">모든 데이터를 삭제했어요.</string>
     <string name="backup_result_confirm">확인</string>
 
     <!-- 프리셋 목표 (docs/MVP-SCOPE.md §2.7) -->

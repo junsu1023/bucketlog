@@ -43,6 +43,12 @@ actual class FileStorage {
     }
 
     @OptIn(ExperimentalForeignApi::class)
+    actual suspend fun readAbsoluteBytes(absolutePath: String): ByteArray? = withContext(Dispatchers.Default) {
+        if (!NSFileManager.defaultManager.fileExistsAtPath(absolutePath)) return@withContext null
+        NSFileManager.defaultManager.contentsAtPath(absolutePath)?.toByteArray()
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
     private fun writeFileBytes(bytes: ByteArray, path: String) {
         NSFileManager.defaultManager.createFileAtPath(path, contents = bytes.toNSData(), attributes = null)
     }

@@ -32,4 +32,6 @@ sealed interface PendingAction {
     data object ConfirmArchive : PendingAction
     data object ConfirmDelete : PendingAction
     data object AddProgress : PendingAction
+    data class EditEntry(val entryId: String) : PendingAction
+    data class ConfirmDeleteEntry(val entryId: String) : PendingAction
 }
