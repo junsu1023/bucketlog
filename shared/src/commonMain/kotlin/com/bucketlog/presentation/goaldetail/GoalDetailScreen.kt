@@ -185,13 +185,13 @@ private fun GoalDetailContent(
             if (goal.type == GoalType.REPEATABLE && goal.targetCount != null) {
                 Text(
                     text = stringResource(Res.string.progress_count, state.progressCount, goal.targetCount),
-                    style = MaterialTheme.typography.bodyMedium.merge(MonoLabel),
+                    style = MaterialTheme.typography.bodyMedium.merge(MonoLabel()),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 )
             } else if (state.timeline.isNotEmpty()) {
                 Text(
                     text = stringResource(Res.string.entry_count, state.timeline.size),
-                    style = MaterialTheme.typography.bodyMedium.merge(MonoLabel),
+                    style = MaterialTheme.typography.bodyMedium.merge(MonoLabel()),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 )
             }
@@ -392,10 +392,11 @@ private fun TimelineNode(
 
     Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
         TimelineRail(
+            // docs/DESIGN.md §5.2 — 노드 크기는 성과가 아니라 "기록의 중요도"를 나타낸다.
             nodeSize = when (entry.kind) {
-                EntryKind.CHECK_IN -> 8.dp
-                EntryKind.PROGRESS -> 14.dp
-                EntryKind.COMPLETION -> 18.dp
+                EntryKind.CHECK_IN -> 4.dp
+                EntryKind.PROGRESS -> 8.dp
+                EntryKind.COMPLETION -> 16.dp
             },
             filled = true,
             color = when (entry.kind) {
@@ -409,7 +410,7 @@ private fun TimelineNode(
         Column(modifier = Modifier.padding(start = 12.dp, bottom = 20.dp)) {
             Text(
                 text = relativeDayLabel(entry.recordedAt),
-                style = MaterialTheme.typography.labelMedium.merge(MonoLabel),
+                style = MaterialTheme.typography.labelMedium.merge(MonoLabel()),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             entry.memo?.takeIf { it.isNotBlank() }?.let { memo ->
@@ -463,7 +464,7 @@ private fun TimelineCreatedNode(createdAt: Instant, isLast: Boolean) {
         Column(modifier = Modifier.padding(start = 12.dp)) {
             Text(
                 text = relativeDayLabel(createdAt),
-                style = MaterialTheme.typography.labelMedium.merge(MonoLabel),
+                style = MaterialTheme.typography.labelMedium.merge(MonoLabel()),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
@@ -486,11 +487,12 @@ private fun TimelineRail(
 ) {
     Box(modifier = Modifier.width(28.dp).fillMaxHeight(), contentAlignment = Alignment.TopCenter) {
         if (!isLast) {
+            // docs/DESIGN.md §5.2 — 세로선은 화면을 강하게 가르지 않도록 가늘고 옅게.
             Box(
                 modifier = Modifier
-                    .width(2.dp)
+                    .width(1.dp)
                     .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.outlineVariant),
+                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)),
             )
         }
         Box(
@@ -525,6 +527,7 @@ private fun relativeDayLabel(instant: Instant): String {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ActionDialog(
     pending: PendingAction,

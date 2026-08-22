@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,8 +17,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -28,7 +32,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import com.bucketlog.presentation.theme.BucketLogSpacing
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.archive_nav_button
 import bucketlog.shared.generated.resources.cancel
@@ -171,9 +175,12 @@ private fun YearFilterRow(
                 selected = selected == filter,
                 onClick = { onSelect(filter) },
                 label = { Text(stringResource(Res.string.year_chip, year)) },
+                shape = RoundedCornerShape(BucketLogSpacing.ChipRadius),
+                border = null,
                 colors = FilterChipDefaults.filterChipColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
                     selectedContainerColor = MaterialTheme.colorScheme.primary,
-                    selectedLabelColor = MaterialTheme.colorScheme.surface,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
                 ),
             )
         }
@@ -181,9 +188,12 @@ private fun YearFilterRow(
             selected = selected == BucketYearFilter.Someday,
             onClick = { onSelect(BucketYearFilter.Someday) },
             label = { Text(stringResource(Res.string.goal_bucket_someday)) },
+            shape = RoundedCornerShape(BucketLogSpacing.ChipRadius),
+            border = null,
             colors = FilterChipDefaults.filterChipColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 selectedContainerColor = MaterialTheme.colorScheme.primary,
-                selectedLabelColor = MaterialTheme.colorScheme.surface,
+                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
             ),
         )
     }
@@ -196,7 +206,8 @@ private fun ThrowbackBannerCard(banner: ThrowbackBanner, onClick: () -> Unit) {
         ThrowbackKind.YEAR_AGO -> stringResource(Res.string.throwback_year_ago, banner.goalTitle)
         ThrowbackKind.MONTH_AGO -> stringResource(Res.string.throwback_month_ago, banner.goalTitle)
     }
-    OutlinedCard(
+    Card(
+        shape = RoundedCornerShape(BucketLogSpacing.CardRadius),
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).clickable(onClick = onClick),
     ) {
         Text(
@@ -216,7 +227,7 @@ private fun SummaryHeader(filter: BucketYearFilter, total: Int, completed: Int) 
     }
     Text(
         text = text,
-        style = MaterialTheme.typography.bodyMedium.merge(MonoLabel),
+        style = MaterialTheme.typography.bodyMedium.merge(MonoLabel()),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
     )
@@ -252,6 +263,9 @@ private fun PresetChip(preset: PresetGoal, existingTitles: Set<String>, onIntent
     AssistChip(
         onClick = { onIntent(HomeIntent.AddPresetGoal(title, preset.category)) },
         label = { Text(title) },
+        shape = RoundedCornerShape(BucketLogSpacing.ChipRadius),
+        border = null,
+        colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     )
 }
 
@@ -264,51 +278,65 @@ private fun GoalCard(
     onClick: () -> Unit,
 ) {
     val goal = overview.goal
-    OutlinedCard(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
+    Card(
+        shape = RoundedCornerShape(BucketLogSpacing.CardRadius),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+    ) {
         if (overview.recentPhotoPaths.isNotEmpty()) {
             if (overview.recentPhotoPaths.size == 1) {
                 AsyncImage(
                     model = overview.recentPhotoPaths.first(),
                     contentDescription = null,
-                    modifier = Modifier.fillMaxWidth().height(160.dp),
+                    modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
                     contentScale = ContentScale.Crop,
                 )
             } else {
                 LazyRow(
-                    modifier = Modifier.fillMaxWidth().height(160.dp),
+                    modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
                     items(overview.recentPhotoPaths) { path ->
                         AsyncImage(
                             model = path,
                             contentDescription = null,
-                            modifier = Modifier.size(160.dp),
+                            modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
                             contentScale = ContentScale.Crop,
                         )
                     }
                 }
             }
         }
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(BucketLogSpacing.lg)) {
             Text(text = goal.title, style = MaterialTheme.typography.titleMedium)
 
             Row(
-                modifier = Modifier.padding(top = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(top = BucketLogSpacing.xs),
+                horizontalArrangement = Arrangement.spacedBy(BucketLogSpacing.sm),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                AssistChip(onClick = {}, enabled = false, label = { Text(stringResource(goal.category.labelRes())) })
+                AssistChip(
+                    onClick = {},
+                    enabled = false,
+                    label = { Text(stringResource(goal.category.labelRes())) },
+                    shape = RoundedCornerShape(BucketLogSpacing.ChipRadius),
+                    border = null,
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
+                )
                 overview.lastRecordedAt?.let {
                     Text(
                         text = stringResource(Res.string.last_recorded, relativeDayLabel(it)),
-                        style = MaterialTheme.typography.bodySmall.merge(MonoLabel),
+                        style = MaterialTheme.typography.bodySmall.merge(MonoLabel()),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 if (goal.type == GoalType.REPEATABLE && goal.targetCount != null) {
                     Text(
                         text = stringResource(Res.string.progress_count, overview.progressCount, goal.targetCount),
-                        style = MaterialTheme.typography.bodySmall.merge(MonoLabel),
+                        style = MaterialTheme.typography.bodySmall.merge(MonoLabel()),
                     )
                 }
             }

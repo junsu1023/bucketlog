@@ -41,7 +41,7 @@ fun PhotoAttachRow(
         }
         Text(
             text = stringResource(Res.string.photo_selected_count, photoCount, 5),
-            style = MaterialTheme.typography.bodySmall.merge(MonoLabel),
+            style = MaterialTheme.typography.bodySmall.merge(MonoLabel()),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         if (photoCount > 0) {

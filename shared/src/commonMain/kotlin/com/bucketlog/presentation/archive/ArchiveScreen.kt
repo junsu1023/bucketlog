@@ -19,11 +19,14 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -35,8 +38,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import com.bucketlog.presentation.theme.BucketLogSpacing
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.archive_reason_label
 import bucketlog.shared.generated.resources.archive_title
@@ -103,6 +108,12 @@ private fun ArchiveContent(
         },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            val tabChipColors = FilterChipDefaults.filterChipColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+            )
+            val tabChipShape = RoundedCornerShape(BucketLogSpacing.ChipRadius)
             Row(
                 modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -111,26 +122,41 @@ private fun ArchiveContent(
                     selected = state.tab == ArchiveTab.COMPLETED,
                     onClick = { onIntent(ArchiveIntent.SelectTab(ArchiveTab.COMPLETED)) },
                     label = { Text(stringResource(Res.string.filter_completed)) },
+                    shape = tabChipShape,
+                    border = null,
+                    colors = tabChipColors,
                 )
                 FilterChip(
                     selected = state.tab == ArchiveTab.ARCHIVED,
                     onClick = { onIntent(ArchiveIntent.SelectTab(ArchiveTab.ARCHIVED)) },
                     label = { Text(stringResource(Res.string.filter_archived)) },
+                    shape = tabChipShape,
+                    border = null,
+                    colors = tabChipColors,
                 )
                 FilterChip(
                     selected = state.tab == ArchiveTab.MONTHLY,
                     onClick = { onIntent(ArchiveIntent.ShowMonth(MonthKey.current())) },
                     label = { Text(stringResource(Res.string.filter_monthly)) },
+                    shape = tabChipShape,
+                    border = null,
+                    colors = tabChipColors,
                 )
                 FilterChip(
                     selected = state.tab == ArchiveTab.ALL,
                     onClick = { onIntent(ArchiveIntent.SelectTab(ArchiveTab.ALL)) },
                     label = { Text(stringResource(Res.string.filter_all)) },
+                    shape = tabChipShape,
+                    border = null,
+                    colors = tabChipColors,
                 )
                 FilterChip(
                     selected = state.tab == ArchiveTab.STATS,
                     onClick = { onIntent(ArchiveIntent.SelectTab(ArchiveTab.STATS)) },
                     label = { Text(stringResource(Res.string.filter_stats)) },
+                    shape = tabChipShape,
+                    border = null,
+                    colors = tabChipColors,
                 )
             }
 
@@ -163,8 +189,8 @@ private fun CompletedGrid(overviews: List<GoalOverview>, onGoalClick: (String) -
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         contentPadding = PaddingValues(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(BucketLogSpacing.xs),
+        verticalArrangement = Arrangement.spacedBy(BucketLogSpacing.xs),
         modifier = Modifier.fillMaxSize(),
     ) {
         items(overviews, key = { it.goal.id }) { overview ->
@@ -178,6 +204,7 @@ private fun CompletedGridCell(overview: GoalOverview, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .aspectRatio(1f)
+            .clip(RoundedCornerShape(BucketLogSpacing.PhotoGridRadius))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.BottomStart,
     ) {
@@ -198,7 +225,8 @@ private fun CompletedGridCell(overview: GoalOverview, onClick: () -> Unit) {
             Text(
                 text = overview.goal.title,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.surface,
+                // 스크림이 라이트/다크 모두 항상 어둡게 깔리므로 텍스트는 테마와 무관하게 흰색 고정.
+                color = Color.White,
                 maxLines = 1,
                 modifier = Modifier.padding(8.dp),
             )
@@ -227,13 +255,23 @@ private fun ArchivedList(overviews: List<GoalOverview>, onGoalClick: (String) ->
 @Composable
 private fun ArchivedRow(overview: GoalOverview, onClick: () -> Unit) {
     val goal = overview.goal
-    OutlinedCard(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
+    Card(
+        shape = RoundedCornerShape(BucketLogSpacing.CardRadius),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = goal.title, style = MaterialTheme.typography.titleMedium)
             AssistChip(
                 onClick = {},
                 enabled = false,
                 label = { Text(stringResource(goal.category.labelRes())) },
+                shape = RoundedCornerShape(BucketLogSpacing.ChipRadius),
+                border = null,
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
                 modifier = Modifier.padding(top = 4.dp),
             )
             goal.archiveReason?.takeIf { it.isNotBlank() }?.let { reason ->
@@ -269,7 +307,10 @@ private fun MonthlyEntriesList(entries: List<MonthlyEntry>, emptyText: String, o
 @Composable
 private fun MonthlyEntryRow(monthlyEntry: MonthlyEntry, onClick: () -> Unit) {
     val entry = monthlyEntry.entry
-    OutlinedCard(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
+    Card(
+        shape = RoundedCornerShape(BucketLogSpacing.CardRadius),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 Text(text = monthlyEntry.goalTitle, style = MaterialTheme.typography.titleMedium)

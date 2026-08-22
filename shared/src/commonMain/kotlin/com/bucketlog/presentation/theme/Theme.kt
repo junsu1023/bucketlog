@@ -25,14 +25,18 @@ val LocalExtraColors = staticCompositionLocalOf { LightExtras }
 
 private val LightColors = lightColorScheme(
     primary = BucketLogColors.LightAccent,
-    onPrimary = Color.White,
+    onPrimary = BucketLogColors.OnAccent,
     primaryContainer = BucketLogColors.LightAccent,
-    onPrimaryContainer = Color.White,
+    onPrimaryContainer = BucketLogColors.OnAccent,
+    // secondaryContainer는 커스터마이징하지 않으면 Material 기본(보라 계열)로 남아 FilterChip
+    // 선택 상태가 이 앱의 톤과 어긋난다 — 칩이 많은 화면(목표 만들기, 온보딩)까지 한 번에 잡아준다.
+    secondaryContainer = BucketLogColors.LightAccent,
+    onSecondaryContainer = BucketLogColors.OnAccent,
     background = BucketLogColors.LightBackground,
     onBackground = BucketLogColors.LightOnSurface,
     surface = BucketLogColors.LightSurface,
     onSurface = BucketLogColors.LightOnSurface,
-    surfaceVariant = BucketLogColors.LightSurface,
+    surfaceVariant = BucketLogColors.LightSurfaceContainer,
     onSurfaceVariant = BucketLogColors.LightOnSurfaceVariant,
     tertiary = BucketLogColors.LightCompleted,
     onTertiary = Color.White,
@@ -42,14 +46,16 @@ private val LightColors = lightColorScheme(
 
 private val DarkColors = darkColorScheme(
     primary = BucketLogColors.DarkAccent,
-    onPrimary = Color.Black,
+    onPrimary = BucketLogColors.OnAccent,
     primaryContainer = BucketLogColors.DarkAccent,
-    onPrimaryContainer = Color.Black,
+    onPrimaryContainer = BucketLogColors.OnAccent,
+    secondaryContainer = BucketLogColors.DarkAccent,
+    onSecondaryContainer = BucketLogColors.OnAccent,
     background = BucketLogColors.DarkBackground,
     onBackground = BucketLogColors.DarkOnSurface,
     surface = BucketLogColors.DarkSurface,
     onSurface = BucketLogColors.DarkOnSurface,
-    surfaceVariant = BucketLogColors.DarkSurface,
+    surfaceVariant = BucketLogColors.DarkSurfaceContainer,
     onSurfaceVariant = BucketLogColors.DarkOnSurfaceVariant,
     tertiary = BucketLogColors.DarkCompleted,
     onTertiary = Color.Black,
@@ -66,7 +72,7 @@ fun BucketLogTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composa
     CompositionLocalProvider(LocalExtraColors provides if (darkTheme) DarkExtras else LightExtras) {
         MaterialTheme(
             colorScheme = if (darkTheme) DarkColors else LightColors,
-            typography = BucketLogTypography,
+            typography = bucketLogTypography(),
             content = content,
         )
     }
