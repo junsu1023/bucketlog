@@ -253,7 +253,7 @@ private fun ThrowbackBannerCard(banner: ThrowbackBanner, onClick: () -> Unit) {
         ThrowbackKind.MONTH_AGO -> stringResource(Res.string.throwback_month_ago, banner.goalTitle)
     }
     Card(
-        colors = CardDefaults.cardColors(containerColor = LocalExtraColors.current.bannerCard),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         shape = RoundedCornerShape(BucketLogSpacing.CardRadius),
         modifier = Modifier
             .fillMaxWidth()
@@ -330,6 +330,7 @@ private fun GoalCard(
     val goal = overview.goal
     val hasPhoto = overview.recentPhotoPaths.isNotEmpty()
     Card(
+        colors = CardDefaults.cardColors(containerColor = LocalExtraColors.current.goalCard),
         shape = RoundedCornerShape(BucketLogSpacing.CardRadius),
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
     ) {

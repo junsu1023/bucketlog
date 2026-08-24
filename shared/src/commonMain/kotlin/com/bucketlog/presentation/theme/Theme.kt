@@ -10,18 +10,18 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 /** docs/DESIGN.md §4 완료/접어둠 색상은 Material 표준 롤에 없어 CompositionLocal로 별도 노출한다. */
-data class ExtraColors(val completed: Color, val archived: Color, val bannerCard: Color)
+data class ExtraColors(val completed: Color, val archived: Color, val goalCard: Color)
 
 private val LightExtras = ExtraColors(
     completed = BucketLogColors.LightCompleted,
     archived = BucketLogColors.LightArchived,
-    bannerCard = BucketLogColors.LightBannerCard,
+    goalCard = BucketLogColors.LightGoalCard,
 )
 private val DarkExtras = ExtraColors(
     completed = BucketLogColors.DarkCompleted,
     archived = BucketLogColors.DarkArchived,
     // 사용자 지적은 라이트 모드 흰 배경 한정이라 다크는 기존 surfaceContainer 톤을 그대로 쓴다.
-    bannerCard = BucketLogColors.DarkSurfaceContainer,
+    goalCard = BucketLogColors.DarkSurfaceContainer,
 )
 
 val LocalExtraColors = staticCompositionLocalOf { LightExtras }
