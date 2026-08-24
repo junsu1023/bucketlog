@@ -18,7 +18,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Edit
@@ -50,8 +52,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.bucketlog.presentation.theme.BucketLogSpacing
+import com.bucketlog.presentation.theme.LocalExtraColors
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.cancel
 import bucketlog.shared.generated.resources.check_in_placeholder
@@ -71,6 +75,8 @@ import bucketlog.shared.generated.resources.relative_yesterday
 import bucketlog.shared.generated.resources.throwback_month_ago
 import bucketlog.shared.generated.resources.throwback_year_ago
 import bucketlog.shared.generated.resources.year_chip
+import bucketlog.shared.generated.resources.year_dropdown_previous
+import bucketlog.shared.generated.resources.year_picker_dialog_title
 import coil3.compose.AsyncImage
 import com.bucketlog.domain.model.Goal
 import com.bucketlog.domain.model.GoalStatus
@@ -117,6 +123,7 @@ private fun HomeContent(
                 title = {
                     YearDropdown(
                         selected = state.yearFilter,
+                        thisYear = state.thisYear,
                         availableYears = state.availableYears,
                         onSelect = { onIntent(HomeIntent.SelectYearFilter(it)) },
                     )
@@ -172,10 +179,12 @@ private fun HomeContent(
 @Composable
 private fun YearDropdown(
     selected: BucketYearFilter,
+    thisYear: Int,
     availableYears: List<Int>,
     onSelect: (BucketYearFilter) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var showPastYearDialog by remember { mutableStateOf(false) }
     val label = when (selected) {
         is BucketYearFilter.Year -> stringResource(Res.string.year_chip, selected.year)
         BucketYearFilter.Someday -> stringResource(Res.string.goal_bucket_someday)
@@ -188,18 +197,51 @@ private fun YearDropdown(
             Text(text = label, style = MaterialTheme.typography.headlineSmall)
             Icon(Icons.Outlined.ArrowDropDown, contentDescription = null)
         }
+        // 드롭다운엔 현재 연도/이전/언젠가 3개만 두고, "이전"을 고르면 다이얼로그에서 특정 연도를
+        // 고르게 한다 — 연도가 늘어날수록 드롭다운이 한없이 길어지는 걸 막는다.
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            availableYears.forEach { year ->
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.year_chip, year)) },
-                    onClick = { onSelect(BucketYearFilter.Year(year)); expanded = false },
-                )
-            }
+            DropdownMenuItem(
+                text = { Text(stringResource(Res.string.year_chip, thisYear)) },
+                onClick = { onSelect(BucketYearFilter.Year(thisYear)); expanded = false },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(Res.string.year_dropdown_previous)) },
+                onClick = { expanded = false; showPastYearDialog = true },
+            )
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.goal_bucket_someday)) },
                 onClick = { onSelect(BucketYearFilter.Someday); expanded = false },
             )
         }
+    }
+
+    if (showPastYearDialog) {
+        AlertDialog(
+            onDismissRequest = { showPastYearDialog = false },
+            title = { Text(stringResource(Res.string.year_picker_dialog_title)) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    availableYears.filter { it != thisYear }.forEach { year ->
+                        TextButton(
+                            onClick = {
+                                onSelect(BucketYearFilter.Year(year))
+                                showPastYearDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.year_chip, year),
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Start,
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showPastYearDialog = false }) { Text(stringResource(Res.string.cancel)) }
+            },
+        )
     }
 }
 
@@ -211,7 +253,7 @@ private fun ThrowbackBannerCard(banner: ThrowbackBanner, onClick: () -> Unit) {
         ThrowbackKind.MONTH_AGO -> stringResource(Res.string.throwback_month_ago, banner.goalTitle)
     }
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(containerColor = LocalExtraColors.current.bannerCard),
         shape = RoundedCornerShape(BucketLogSpacing.CardRadius),
         modifier = Modifier
             .fillMaxWidth()

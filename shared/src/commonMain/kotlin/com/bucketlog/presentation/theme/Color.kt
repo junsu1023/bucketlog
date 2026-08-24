@@ -26,6 +26,8 @@ object BucketLogColors {
     val LightSurfaceContainerLow = Color(0xFFFAF8F4)
     val LightSurfaceContainerHigh = Color(0xFFEFEBE4)
     val LightSurfaceContainerHighest = Color(0xFFFFFFFF)
+    /** H-07 작년 오늘 배너 전용 배경 — 사용자 지정 톤(순백보다 따뜻하게). */
+    val LightBannerCard = Color(0xFFFFF8E8)
     val LightAccent = Color(0xFFD6A441)
     val LightCompleted = Color(0xFF6B7F4D)
     val LightArchived = Color(0xFFB3B3AD)

@@ -4,6 +4,7 @@ import com.bucketlog.domain.usecase.GoalOverview
 
 data class HomeUiState(
     val yearFilter: BucketYearFilter,
+    val thisYear: Int = 0,
     val availableYears: List<Int> = emptyList(),
     val overviews: List<GoalOverview> = emptyList(),
     val summaryTotal: Int = 0,

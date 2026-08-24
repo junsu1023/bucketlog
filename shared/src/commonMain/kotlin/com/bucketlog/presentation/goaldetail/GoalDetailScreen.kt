@@ -354,7 +354,7 @@ private fun CategoryBadgeRow(goal: Goal) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant,
         shape = MaterialTheme.shapes.small,
-        modifier = Modifier.padding(start = 16.dp, top = 8.dp),
+        modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
     ) {
         Text(
             text = stringResource(goal.category.labelRes()),

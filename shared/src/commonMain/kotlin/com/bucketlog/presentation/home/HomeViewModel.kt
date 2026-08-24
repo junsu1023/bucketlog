@@ -68,6 +68,7 @@ class HomeViewModel(
         }
         HomeUiState(
             yearFilter = filter,
+            thisYear = thisYear,
             availableYears = availableYears,
             overviews = filteredOverviews,
             summaryTotal = inBucket.size,
@@ -84,7 +85,7 @@ class HomeViewModel(
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
-        HomeUiState(yearFilter = BucketYearFilter.Year(thisYear)),
+        HomeUiState(yearFilter = BucketYearFilter.Year(thisYear), thisYear = thisYear),
     )
 
     fun onIntent(intent: HomeIntent) {
