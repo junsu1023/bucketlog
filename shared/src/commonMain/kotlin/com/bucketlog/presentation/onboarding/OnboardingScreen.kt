@@ -9,12 +9,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -23,8 +29,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.bucketlog.presentation.theme.BucketLogSpacing
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.cancel
 import bucketlog.shared.generated.resources.error_generic
@@ -143,11 +151,35 @@ private fun CategoryPresetSection(
         presets.forEach { preset ->
             val title = stringResource(preset.titleRes)
             val added = title in addedTitles
-            FilterChip(
-                selected = added,
-                onClick = { onPresetClick(title) },
-                label = { Text(if (added) "$title · ${stringResource(Res.string.onboarding_added)}" else title) },
+            PresetCard(title = title, added = added, onClick = { onPresetClick(title) })
+        }
+    }
+}
+
+/** 온보딩 프리셋 — 담긴 것은 배지가 아니라 카드 자체가 강조색으로 바뀌고 체크 아이콘이 붙는다. */
+@Composable
+private fun PresetCard(title: String, added: Boolean, onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        shape = RoundedCornerShape(BucketLogSpacing.CardRadius),
+        colors = if (added) {
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
             )
+        } else {
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        },
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = BucketLogSpacing.md, vertical = BucketLogSpacing.sm),
+            horizontalArrangement = Arrangement.spacedBy(BucketLogSpacing.xs),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (added) {
+                Icon(Icons.Filled.Check, contentDescription = stringResource(Res.string.onboarding_added), modifier = Modifier.size(16.dp))
+            }
+            Text(text = title, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

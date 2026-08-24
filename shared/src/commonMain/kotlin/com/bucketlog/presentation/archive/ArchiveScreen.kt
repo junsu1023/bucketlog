@@ -20,8 +20,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -44,6 +42,9 @@ import androidx.compose.ui.unit.dp
 import com.bucketlog.presentation.theme.BucketLogSpacing
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.archive_reason_label
+import bucketlog.shared.generated.resources.archived_date_label
+import bucketlog.shared.generated.resources.archived_view_button
+import bucketlog.shared.generated.resources.completed_grid_caption
 import bucketlog.shared.generated.resources.archive_title
 import bucketlog.shared.generated.resources.back
 import bucketlog.shared.generated.resources.empty_archived
@@ -67,6 +68,7 @@ import com.bucketlog.domain.repository.MonthlyEntry
 import com.bucketlog.domain.usecase.GoalOverview
 import com.bucketlog.presentation.common.MonthKey
 import com.bucketlog.presentation.common.labelRes
+import com.bucketlog.presentation.theme.MonoLabel
 import kotlin.time.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -77,8 +79,8 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ArchiveScreen(
     viewModel: ArchiveViewModel,
-    onBack: () -> Unit,
     onGoalClick: (String) -> Unit,
+    onBack: (() -> Unit)? = null,
     targetMonth: MonthKey? = null,
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -96,14 +98,17 @@ fun ArchiveScreen(
 private fun ArchiveContent(
     state: ArchiveUiState,
     onIntent: (ArchiveIntent) -> Unit,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onGoalClick: (String) -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(Res.string.archive_title)) },
-                navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(Res.string.back)) } },
+                navigationIcon = {
+                    // 하단 탭으로 진입했을 때는(onBack == null) 뒤로가기가 필요 없다.
+                    onBack?.let { back -> TextButton(onClick = back) { Text(stringResource(Res.string.back)) } }
+                },
             )
         },
     ) { padding ->
@@ -199,36 +204,40 @@ private fun CompletedGrid(overviews: List<GoalOverview>, onGoalClick: (String) -
     }
 }
 
+/** docs/DESIGN.md §5.7 — 사진 위에 텍스트를 얹지 않고, 사진첩처럼 사진 아래에 캡션을 둔다. */
 @Composable
 private fun CompletedGridCell(overview: GoalOverview, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(BucketLogSpacing.PhotoGridRadius))
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.BottomStart,
-    ) {
-        val coverPath = overview.recentPhotoPaths.firstOrNull()
-        if (coverPath != null) {
-            AsyncImage(
-                model = coverPath,
-                contentDescription = overview.goal.title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-            )
-        } else {
-            Box(
-                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant),
-            )
+    Column(modifier = Modifier.clickable(onClick = onClick)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .clip(RoundedCornerShape(BucketLogSpacing.PhotoGridRadius)),
+        ) {
+            val coverPath = overview.recentPhotoPaths.firstOrNull()
+            if (coverPath != null) {
+                AsyncImage(
+                    model = coverPath,
+                    contentDescription = overview.goal.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
+            } else {
+                Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant))
+            }
         }
-        Box(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))) {
+        Text(
+            text = overview.goal.title,
+            style = MaterialTheme.typography.bodyMedium,
+            maxLines = 1,
+            modifier = Modifier.padding(top = BucketLogSpacing.xs),
+        )
+        val completedYear = overview.goal.completedAt?.toLocalDateTime(TimeZone.currentSystemDefault())?.date?.year
+        if (completedYear != null) {
             Text(
-                text = overview.goal.title,
-                style = MaterialTheme.typography.labelMedium,
-                // 스크림이 라이트/다크 모두 항상 어둡게 깔리므로 텍스트는 테마와 무관하게 흰색 고정.
-                color = Color.White,
-                maxLines = 1,
-                modifier = Modifier.padding(8.dp),
+                text = stringResource(Res.string.completed_grid_caption, completedYear),
+                style = MaterialTheme.typography.bodySmall.merge(MonoLabel()),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -260,20 +269,12 @@ private fun ArchivedRow(overview: GoalOverview, onClick: () -> Unit) {
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = goal.title, style = MaterialTheme.typography.titleMedium)
-            AssistChip(
-                onClick = {},
-                enabled = false,
-                label = { Text(stringResource(goal.category.labelRes())) },
-                shape = RoundedCornerShape(BucketLogSpacing.ChipRadius),
-                border = null,
-                colors = AssistChipDefaults.assistChipColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                ),
-                modifier = Modifier.padding(top = 4.dp),
+            Text(
+                text = stringResource(goal.category.labelRes()),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Text(text = goal.title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 4.dp))
             goal.archiveReason?.takeIf { it.isNotBlank() }?.let { reason ->
                 Text(
                     text = "${stringResource(Res.string.archive_reason_label)} $reason",
@@ -281,6 +282,20 @@ private fun ArchivedRow(overview: GoalOverview, onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp),
                 )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                goal.archivedAt?.let {
+                    Text(
+                        text = "${stringResource(Res.string.archived_date_label)} ${it.toLocalDateTime(TimeZone.currentSystemDefault()).date}",
+                        style = MaterialTheme.typography.bodySmall.merge(MonoLabel()),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                TextButton(onClick = onClick) { Text(stringResource(Res.string.archived_view_button)) }
             }
         }
     }

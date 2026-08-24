@@ -11,8 +11,32 @@
     <string name="filter_all">전체</string>
     <string name="filter_stats">통계</string>
     <string name="add_goal_fab">목표 추가하기</string>
+    <string name="home_nav_button">홈</string>
     <string name="archive_nav_button">보관함</string>
+    <string name="search_nav_button">검색</string>
     <string name="settings_nav_button">설정</string>
+
+    <string name="home_notifications_button">알림 설정으로 이동</string>
+
+    <!-- 목표 상세 탭 -->
+    <string name="tab_records">기록</string>
+    <string name="tab_info">정보</string>
+    <string name="info_note_label">메모</string>
+    <string name="info_no_note">메모가 없어요.</string>
+    <string name="info_category_label">카테고리</string>
+    <string name="info_type_label">유형</string>
+    <string name="info_target_count_label">목표 횟수</string>
+    <string name="info_bucket_year_label">버킷 연도</string>
+    <string name="info_created_label">만든 날짜</string>
+    <string name="info_archive_reason_label">접어둔 이유</string>
+    <string name="completed_grid_caption">완료 · %1$d</string>
+    <string name="archived_view_button">보기</string>
+    <string name="archived_date_label">정리한 날짜</string>
+
+    <!-- 검색 -->
+    <string name="search_placeholder">목표 제목으로 찾아보세요</string>
+    <string name="search_empty_query">찾고 싶은 목표 제목을 입력해보세요.</string>
+    <string name="search_empty_result">일치하는 목표가 없어요.</string>
 
     <string name="empty_in_progress">올해 하고 싶은 걸 하나 적어볼까요?</string>
     <string name="empty_completed">완료한 것들이 여기 모여요.</string>
@@ -149,6 +173,7 @@
     <string name="settings_theme_system">시스템 설정</string>
     <string name="settings_theme_light">라이트</string>
     <string name="settings_theme_dark">다크</string>
+    <string name="settings_notifications_section">알림</string>
     <string name="settings_all_notifications">전체 알림</string>
     <string name="settings_nudge">오래된 목표 살펴보기</string>
     <string name="settings_notification_hour">알림 받을 시각</string>

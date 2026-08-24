@@ -8,6 +8,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CloudUpload
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -15,6 +20,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -28,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.back
@@ -46,6 +53,7 @@ import bucketlog.shared.generated.resources.reset_confirm_body
 import bucketlog.shared.generated.resources.reset_confirm_title
 import bucketlog.shared.generated.resources.reset_result_message
 import bucketlog.shared.generated.resources.settings_all_notifications
+import bucketlog.shared.generated.resources.settings_notifications_section
 import bucketlog.shared.generated.resources.settings_backup_export
 import bucketlog.shared.generated.resources.settings_backup_restore
 import bucketlog.shared.generated.resources.settings_backup_section
@@ -68,7 +76,7 @@ private val HOUR_OPTIONS = listOf(9, 12, 18, 20)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
+fun SettingsScreen(viewModel: SettingsViewModel, onBack: (() -> Unit)? = null) {
     val state by viewModel.uiState.collectAsState()
 
     val exportLauncher = rememberBackupExporter { success ->
@@ -95,18 +103,16 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(Res.string.settings_title)) },
-                navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(Res.string.back)) } },
+                navigationIcon = {
+                    onBack?.let { back -> TextButton(onClick = back) { Text(stringResource(Res.string.back)) } }
+                },
             )
         },
     ) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
         ) {
-            Text(
-                text = stringResource(Res.string.settings_theme_section),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(bottom = 8.dp),
-            )
+            SectionHeader(icon = Icons.Outlined.DarkMode, label = stringResource(Res.string.settings_theme_section))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = state.themeMode == ThemeMode.SYSTEM,
@@ -127,6 +133,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
 
+            SectionHeader(icon = Icons.Outlined.Notifications, label = stringResource(Res.string.settings_notifications_section))
             SettingsRow(
                 label = stringResource(Res.string.settings_all_notifications),
                 checked = state.notificationsEnabled,
@@ -157,10 +164,10 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
 
-            Text(
-                text = stringResource(Res.string.settings_backup_section),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(bottom = 12.dp),
+            SectionHeader(
+                icon = Icons.Outlined.CloudUpload,
+                label = stringResource(Res.string.settings_backup_section),
+                modifier = Modifier.padding(bottom = 4.dp),
             )
             Button(
                 onClick = { viewModel.onIntent(SettingsIntent.ExportBackup) },
@@ -184,10 +191,10 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
 
-            Text(
-                text = stringResource(Res.string.settings_data_section),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(bottom = 12.dp),
+            SectionHeader(
+                icon = Icons.Outlined.Storage,
+                label = stringResource(Res.string.settings_data_section),
+                modifier = Modifier.padding(bottom = 4.dp),
             )
             OutlinedButton(
                 onClick = { viewModel.onIntent(SettingsIntent.RequestReset) },
@@ -274,6 +281,19 @@ private fun backupResultText(result: BackupResultMessage): String = when (result
         stringResource(Res.string.backup_result_restore_success, result.goalCount, result.entryCount)
     BackupResultMessage.RestoreSchemaTooNew -> stringResource(Res.string.backup_result_restore_schema_too_new)
     BackupResultMessage.RestoreFailed -> stringResource(Res.string.backup_result_restore_failed)
+}
+
+/** docs/DESIGN.md — 설정 각 섹션 제목 앞에 아이콘을 둔 리스트형 헤더. */
+@Composable
+private fun SectionHeader(icon: ImageVector, label: String, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text = label, style = MaterialTheme.typography.labelLarge)
+    }
 }
 
 @Composable

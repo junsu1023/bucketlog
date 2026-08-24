@@ -17,15 +17,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowDropDown
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -35,13 +41,16 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.bucketlog.presentation.theme.BucketLogSpacing
 import bucketlog.shared.generated.resources.Res
-import bucketlog.shared.generated.resources.archive_nav_button
 import bucketlog.shared.generated.resources.cancel
 import bucketlog.shared.generated.resources.check_in_placeholder
 import bucketlog.shared.generated.resources.check_in_save
@@ -51,17 +60,17 @@ import bucketlog.shared.generated.resources.error_generic
 import bucketlog.shared.generated.resources.goal_bucket_someday
 import bucketlog.shared.generated.resources.home_summary_someday
 import bucketlog.shared.generated.resources.home_summary_year
-import bucketlog.shared.generated.resources.home_title
+import bucketlog.shared.generated.resources.home_notifications_button
 import bucketlog.shared.generated.resources.last_recorded
 import bucketlog.shared.generated.resources.progress_count
 import bucketlog.shared.generated.resources.relative_days_ago
 import bucketlog.shared.generated.resources.relative_today
 import bucketlog.shared.generated.resources.relative_yesterday
-import bucketlog.shared.generated.resources.settings_nav_button
 import bucketlog.shared.generated.resources.throwback_month_ago
 import bucketlog.shared.generated.resources.throwback_year_ago
 import bucketlog.shared.generated.resources.year_chip
 import coil3.compose.AsyncImage
+import com.bucketlog.domain.model.Goal
 import com.bucketlog.domain.model.GoalStatus
 import com.bucketlog.domain.model.GoalType
 import com.bucketlog.domain.usecase.GoalOverview
@@ -79,19 +88,15 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
-    onAddGoalClick: () -> Unit,
     onGoalClick: (String) -> Unit,
-    onArchiveClick: () -> Unit,
-    onSettingsClick: () -> Unit,
+    onNotificationsClick: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
     HomeContent(
         state = state,
         onIntent = viewModel::onIntent,
-        onAddGoalClick = onAddGoalClick,
         onGoalClick = onGoalClick,
-        onArchiveClick = onArchiveClick,
-        onSettingsClick = onSettingsClick,
+        onNotificationsClick = onNotificationsClick,
     )
 }
 
@@ -100,36 +105,32 @@ fun HomeScreen(
 private fun HomeContent(
     state: HomeUiState,
     onIntent: (HomeIntent) -> Unit,
-    onAddGoalClick: () -> Unit,
     onGoalClick: (String) -> Unit,
-    onArchiveClick: () -> Unit,
-    onSettingsClick: () -> Unit,
+    onNotificationsClick: () -> Unit,
 ) {
     Scaffold(
+        // 목표 추가는 하단 내비게이션의 가운데 "+"가 맡는다(App.kt의 BottomNav 참고).
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.home_title)) },
+                title = {
+                    YearDropdown(
+                        selected = state.yearFilter,
+                        availableYears = state.availableYears,
+                        onSelect = { onIntent(HomeIntent.SelectYearFilter(it)) },
+                    )
+                },
                 actions = {
-                    TextButton(onClick = onSettingsClick) { Text(stringResource(Res.string.settings_nav_button)) }
-                    TextButton(onClick = onArchiveClick) { Text(stringResource(Res.string.archive_nav_button)) }
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(Icons.Outlined.Notifications, contentDescription = stringResource(Res.string.home_notifications_button))
+                    }
                 },
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onAddGoalClick) {
-                Text(text = "+", style = MaterialTheme.typography.headlineSmall)
-            }
         },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             state.throwback?.let { banner ->
                 ThrowbackBannerCard(banner = banner, onClick = { onGoalClick(banner.goalId) })
             }
-            YearFilterRow(
-                selected = state.yearFilter,
-                availableYears = state.availableYears,
-                onSelect = { onIntent(HomeIntent.SelectYearFilter(it)) },
-            )
             SummaryHeader(state.yearFilter, state.summaryTotal, state.summaryCompleted)
 
             if (state.overviews.isEmpty() && !state.isLoading) {
@@ -158,44 +159,38 @@ private fun HomeContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** 홈 상단바 타이틀 자리 — 연도 선택을 드롭다운 하나로 압축한다("2026년 ⌄"). */
 @Composable
-private fun YearFilterRow(
+private fun YearDropdown(
     selected: BucketYearFilter,
     availableYears: List<Int>,
     onSelect: (BucketYearFilter) -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        availableYears.forEach { year ->
-            val filter = BucketYearFilter.Year(year)
-            FilterChip(
-                selected = selected == filter,
-                onClick = { onSelect(filter) },
-                label = { Text(stringResource(Res.string.year_chip, year)) },
-                shape = RoundedCornerShape(BucketLogSpacing.ChipRadius),
-                border = null,
-                colors = FilterChipDefaults.filterChipColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                ),
+    var expanded by remember { mutableStateOf(false) }
+    val label = when (selected) {
+        is BucketYearFilter.Year -> stringResource(Res.string.year_chip, selected.year)
+        BucketYearFilter.Someday -> stringResource(Res.string.goal_bucket_someday)
+    }
+    Box {
+        Row(
+            modifier = Modifier.clickable { expanded = true },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(text = label, style = MaterialTheme.typography.headlineSmall)
+            Icon(Icons.Outlined.ArrowDropDown, contentDescription = null)
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            availableYears.forEach { year ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.year_chip, year)) },
+                    onClick = { onSelect(BucketYearFilter.Year(year)); expanded = false },
+                )
+            }
+            DropdownMenuItem(
+                text = { Text(stringResource(Res.string.goal_bucket_someday)) },
+                onClick = { onSelect(BucketYearFilter.Someday); expanded = false },
             )
         }
-        FilterChip(
-            selected = selected == BucketYearFilter.Someday,
-            onClick = { onSelect(BucketYearFilter.Someday) },
-            label = { Text(stringResource(Res.string.goal_bucket_someday)) },
-            shape = RoundedCornerShape(BucketLogSpacing.ChipRadius),
-            border = null,
-            colors = FilterChipDefaults.filterChipColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                selectedContainerColor = MaterialTheme.colorScheme.primary,
-                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-            ),
-        )
     }
 }
 
@@ -278,35 +273,46 @@ private fun GoalCard(
     onClick: () -> Unit,
 ) {
     val goal = overview.goal
+    val hasPhoto = overview.recentPhotoPaths.isNotEmpty()
     Card(
         shape = RoundedCornerShape(BucketLogSpacing.CardRadius),
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
     ) {
-        if (overview.recentPhotoPaths.isNotEmpty()) {
-            if (overview.recentPhotoPaths.size == 1) {
-                AsyncImage(
-                    model = overview.recentPhotoPaths.first(),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
-                    contentScale = ContentScale.Crop,
-                )
-            } else {
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
-                    horizontalArrangement = Arrangement.spacedBy(2.dp),
-                ) {
-                    items(overview.recentPhotoPaths) { path ->
-                        AsyncImage(
-                            model = path,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
-                            contentScale = ContentScale.Crop,
-                        )
+        if (hasPhoto) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                if (overview.recentPhotoPaths.size == 1) {
+                    AsyncImage(
+                        model = overview.recentPhotoPaths.first(),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+                        contentScale = ContentScale.Crop,
+                    )
+                } else {
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        items(overview.recentPhotoPaths) { path ->
+                            AsyncImage(
+                                model = path,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+                                contentScale = ContentScale.Crop,
+                            )
+                        }
                     }
                 }
+                // 사진 위에 얹는 카테고리 배지 — 사진이 없을 땐 아래(제목 위)에 인라인으로 대신 보여준다.
+                CategoryBadge(
+                    goal = goal,
+                    modifier = Modifier.align(Alignment.TopStart).padding(BucketLogSpacing.sm),
+                )
             }
         }
         Column(modifier = Modifier.padding(BucketLogSpacing.lg)) {
+            if (!hasPhoto) {
+                CategoryBadge(goal = goal, modifier = Modifier.padding(bottom = BucketLogSpacing.xs))
+            }
             Text(text = goal.title, style = MaterialTheme.typography.titleMedium)
 
             Row(
@@ -314,18 +320,6 @@ private fun GoalCard(
                 horizontalArrangement = Arrangement.spacedBy(BucketLogSpacing.sm),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                AssistChip(
-                    onClick = {},
-                    enabled = false,
-                    label = { Text(stringResource(goal.category.labelRes())) },
-                    shape = RoundedCornerShape(BucketLogSpacing.ChipRadius),
-                    border = null,
-                    colors = AssistChipDefaults.assistChipColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
-                )
                 overview.lastRecordedAt?.let {
                     Text(
                         text = stringResource(Res.string.last_recorded, relativeDayLabel(it)),
@@ -353,12 +347,28 @@ private fun GoalCard(
                         modifier = Modifier.weight(1f),
                         singleLine = true,
                     )
-                    TextButton(onClick = { onIntent(HomeIntent.SubmitCheckIn(goal.id)) }) {
-                        Text(stringResource(Res.string.check_in_save))
+                    IconButton(onClick = { onIntent(HomeIntent.SubmitCheckIn(goal.id)) }) {
+                        Icon(Icons.Outlined.Edit, contentDescription = stringResource(Res.string.check_in_save))
                     }
                 }
             }
         }
+    }
+}
+
+/** 카테고리 배지 — 사진이 있으면 사진 위에 얹는 작은 캡슐, 없으면 제목 위 인라인 텍스트로 대신 쓴다. */
+@Composable
+private fun CategoryBadge(goal: Goal, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .background(Color.Black.copy(alpha = 0.55f), RoundedCornerShape(BucketLogSpacing.ChipRadius))
+            .padding(horizontal = BucketLogSpacing.sm, vertical = BucketLogSpacing.xs),
+    ) {
+        Text(
+            text = stringResource(goal.category.labelRes()),
+            style = MaterialTheme.typography.labelMedium,
+            color = Color.White,
+        )
     }
 }
 

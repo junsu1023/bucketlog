@@ -1,6 +1,19 @@
 package com.bucketlog
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -8,20 +21,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import bucketlog.shared.generated.resources.Res
+import bucketlog.shared.generated.resources.add_goal_fab
+import bucketlog.shared.generated.resources.archive_nav_button
+import bucketlog.shared.generated.resources.home_nav_button
+import bucketlog.shared.generated.resources.search_nav_button
+import bucketlog.shared.generated.resources.settings_nav_button
 import com.bucketlog.platform.AppBackHandler
 import com.bucketlog.presentation.addgoal.AddGoalScreen
 import com.bucketlog.presentation.addgoal.AddGoalViewModel
 import com.bucketlog.presentation.archive.ArchiveScreen
+import com.bucketlog.presentation.common.MonthKey
 import com.bucketlog.presentation.goaldetail.GoalDetailScreen
 import com.bucketlog.presentation.home.HomeScreen
 import com.bucketlog.presentation.onboarding.OnboardingScreen
-import com.bucketlog.presentation.common.MonthKey
 import com.bucketlog.presentation.onboarding.OnboardingViewModel
+import com.bucketlog.presentation.search.SearchScreen
 import com.bucketlog.presentation.settings.SettingsScreen
 import com.bucketlog.presentation.theme.BucketLogTheme
 import com.bucketlog.presentation.theme.ThemeMode
 import com.bucketlog.presentation.theme.ThemeModeStore
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -31,15 +53,21 @@ private sealed interface Screen {
     data object Loading : Screen
     data object Onboarding : Screen
     data object Home : Screen
+    /** 하단 탭 중 하나 — MVP-SCOPE.md엔 없던 기능, 디자인 리뉴얼 때 추가(목표 제목 검색). */
+    data object Search : Screen
     /** [editingGoalId]가 있으면 수정 모드(G-05). [returnTo]는 저장/취소 후 돌아갈 화면. */
     data class AddGoal(val editingGoalId: String? = null, val returnTo: Screen = Home) : Screen
     /** [targetMonth]가 있으면 N-01 딥링크로 진입한 것 — "이번 달" 탭이 그 달을 보여준다. */
     data class Archive(val targetMonth: MonthKey? = null) : Screen
     data object Settings : Screen
-    /** [from]으로 돌아가야 뒤로가기가 진입 경로(홈/보관함)에 맞게 동작한다.
+    /** [from]으로 돌아가야 뒤로가기가 진입 경로(홈/보관함/검색)에 맞게 동작한다.
      *  [focusCheckIn]은 스마트 넛지 딥링크(focus=checkin)로 들어왔을 때만 true. */
     data class GoalDetail(val goalId: String, val from: Screen, val focusCheckIn: Boolean = false) : Screen
 }
+
+/** 홈/보관함/검색/설정 — 하단 탭으로 묶이는 화면들. 이 화면들 사이에는 "뒤로가기"가 없다. */
+private fun isBottomTab(screen: Screen) =
+    screen is Screen.Home || screen is Screen.Archive || screen is Screen.Search || screen is Screen.Settings
 
 @Composable
 @Preview
@@ -76,8 +104,9 @@ fun App() {
             DeepLinkHolder.consume()
         }
 
-        // 상세/추가/보관함/온보딩 화면에서는 시스템 뒤로가기가 앱 종료가 아니라 이전 화면으로 돌아가야 한다.
-        AppBackHandler(enabled = screen != Screen.Home && screen != Screen.Loading) {
+        // 하단 탭 화면(홈/보관함/검색/설정)에서는 시스템 뒤로가기가 앱 종료로 이어져야 한다 —
+        // 서로 형제 화면이라 "돌아갈 곳"이 없다. 상세/추가/온보딩에서만 이전 화면으로 되돌아간다.
+        AppBackHandler(enabled = !isBottomTab(screen) && screen != Screen.Loading) {
             screen = when (val s = screen) {
                 is Screen.GoalDetail -> s.from
                 is Screen.AddGoal -> s.returnTo
@@ -95,32 +124,10 @@ fun App() {
                 },
                 onDone = { screen = Screen.Home },
             )
-            Screen.Home -> HomeScreen(
-                viewModel = koinViewModel(),
-                onAddGoalClick = {
-                    // koinViewModel()이 화면 재진입마다 같은 인스턴스를 재사용하므로
-                    // 진입 직전에 폼을 초기화한다 (AddGoalViewModel.resetForm 참고).
-                    addGoalViewModel.resetForm()
-                    screen = Screen.AddGoal()
-                },
-                onGoalClick = { goalId -> screen = Screen.GoalDetail(goalId, from = Screen.Home) },
-                onArchiveClick = { screen = Screen.Archive() },
-                onSettingsClick = { screen = Screen.Settings },
-            )
             is Screen.AddGoal -> AddGoalScreen(
                 viewModel = addGoalViewModel,
                 onSaved = { screen = current.returnTo },
                 onCancel = { screen = current.returnTo },
-            )
-            is Screen.Archive -> ArchiveScreen(
-                viewModel = koinViewModel(),
-                onBack = { screen = Screen.Home },
-                onGoalClick = { goalId -> screen = Screen.GoalDetail(goalId, from = current) },
-                targetMonth = current.targetMonth,
-            )
-            Screen.Settings -> SettingsScreen(
-                viewModel = koinViewModel(),
-                onBack = { screen = Screen.Home },
             )
             is Screen.GoalDetail -> GoalDetailScreen(
                 // goalId가 바뀌면(다른 목표 상세로 재진입) key로 새 ViewModel 인스턴스를 만든다.
@@ -132,6 +139,76 @@ fun App() {
                 },
                 focusCheckIn = current.focusCheckIn,
             )
+            else -> Scaffold(
+                bottomBar = {
+                    BottomNav(
+                        current = current,
+                        onSelect = { tab -> screen = tab },
+                        onAddGoal = {
+                            // koinViewModel()이 화면 재진입마다 같은 인스턴스를 재사용하므로
+                            // 진입 직전에 폼을 초기화한다 (AddGoalViewModel.resetForm 참고).
+                            addGoalViewModel.resetForm()
+                            screen = Screen.AddGoal(returnTo = current)
+                        },
+                    )
+                },
+            ) { padding ->
+                Box(modifier = Modifier.padding(padding)) {
+                    when (current) {
+                        Screen.Home -> HomeScreen(
+                            viewModel = koinViewModel(),
+                            onGoalClick = { goalId -> screen = Screen.GoalDetail(goalId, from = Screen.Home) },
+                            onNotificationsClick = { screen = Screen.Settings },
+                        )
+                        is Screen.Archive -> ArchiveScreen(
+                            viewModel = koinViewModel(),
+                            onGoalClick = { goalId -> screen = Screen.GoalDetail(goalId, from = current) },
+                            targetMonth = current.targetMonth,
+                        )
+                        Screen.Search -> SearchScreen(
+                            viewModel = koinViewModel(),
+                            onGoalClick = { goalId -> screen = Screen.GoalDetail(goalId, from = Screen.Search) },
+                        )
+                        Screen.Settings -> SettingsScreen(viewModel = koinViewModel())
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun BottomNav(current: Screen, onSelect: (Screen) -> Unit, onAddGoal: () -> Unit) {
+    NavigationBar {
+        NavigationBarItem(
+            selected = current is Screen.Home,
+            onClick = { onSelect(Screen.Home) },
+            icon = { Icon(Icons.Outlined.Home, contentDescription = null) },
+            label = { Text(stringResource(Res.string.home_nav_button)) },
+        )
+        NavigationBarItem(
+            selected = current is Screen.Archive,
+            onClick = { onSelect(Screen.Archive()) },
+            icon = { Icon(Icons.Outlined.Folder, contentDescription = null) },
+            label = { Text(stringResource(Res.string.archive_nav_button)) },
+        )
+        NavigationBarItem(
+            selected = false,
+            onClick = onAddGoal,
+            icon = { Icon(Icons.Outlined.Add, contentDescription = stringResource(Res.string.add_goal_fab)) },
+            label = null,
+        )
+        NavigationBarItem(
+            selected = current is Screen.Search,
+            onClick = { onSelect(Screen.Search) },
+            icon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+            label = { Text(stringResource(Res.string.search_nav_button)) },
+        )
+        NavigationBarItem(
+            selected = current is Screen.Settings,
+            onClick = { onSelect(Screen.Settings) },
+            icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
+            label = { Text(stringResource(Res.string.settings_nav_button)) },
+        )
     }
 }

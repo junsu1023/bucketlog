@@ -28,6 +28,7 @@ import com.bucketlog.domain.usecase.RestoreGoalUseCase
 import com.bucketlog.domain.usecase.ScheduleGoalRemindersUseCase
 import com.bucketlog.domain.usecase.ScheduleMonthlyRecapUseCase
 import com.bucketlog.domain.usecase.ScheduleNudgeUseCase
+import com.bucketlog.domain.usecase.SearchGoalsUseCase
 import com.bucketlog.domain.usecase.UpdateEntryUseCase
 import com.bucketlog.notification.AppSettingsStore
 import com.bucketlog.notification.NotificationBudget
@@ -42,6 +43,7 @@ import com.bucketlog.presentation.archive.ArchiveViewModel
 import com.bucketlog.presentation.goaldetail.GoalDetailViewModel
 import com.bucketlog.presentation.home.HomeViewModel
 import com.bucketlog.presentation.onboarding.OnboardingViewModel
+import com.bucketlog.presentation.search.SearchViewModel
 import com.bucketlog.presentation.settings.SettingsViewModel
 import com.bucketlog.presentation.theme.ThemeModeStore
 import org.jetbrains.compose.resources.getString
@@ -111,12 +113,14 @@ val appModule = module {
     factory { ResetAllDataUseCase(get()) }
     factory { UpdateEntryUseCase(get()) }
     factory { DeleteEntryUseCase(get()) }
+    factory { SearchGoalsUseCase(get(), get()) }
 
     viewModelOf(::HomeViewModel)
     viewModelOf(::AddGoalViewModel)
     viewModelOf(::ArchiveViewModel)
     viewModelOf(::OnboardingViewModel)
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::SearchViewModel)
 
     // goalId는 화면 진입 시점의 런타임 파라미터라 viewModelOf(생성자 참조)로는 주입할 수 없다.
     viewModel { params ->
