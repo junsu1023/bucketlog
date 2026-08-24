@@ -26,10 +26,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.add_goal_fab
 import bucketlog.shared.generated.resources.archive_nav_button
+import bucketlog.shared.generated.resources.exit_double_back_message
 import bucketlog.shared.generated.resources.home_nav_button
 import bucketlog.shared.generated.resources.search_nav_button
 import bucketlog.shared.generated.resources.settings_nav_button
 import com.bucketlog.platform.AppBackHandler
+import com.bucketlog.platform.ExitOnDoubleBackHandler
 import com.bucketlog.presentation.addgoal.AddGoalScreen
 import com.bucketlog.presentation.addgoal.AddGoalViewModel
 import com.bucketlog.presentation.archive.ArchiveScreen
@@ -113,6 +115,8 @@ fun App() {
                 else -> Screen.Home
             }
         }
+        // 실수로 앱이 바로 꺼지는 걸 막기 위해 하단 탭에서는 뒤로가기를 두 번 눌러야 종료된다.
+        ExitOnDoubleBackHandler(enabled = isBottomTab(screen), message = stringResource(Res.string.exit_double_back_message))
 
         when (val current = screen) {
             Screen.Loading -> Unit

@@ -27,6 +27,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,6 +39,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -124,6 +126,7 @@ private fun HomeContent(
                         Icon(Icons.Outlined.Notifications, contentDescription = stringResource(Res.string.home_notifications_button))
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         },
     ) { padding ->
@@ -138,8 +141,14 @@ private fun HomeContent(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    // 마지막 카드가 하단 내비게이션 바로 아래 바짝 붙지 않도록 아래쪽만 더 넉넉히 둔다.
+                    contentPadding = PaddingValues(
+                        start = BucketLogSpacing.lg,
+                        end = BucketLogSpacing.lg,
+                        top = BucketLogSpacing.lg,
+                        bottom = BucketLogSpacing.xxl,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(BucketLogSpacing.md),
                 ) {
                     items(state.overviews, key = { it.goal.id }) { overview ->
                         GoalCard(
@@ -202,13 +211,17 @@ private fun ThrowbackBannerCard(banner: ThrowbackBanner, onClick: () -> Unit) {
         ThrowbackKind.MONTH_AGO -> stringResource(Res.string.throwback_month_ago, banner.goalTitle)
     }
     Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         shape = RoundedCornerShape(BucketLogSpacing.CardRadius),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).clickable(onClick = onClick),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = BucketLogSpacing.lg, vertical = BucketLogSpacing.sm)
+            .clickable(onClick = onClick),
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(BucketLogSpacing.lg),
         )
     }
 }
@@ -224,7 +237,7 @@ private fun SummaryHeader(filter: BucketYearFilter, total: Int, completed: Int) 
         text = text,
         style = MaterialTheme.typography.bodyMedium.merge(MonoLabel()),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        modifier = Modifier.padding(horizontal = BucketLogSpacing.lg, vertical = BucketLogSpacing.sm),
     )
 }
 

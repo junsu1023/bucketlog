@@ -29,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -109,6 +110,7 @@ private fun ArchiveContent(
                     // 하단 탭으로 진입했을 때는(onBack == null) 뒤로가기가 필요 없다.
                     onBack?.let { back -> TextButton(onClick = back) { Text(stringResource(Res.string.back)) } }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         },
     ) { padding ->

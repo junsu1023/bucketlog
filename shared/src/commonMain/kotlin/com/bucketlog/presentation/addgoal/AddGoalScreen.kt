@@ -21,6 +21,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -87,6 +88,7 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
                     Text(stringResource(if (isEditMode) Res.string.edit_goal_title else Res.string.add_goal_title))
                 },
                 navigationIcon = { TextButton(onClick = onCancel) { Text(stringResource(Res.string.cancel)) } },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         },
     ) { padding ->

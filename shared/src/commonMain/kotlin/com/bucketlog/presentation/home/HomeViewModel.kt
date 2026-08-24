@@ -51,7 +51,11 @@ class HomeViewModel(
     private val baseState: Flow<HomeUiState> = combine(
         allGoals, inProgressOverviews, yearFilter, checkInDrafts, hasError,
     ) { goals, overviews, filter, drafts, error ->
-        val availableYears = (goals.mapNotNull { it.bucketYear } + thisYear).distinct().sortedDescending()
+        // 추억 아카이브 앱이라 데이터가 없는 과거 연도도 항상 넘겨볼 수 있어야 한다 —
+        // 목표 데이터에 있는 연도로만 제한하면 몇 년 전 기록을 보러 온 유저가 그 해를 아예 못 고른다.
+        val availableYears = (goals.mapNotNull { it.bucketYear } + (thisYear - 4..thisYear))
+            .distinct()
+            .sortedDescending()
         val inBucket = when (filter) {
             is BucketYearFilter.Year -> goals.filter { it.bucketYear == filter.year }
             BucketYearFilter.Someday -> goals.filter { it.bucketYear == null }

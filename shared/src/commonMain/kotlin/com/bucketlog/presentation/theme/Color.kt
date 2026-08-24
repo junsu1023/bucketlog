@@ -15,6 +15,17 @@ object BucketLogColors {
 
     /** Surface(카드)와 살짝 구분되는 중립 톤 — 칩·배지 배경용(§5.5). 디자인 문서엔 hex가 없어 직접 정함. */
     val LightSurfaceContainer = Color(0xFFEFEBE4)
+
+    /**
+     * Material3의 surfaceContainer* 5단계 톤(Card/Dialog/NavigationBar 등이 기본값으로 씀)을
+     * 명시적으로 지정하지 않으면 Material 기본 라벤더색으로 떨어진다 — 실기기에서 발견한 버그.
+     * Card는 surfaceContainerHighest를, Dialog는 surfaceContainerHigh를, NavigationBar는
+     * surfaceContainer를 기본으로 쓰므로 다섯 단계 전부 우리 팔레트로 채워야 한다.
+     */
+    val LightSurfaceContainerLowest = Color(0xFFFFFFFF)
+    val LightSurfaceContainerLow = Color(0xFFFAF8F4)
+    val LightSurfaceContainerHigh = Color(0xFFEFEBE4)
+    val LightSurfaceContainerHighest = Color(0xFFFFFFFF)
     val LightAccent = Color(0xFFD6A441)
     val LightCompleted = Color(0xFF6B7F4D)
     val LightArchived = Color(0xFFB3B3AD)
@@ -26,6 +37,10 @@ object BucketLogColors {
     val DarkOnSurface = Color(0xFFE9E9EA)
     val DarkOnSurfaceVariant = Color(0xFFA1A1A6)
     val DarkSurfaceContainer = Color(0xFF232326)
+    val DarkSurfaceContainerLowest = Color(0xFF0F0F10)
+    val DarkSurfaceContainerLow = Color(0xFF161617)
+    val DarkSurfaceContainerHigh = Color(0xFF29292C)
+    val DarkSurfaceContainerHighest = Color(0xFF323235)
     val DarkAccent = Color(0xFFE0B14A)
     val DarkCompleted = Color(0xFF8A8A6B)
     val DarkArchived = Color(0xFF6E6E73)

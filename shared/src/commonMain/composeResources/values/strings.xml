@@ -17,6 +17,7 @@
     <string name="settings_nav_button">설정</string>
 
     <string name="home_notifications_button">알림 설정으로 이동</string>
+    <string name="exit_double_back_message">한 번 더 누르면 종료됩니다</string>
 
     <!-- 목표 상세 탭 -->
     <string name="tab_records">기록</string>
