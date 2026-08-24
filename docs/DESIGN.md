@@ -446,5 +446,12 @@ MaterialTheme.typography.bodySmall.merge(MonoLabel())  // 날짜/수치
   캡션이 어두운 배경에 묻히던 문제(§5.7), FilterChip 기본 선택색이 Material 기본(보라 계열)로
   남아있던 문제(`secondaryContainer` 테마 지정으로 해결) — 모두 이 문서의 대상 화면들을 실기기로
   다시 확인하며 발견.
+- **중요 — surfaceContainer 5단계 톤을 반드시 채울 것**: Material3의 `Card`/`AlertDialog`/
+  `NavigationBar`는 각각 `surfaceContainerHighest`/`surfaceContainerHigh`/`surfaceContainer`를
+  기본 배경색으로 쓴다. `surface`/`surfaceVariant`만 지정하고 이 5단계(`surfaceContainerLowest`
+  ~`surfaceContainerHighest`)를 안 채우면 Material 기본 라벤더색으로 떨어진다 — 다크 모드에서는
+  기본값이 우연히 무난한 회색이라 눈에 안 띄었지만 라이트 모드에서 실기기로 확인하다 발견한
+  버그다. `Color.kt`/`Theme.kt`에 다섯 단계 전부 채워져 있으니, 새 컬러 톤을 추가할 때 이 롤들도
+  함께 챙길 것.
 - 이 문서에서 다루지 않은 것(적용 보류): 카드 위 카테고리 배지를 사진에 오버레이하는 레이아웃,
   전용 빈 상태 일러스트, 온보딩 프리셋 카드의 아이콘/색 재설계 — 필요해지면 후속 작업으로.
