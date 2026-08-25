@@ -222,14 +222,14 @@
 
 `ZipArchiver`(Android/iOS 각각의 실제 zip 압축/해제)와 `Export/RestoreBackupUseCase`는 플랫폼 I/O(파일, DB)에 의존해 순수 유닛 테스트로 못 덮었습니다 — 위 10번 항목의 실기기 확인이 이 부분의 유일한 검증입니다.
 
-**알려진 불안정 테스트**: `ScheduleGoalRemindersUseCaseTest`와 `EvaluateNotificationsUseCaseTest` 일부가
-현재 실패 중입니다. 둘 다 `Clock.System.now()` 기준 상대 날짜로 픽스처를 만드는데, 이 문서를 쓰는
-세션이 실제로 여러 날에 걸쳐 진행되면서 그 기준일이 흘러 발생한 것으로 보입니다(이번 세션에서
-수정한 코드와는 무관 — 정확히 같은 원인으로 여전히 실패 중임을 재확인함). 별도로 픽스처를 고정
-날짜 기반으로 바꾸는 작업이 필요합니다. 이번에 새로 추가한 `ScheduleDueSoonUseCaseTest`는 같은
-함정을 피하려고 리터럴 날짜 대신 테스트 실행 시점의 실제 오늘(`Clock.System.todayIn`)에 상대적인
-날짜로 픽스처를 만들어 세션이 며칠 걸려도 깨지지 않게 했습니다 — 앞으로 날짜 관련 픽스처를 쓸 때
-이 패턴을 기본으로 삼는 걸 권합니다.
+**불안정 테스트 (해결됨)**: `ScheduleGoalRemindersUseCaseTest`와 `EvaluateNotificationsUseCaseTest`의
+`now` 픽스처가 리터럴 날짜(`2026-08-17`)로 고정돼 있어서, usecase 내부가 참조하는 실제
+`Clock.System.now()`와의 간극이 7일을 넘어가는 순간부터 리마인더 주기 판정이 어긋나 실패하고
+있었습니다. 두 파일 모두 `now` 기준점을 `Clock.System.now()`로 바꿔 세션이 며칠 걸려도 깨지지
+않게 고쳤습니다 — `ScheduleDueSoonUseCaseTest`에 이미 적용했던 패턴과 동일. `:shared:allTests`
+재실행해 48개 전부 통과 확인(Android host + iOS 시뮬레이터 양쪽). 앞으로 날짜 관련 픽스처를 쓸 때
+이 패턴(리터럴 날짜 대신 실행 시점의 `Clock.System.now()`/`todayIn`에 상대적인 값)을 기본으로
+삼는 걸 권합니다.
 
 **환경 문제 (같은 세션 안에서 해결됨)**: 이 머신엔 원래 Xcode Command Line Tools만 설치돼 있고
 전체 Xcode가 없어서 `xcrun --sdk iphonesimulator`가 SDK를 못 찾는 상태였습니다(`:shared:allTests`의

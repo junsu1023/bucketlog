@@ -82,9 +82,9 @@
 | 백엔드 | **없음** (MVP는 로컬 전용. Phase 1에 도입) |
 | 로그인 | **없음** (Phase 1) |
 | 다음 작업 | MVP-SCOPE.md의 P0/P1 기능은 전부 구현됨. 남은 건 (1) 남은 버그 있는지 계속 확인
-  (2) 스토어 제출 준비(개발자 계정·서명키·스토어 리스팅 등 사용자가 직접 해야 하는 외부 작업)
-  (3) `test.md` §11의 알려진 불안정 테스트
-  (`ScheduleGoalRemindersUseCaseTest`/`EvaluateNotificationsUseCaseTest`) 고정 날짜 픽스처로 전환 |
+  (2) 스토어 제출 준비(개발자 계정·서명키·스토어 리스팅 등 사용자가 직접 해야 하는 외부 작업)뿐 —
+  알림 테스트 날짜 드리프트 문제(`ScheduleGoalRemindersUseCaseTest`/`EvaluateNotificationsUseCaseTest`)는
+  해결 완료, iOS 컴파일·시뮬레이터 실행 확인도 완료(`test.md` §11) |
 
 > 미확정 항목에 대해 코드를 생성해야 하면 **임의로 결정하지 말고 먼저 물어보세요.**
 
