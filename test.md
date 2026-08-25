@@ -231,13 +231,20 @@
 날짜로 픽스처를 만들어 세션이 며칠 걸려도 깨지지 않게 했습니다 — 앞으로 날짜 관련 픽스처를 쓸 때
 이 패턴을 기본으로 삼는 걸 권합니다.
 
-**이번 세션에 발견한 환경 문제**: 이 머신엔 Xcode Command Line Tools만 설치돼 있고 전체 Xcode가
-없어서 `xcrun --sdk iphonesimulator`가 SDK를 못 찾습니다. 그 결과 `:shared:allTests`(iOS 시뮬레이터
-테스트 링크·실행)와 `:shared:linkDebugFrameworkIosSimulatorArm64`(CLAUDE.md가 안내하는 표준 iOS
-컴파일 확인 명령)가 둘 다 이 환경에서 실행 자체가 안 됩니다 — 코드 문제가 아니라 이 세션의 로컬
-환경 문제입니다. 이번 세션에서 건드린 commonMain 코드는 androidMain 컴파일이 전부 통과했고
-플랫폼 전용 API를 쓰지 않아 iOS에서도 문제없이 컴파일될 것으로 보이나, 실제로 Xcode가 설치된
-환경에서 한 번 더 확인해 주세요.
+**환경 문제 (같은 세션 안에서 해결됨)**: 이 머신엔 원래 Xcode Command Line Tools만 설치돼 있고
+전체 Xcode가 없어서 `xcrun --sdk iphonesimulator`가 SDK를 못 찾는 상태였습니다(`:shared:allTests`의
+iOS 시뮬레이터 타깃, `:shared:linkDebugFrameworkIosSimulatorArm64` 둘 다 실행 자체가 안 됐음 —
+코드 문제 아니고 환경 문제였음). 사용자가 이미 설치돼 있던 전체 Xcode로 `sudo xcode-select -s
+/Applications/Xcode.app/Contents/Developer`를 실행해 연결한 뒤 아래를 전부 확인했습니다.
+
+- [x] ✅ `:shared:allTests` — Android host + iOS 시뮬레이터(iPhone 17) 양쪽 타깃 전부 테스트 실행.
+      48개 중 3개 실패는 위에서 설명한 기존 날짜 드리프트 문제와 완전히 동일(Android/iOS 결과
+      일치) — 이번 세션 코드와 무관함을 두 플랫폼에서 교차 확인
+- [x] ✅ `xcodebuild`로 `iosApp` 스킴을 iPhone 17 시뮬레이터용으로 빌드 — **BUILD SUCCEEDED**
+- [x] ✅ 빌드된 앱을 시뮬레이터에 설치·실행 — 온보딩 화면이 폰트·컬러·프리셋 전부 정상 렌더링되는
+      것을 스크린샷으로 확인. 탭 단위 인터랙션 자동화(연도 드롭다운, 마감일 피커 등)는 터미널의
+      보조 접근성 권한이 필요해 이번엔 생략 — 같은 공유 로직(ViewModel/UseCase)은 Android에서
+      이미 상세히 인터랙션 검증을 마쳤으므로 위험도가 낮다고 판단
 
 ---
 

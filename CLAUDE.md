@@ -72,15 +72,18 @@
   N-05 연말회고)를 전부 구현 — 우선순위 체인도 문서(`docs/NOTIFICATIONS.md` §1)와 일치하도록
   연말회고>마감임박>월간회고>목표별리마인더>넛지 순으로 재배열. 상세는 `test.md` §13 참고.
   이제 MVP-SCOPE.md 기능 명세(P0/P1) 전부 구현 완료 — 남은 건 P2(Phase 1 이후)와 실기기 대규모
-  테스트·스토어 제출뿐. 전부 Android 실기기/에뮬레이터 검증, iOS는 이번 세션부터 이 머신에 Xcode
-  Command Line Tools만 있고 전체 Xcode가 없어 컴파일 확인 자체가 불가능해짐(`test.md` §11 참고 —
-  코드 문제 아님, 환경 문제) |
+  테스트·스토어 제출뿐. 전부 Android 실기기/에뮬레이터 검증. iOS는 같은 세션 안에서 사용자가
+  전체 Xcode를 설치·연결해줘서(`xcode-select`가 Command Line Tools만 가리키던 문제 해결)
+  `:shared:allTests`(iOS 시뮬레이터 타깃 포함)와 `xcodebuild`+iOS 시뮬레이터 실제 실행까지
+  전부 확인 완료 — 온보딩 화면이 정상 렌더링되는 것까지 확인. 탭 단위 인터랙션 자동화는
+  터미널 보조 접근성 권한이 필요해 이번엔 생략(공유 로직은 Android에서 이미 상세 검증됨).
+  `test.md` §11 참고 |
 | 앱 이름 | **가칭** BucketLog / 버킷로그 |
 | 백엔드 | **없음** (MVP는 로컬 전용. Phase 1에 도입) |
 | 로그인 | **없음** (Phase 1) |
 | 다음 작업 | MVP-SCOPE.md의 P0/P1 기능은 전부 구현됨. 남은 건 (1) 남은 버그 있는지 계속 확인
   (2) 스토어 제출 준비(개발자 계정·서명키·스토어 리스팅 등 사용자가 직접 해야 하는 외부 작업)
-  (3) 이 머신에 전체 Xcode 설치해 iOS 컴파일 재확인 (4) `test.md` §11의 알려진 불안정 테스트
+  (3) `test.md` §11의 알려진 불안정 테스트
   (`ScheduleGoalRemindersUseCaseTest`/`EvaluateNotificationsUseCaseTest`) 고정 날짜 픽스처로 전환 |
 
 > 미확정 항목에 대해 코드를 생성해야 하면 **임의로 결정하지 말고 먼저 물어보세요.**
