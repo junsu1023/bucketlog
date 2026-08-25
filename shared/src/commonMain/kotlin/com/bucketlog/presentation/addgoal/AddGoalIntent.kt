@@ -3,6 +3,7 @@ package com.bucketlog.presentation.addgoal
 import com.bucketlog.domain.model.Category
 import com.bucketlog.domain.model.GoalType
 import com.bucketlog.domain.model.ReminderInterval
+import kotlinx.datetime.LocalDate
 
 sealed interface AddGoalIntent {
     data class TitleChanged(val value: String) : AddGoalIntent
@@ -11,6 +12,7 @@ sealed interface AddGoalIntent {
     data class TypeChanged(val value: GoalType) : AddGoalIntent
     data class TargetCountChanged(val value: String) : AddGoalIntent
     data class BucketYearChanged(val value: Int?) : AddGoalIntent
+    data class DueDateChanged(val value: LocalDate?) : AddGoalIntent
     data class AddPhotos(val photoBytes: List<ByteArray>) : AddGoalIntent
     data object ClearPhotos : AddGoalIntent
     data object Save : AddGoalIntent

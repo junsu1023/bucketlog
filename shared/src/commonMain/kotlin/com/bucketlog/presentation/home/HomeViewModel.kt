@@ -36,6 +36,8 @@ class HomeViewModel(
     val thisYear: Int = today.year
 
     private val yearFilter = MutableStateFlow<BucketYearFilter>(BucketYearFilter.Year(thisYear))
+    private val sortOption = MutableStateFlow(HomeSortOption.RECENT)
+    private val categoryFilter = MutableStateFlow<Category?>(null)
     private val checkInDrafts = MutableStateFlow<Map<String, String>>(emptyMap())
     private val hasError = MutableStateFlow(false)
 
@@ -48,9 +50,12 @@ class HomeViewModel(
         entryRepository.observeEntriesOnDate(today.minus(DatePeriod(months = 1))),
     ) { yearAgo, monthAgo -> pickThrowback(yearAgo, monthAgo) }
 
+    // combine()은 5개 Flow까지만 람다로 받는다 — G-11 정렬/카테고리 필터를 연도 필터와 하나로 묶어 자리를 아낀다.
+    private val filters = combine(yearFilter, sortOption, categoryFilter) { year, sort, category -> Triple(year, sort, category) }
+
     private val baseState: Flow<HomeUiState> = combine(
-        allGoals, inProgressOverviews, yearFilter, checkInDrafts, hasError,
-    ) { goals, overviews, filter, drafts, error ->
+        allGoals, inProgressOverviews, filters, checkInDrafts, hasError,
+    ) { goals, overviews, (filter, sort, category), drafts, error ->
         // 추억 아카이브 앱이라 데이터가 없는 과거 연도도 항상 넘겨볼 수 있어야 한다 —
         // 목표 데이터에 있는 연도로만 제한하면 몇 년 전 기록을 보러 온 유저가 그 해를 아예 못 고른다.
         val availableYears = (goals.mapNotNull { it.bucketYear } + (thisYear - 4..thisYear))
@@ -60,11 +65,22 @@ class HomeViewModel(
             is BucketYearFilter.Year -> goals.filter { it.bucketYear == filter.year }
             BucketYearFilter.Someday -> goals.filter { it.bucketYear == null }
         }
-        val filteredOverviews = overviews.filter { overview ->
+        var filteredOverviews = overviews.filter { overview ->
             when (filter) {
                 is BucketYearFilter.Year -> overview.goal.bucketYear == filter.year
                 BucketYearFilter.Someday -> overview.goal.bucketYear == null
             }
+        }
+        if (category != null) {
+            filteredOverviews = filteredOverviews.filter { it.goal.category == category }
+        }
+        filteredOverviews = when (sort) {
+            // 최신순: 가장 최근에 기록을 남긴 목표가 위로. 기록이 아직 없으면 만든 시각으로 대체한다.
+            HomeSortOption.RECENT ->
+                filteredOverviews.sortedByDescending { it.lastRecordedAt ?: it.goal.createdAt }
+            // 마감임박순: 마감일이 가까운 목표가 위로. 마감일이 없는 목표는 맨 뒤로 보낸다.
+            HomeSortOption.DUE_SOON ->
+                filteredOverviews.sortedWith(compareBy(nullsLast()) { it.goal.dueDate })
         }
         HomeUiState(
             yearFilter = filter,
@@ -75,6 +91,8 @@ class HomeViewModel(
             summaryCompleted = inBucket.count { it.status == GoalStatus.COMPLETED },
             existingTitles = goals.map { it.title }.toSet(),
             checkInDrafts = drafts,
+            sortOption = sort,
+            categoryFilter = category,
             isLoading = false,
             hasError = error,
         )
@@ -95,6 +113,8 @@ class HomeViewModel(
                 checkInDrafts.update { it + (intent.goalId to intent.text) }
             is HomeIntent.SubmitCheckIn -> submitCheckIn(intent.goalId)
             is HomeIntent.AddPresetGoal -> addPresetGoal(intent.title, intent.category)
+            is HomeIntent.SelectSortOption -> sortOption.value = intent.option
+            is HomeIntent.SelectCategoryFilter -> categoryFilter.value = intent.category
 
             HomeIntent.DismissError -> hasError.value = false
         }

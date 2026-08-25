@@ -3,6 +3,7 @@ package com.bucketlog.presentation.addgoal
 import com.bucketlog.domain.model.Category
 import com.bucketlog.domain.model.GoalType
 import com.bucketlog.domain.model.ReminderInterval
+import kotlinx.datetime.LocalDate
 
 data class AddGoalUiState(
     val title: String = "",
@@ -11,6 +12,8 @@ data class AddGoalUiState(
     val type: GoalType = GoalType.ONE_TIME,
     val targetCountText: String = "",
     val bucketYear: Int? = null,
+    /** G-09. 선택 입력 — 없으면 마감 없는 목표. */
+    val dueDate: LocalDate? = null,
     val photoBytes: List<ByteArray> = emptyList(),
     val isSaving: Boolean = false,
     val hasError: Boolean = false,

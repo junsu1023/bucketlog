@@ -39,3 +39,10 @@ fun parseArchiveMonthDeepLink(uri: String): MonthKey? {
     if (!uri.startsWith(prefix)) return null
     return MonthKey.parse(uri.removePrefix(prefix))
 }
+
+/** bucketlog://retrospect/2026 -> 2026 (N-05 연말 회고 → G-12 이월 플로우) */
+fun parseRolloverDeepLink(uri: String): Int? {
+    val prefix = "bucketlog://retrospect/"
+    if (!uri.startsWith(prefix)) return null
+    return uri.removePrefix(prefix).toIntOrNull()
+}

@@ -81,7 +81,11 @@ class EvaluateNotificationsUseCaseTest {
             budget,
             settings,
         ) { "넛지" }
-        return EvaluateNotificationsUseCase(recap, reminders, nudge)
+        // 이 테스트의 now(2026-08-17)는 12월이 아니고 픽스처 목표엔 dueDate가 없어서
+        // 연말회고/마감임박은 항상 false를 반환한다 — 기존 3종 우선순위 테스트에 영향 없다.
+        val yearEndRecap = ScheduleYearEndRecapUseCase(budget, settings, { "버킷로그" }, { "" }, { "" })
+        val dueSoon = ScheduleDueSoonUseCase(goalRepository, budget, settings) { "" }
+        return EvaluateNotificationsUseCase(yearEndRecap, dueSoon, recap, reminders, nudge)
     }
 
     @Test

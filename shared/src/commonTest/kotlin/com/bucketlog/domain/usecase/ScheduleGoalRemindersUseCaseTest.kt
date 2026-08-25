@@ -92,7 +92,7 @@ class ScheduleGoalRemindersUseCaseTest {
     }
 
     @Test
-    fun `리마인더를 켜지 않은(reminderRule null) 목표는 제외한다`() = runBlocking {
+    fun `리마인더를 켜지 않은 목표는 제외한다`() = runBlocking {
         val repo = FakeGoalRepository(listOf(goal("g1", interval = null, reminderLastSentAt = now - 30.days)))
         val captured = mutableListOf<LocalNotification>()
 

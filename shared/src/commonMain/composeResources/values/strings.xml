@@ -18,8 +18,12 @@
 
     <string name="home_notifications_button">알림 설정으로 이동</string>
     <string name="exit_double_back_message">한 번 더 누르면 종료됩니다</string>
-    <string name="year_dropdown_previous">이전</string>
+    <!-- G-12 이후로는 연말 이월로 내년 버킷도 생길 수 있어 "이전"이 아니라 "다른 연도"로 표기한다. -->
+    <string name="year_dropdown_previous">다른 연도</string>
     <string name="year_picker_dialog_title">연도 선택</string>
+    <string name="home_sort_recent">최신순</string>
+    <string name="home_sort_due_soon">마감임박순</string>
+    <string name="home_category_filter_all">전체</string>
 
     <!-- 목표 상세 탭 -->
     <string name="tab_records">기록</string>
@@ -30,6 +34,7 @@
     <string name="info_type_label">유형</string>
     <string name="info_target_count_label">목표 횟수</string>
     <string name="info_bucket_year_label">버킷 연도</string>
+    <string name="info_due_date_label">마감일</string>
     <string name="info_created_label">만든 날짜</string>
     <string name="info_archive_reason_label">접어둔 이유</string>
     <string name="completed_grid_caption">완료 · %1$d</string>
@@ -141,6 +146,9 @@
     <string name="goal_bucket_year_label">언제 할까요?</string>
     <string name="goal_bucket_this_year">2026년</string>
     <string name="goal_bucket_someday">언젠가</string>
+    <string name="goal_due_date_label">마감일 (선택)</string>
+    <string name="goal_due_date_unset">설정 안 함</string>
+    <string name="goal_due_date_clear">지우기</string>
     <string name="goal_photo_label">사진 (선택)</string>
     <string name="goal_reminder_label">리마인더</string>
     <string name="goal_reminder_interval_weekly">주 1회</string>
@@ -160,6 +168,18 @@
     <string name="archive_title">보관함</string>
     <string name="archive_reason_label">이유</string>
 
+    <!-- 연말 이월 (G-12) -->
+    <string name="rollover_title">연말 정리</string>
+    <string name="rollover_subtitle">%1$d년에 진행 중이던 목표예요. 어떻게 할까요?</string>
+    <string name="rollover_option_next_year">내년으로</string>
+    <string name="rollover_option_someday">언젠가로</string>
+    <string name="rollover_option_archive">이건 안 하기로 하기</string>
+    <string name="rollover_option_keep">그대로 두기</string>
+    <string name="rollover_confirm">완료</string>
+    <string name="rollover_empty">%1$d년에 진행 중인 목표가 없어요.</string>
+    <string name="home_rollover_banner">%1$d년이 얼마 남지 않았어요 — 연말 정리 해볼까요?</string>
+    <string name="settings_rollover">연말 정리</string>
+
     <!-- 온보딩 -->
     <string name="onboarding_title">뭘 해보고 싶으세요?</string>
     <string name="onboarding_subtitle">몇 개 골라보세요. 나중에 언제든 추가할 수 있어요.</string>
@@ -171,6 +191,9 @@
     <string name="nudge_notification_body">마지막 기록 후 %1$d일이 지났어요. 요즘 어때요?</string>
     <string name="monthly_recap_notification_body">%1$d월이 지나갔어요. 이번 달엔 어떤 걸 했나요?</string>
     <string name="goal_reminder_notification_body">지금 어때요?</string>
+    <string name="due_soon_notification_body">\'%1$s\' 마감일이 다음 주네요. 어떻게 되어가나요?</string>
+    <string name="year_end_recap_notification_mid_body">%1$d년이 한 달 남았어요. 올해 무엇을 했는지 볼까요?</string>
+    <string name="year_end_recap_notification_end_body">오늘이 %1$d년의 마지막 날이에요. 한 해를 돌아볼까요?</string>
     <string name="settings_title">설정</string>
     <string name="settings_theme_section">화면</string>
     <string name="settings_theme_system">시스템 설정</string>
@@ -179,6 +202,8 @@
     <string name="settings_notifications_section">알림</string>
     <string name="settings_all_notifications">전체 알림</string>
     <string name="settings_nudge">오래된 목표 살펴보기</string>
+    <string name="settings_due_soon">마감 임박</string>
+    <string name="settings_year_end_recap">연말 회고</string>
     <string name="settings_notification_hour">알림 받을 시각</string>
     <string name="settings_hour_format">%1$d:00</string>
     <string name="notification_permission_title">%1$s 잊지 않게 가끔 알려드릴까요?</string>

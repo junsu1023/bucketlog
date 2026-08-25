@@ -2,9 +2,12 @@ package com.bucketlog.di
 
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.app_name
+import bucketlog.shared.generated.resources.due_soon_notification_body
 import bucketlog.shared.generated.resources.goal_reminder_notification_body
 import bucketlog.shared.generated.resources.monthly_recap_notification_body
 import bucketlog.shared.generated.resources.nudge_notification_body
+import bucketlog.shared.generated.resources.year_end_recap_notification_end_body
+import bucketlog.shared.generated.resources.year_end_recap_notification_mid_body
 import com.bucketlog.data.local.AppDatabase
 import com.bucketlog.data.local.DatabaseFactory
 import com.bucketlog.data.repository.EntryRepositoryImpl
@@ -25,9 +28,12 @@ import com.bucketlog.domain.usecase.DeleteEntryUseCase
 import com.bucketlog.domain.usecase.ResetAllDataUseCase
 import com.bucketlog.domain.usecase.RestoreBackupUseCase
 import com.bucketlog.domain.usecase.RestoreGoalUseCase
+import com.bucketlog.domain.usecase.RolloverGoalsUseCase
+import com.bucketlog.domain.usecase.ScheduleDueSoonUseCase
 import com.bucketlog.domain.usecase.ScheduleGoalRemindersUseCase
 import com.bucketlog.domain.usecase.ScheduleMonthlyRecapUseCase
 import com.bucketlog.domain.usecase.ScheduleNudgeUseCase
+import com.bucketlog.domain.usecase.ScheduleYearEndRecapUseCase
 import com.bucketlog.domain.usecase.SearchGoalsUseCase
 import com.bucketlog.domain.usecase.UpdateEntryUseCase
 import com.bucketlog.notification.AppSettingsStore
@@ -43,6 +49,7 @@ import com.bucketlog.presentation.archive.ArchiveViewModel
 import com.bucketlog.presentation.goaldetail.GoalDetailViewModel
 import com.bucketlog.presentation.home.HomeViewModel
 import com.bucketlog.presentation.onboarding.OnboardingViewModel
+import com.bucketlog.presentation.rollover.RolloverViewModel
 import com.bucketlog.presentation.search.SearchViewModel
 import com.bucketlog.presentation.settings.SettingsViewModel
 import com.bucketlog.presentation.theme.ThemeModeStore
@@ -81,6 +88,7 @@ val appModule = module {
     factory { DeleteGoalUseCase(get()) }
     factory { CompleteGoalUseCase(get(), get(), get(), get()) }
     factory { ArchiveGoalUseCase(get()) }
+    factory { RolloverGoalsUseCase(get(), get()) }
     factory { RestoreGoalUseCase(get(), get()) }
     factory { AddCheckInEntryUseCase(get()) }
     factory { AddProgressEntryUseCase(get(), get(), get()) }
@@ -107,7 +115,21 @@ val appModule = module {
             getString(Res.string.goal_reminder_notification_body)
         }
     }
-    factory { EvaluateNotificationsUseCase(get(), get(), get()) }
+    factory {
+        ScheduleDueSoonUseCase(get(), get(), get()) { title ->
+            getString(Res.string.due_soon_notification_body, title)
+        }
+    }
+    factory {
+        ScheduleYearEndRecapUseCase(
+            notificationBudget = get(),
+            settings = get(),
+            recapTitle = { getString(Res.string.app_name) },
+            midMonthBody = { year -> getString(Res.string.year_end_recap_notification_mid_body, year) },
+            yearEndBody = { year -> getString(Res.string.year_end_recap_notification_end_body, year) },
+        )
+    }
+    factory { EvaluateNotificationsUseCase(get(), get(), get(), get(), get()) }
     factory { ExportBackupUseCase(get(), get(), get(), get()) }
     factory { RestoreBackupUseCase(get(), get(), get(), get()) }
     factory { ResetAllDataUseCase(get()) }
@@ -139,6 +161,8 @@ val appModule = module {
             deleteEntry = get(),
         )
     }
+    // year도 GoalDetailViewModel의 goalId와 같은 이유로 런타임 파라미터.
+    viewModel { params -> RolloverViewModel(year = params.get(), goalRepository = get(), rolloverGoals = get()) }
 }
 
 /** 플랫폼 진입점(Android Application / iOS MainViewController)에서 한 번만 호출한다. */

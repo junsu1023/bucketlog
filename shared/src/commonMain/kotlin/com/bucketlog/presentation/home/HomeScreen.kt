@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -33,6 +34,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -64,9 +66,13 @@ import bucketlog.shared.generated.resources.empty_in_progress
 import bucketlog.shared.generated.resources.empty_state_preset_hint
 import bucketlog.shared.generated.resources.error_generic
 import bucketlog.shared.generated.resources.goal_bucket_someday
+import bucketlog.shared.generated.resources.home_category_filter_all
+import bucketlog.shared.generated.resources.home_sort_due_soon
+import bucketlog.shared.generated.resources.home_sort_recent
 import bucketlog.shared.generated.resources.home_summary_someday
 import bucketlog.shared.generated.resources.home_summary_year
 import bucketlog.shared.generated.resources.home_notifications_button
+import bucketlog.shared.generated.resources.home_rollover_banner
 import bucketlog.shared.generated.resources.last_recorded
 import bucketlog.shared.generated.resources.progress_count
 import bucketlog.shared.generated.resources.relative_days_ago
@@ -78,6 +84,7 @@ import bucketlog.shared.generated.resources.year_chip
 import bucketlog.shared.generated.resources.year_dropdown_previous
 import bucketlog.shared.generated.resources.year_picker_dialog_title
 import coil3.compose.AsyncImage
+import com.bucketlog.domain.model.Category
 import com.bucketlog.domain.model.Goal
 import com.bucketlog.domain.model.GoalStatus
 import com.bucketlog.domain.model.GoalType
@@ -90,6 +97,7 @@ import kotlin.time.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.todayIn
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,6 +106,7 @@ fun HomeScreen(
     viewModel: HomeViewModel,
     onGoalClick: (String) -> Unit,
     onNotificationsClick: () -> Unit = {},
+    onRolloverClick: (Int) -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
     HomeContent(
@@ -105,6 +114,7 @@ fun HomeScreen(
         onIntent = viewModel::onIntent,
         onGoalClick = onGoalClick,
         onNotificationsClick = onNotificationsClick,
+        onRolloverClick = onRolloverClick,
     )
 }
 
@@ -115,6 +125,7 @@ private fun HomeContent(
     onIntent: (HomeIntent) -> Unit,
     onGoalClick: (String) -> Unit,
     onNotificationsClick: () -> Unit,
+    onRolloverClick: (Int) -> Unit,
 ) {
     Scaffold(
         // 목표 추가는 하단 내비게이션의 가운데 "+"가 맡는다(App.kt의 BottomNav 참고).
@@ -141,7 +152,18 @@ private fun HomeContent(
             state.throwback?.let { banner ->
                 ThrowbackBannerCard(banner = banner, onClick = { onGoalClick(banner.goalId) })
             }
+            // G-12: 12월엔 연말 정리를 먼저 물어본다. N-05 알림과 별개로 앱을 열었을 때도 눈에 띄게.
+            val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
+            if (today.monthNumber == 12) {
+                RolloverBannerCard(year = today.year, onClick = { onRolloverClick(today.year) })
+            }
             SummaryHeader(state.yearFilter, state.summaryTotal, state.summaryCompleted)
+            SortAndFilterRow(
+                sortOption = state.sortOption,
+                categoryFilter = state.categoryFilter,
+                onSortSelect = { onIntent(HomeIntent.SelectSortOption(it)) },
+                onCategorySelect = { onIntent(HomeIntent.SelectCategoryFilter(it)) },
+            )
 
             if (state.overviews.isEmpty() && !state.isLoading) {
                 EmptyState(existingTitles = state.existingTitles, onIntent = onIntent, modifier = Modifier.fillMaxSize())
@@ -172,6 +194,81 @@ private fun HomeContent(
 
     if (state.hasError) {
         ErrorDialog(onDismiss = { onIntent(HomeIntent.DismissError) })
+    }
+}
+
+/** G-12 연말 이월 유도 배너. 작년 오늘 배너와 같은 톤(크림) — 강조색을 쓰면 마감 압박처럼 보인다. */
+@Composable
+private fun RolloverBannerCard(year: Int, onClick: () -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = LocalExtraColors.current.goalCard),
+        shape = RoundedCornerShape(BucketLogSpacing.CardRadius),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = BucketLogSpacing.lg, vertical = BucketLogSpacing.sm)
+            .clickable(onClick = onClick),
+    ) {
+        Text(
+            text = stringResource(Res.string.home_rollover_banner, year),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(BucketLogSpacing.lg),
+        )
+    }
+}
+
+/** G-11 정렬·필터. 정렬 드롭다운 + 카테고리 칩 한 줄로 목록 위에 얹는다. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SortAndFilterRow(
+    sortOption: HomeSortOption,
+    categoryFilter: Category?,
+    onSortSelect: (HomeSortOption) -> Unit,
+    onCategorySelect: (Category?) -> Unit,
+) {
+    Column(modifier = Modifier.padding(horizontal = BucketLogSpacing.lg, vertical = BucketLogSpacing.sm)) {
+        var expanded by remember { mutableStateOf(false) }
+        Box {
+            Row(
+                modifier = Modifier.clickable { expanded = true },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Outlined.SwapVert, contentDescription = null, modifier = Modifier.size(18.dp))
+                Text(
+                    text = stringResource(
+                        if (sortOption == HomeSortOption.RECENT) Res.string.home_sort_recent else Res.string.home_sort_due_soon,
+                    ),
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(start = 4.dp),
+                )
+            }
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.home_sort_recent)) },
+                    onClick = { onSortSelect(HomeSortOption.RECENT); expanded = false },
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.home_sort_due_soon)) },
+                    onClick = { onSortSelect(HomeSortOption.DUE_SOON); expanded = false },
+                )
+            }
+        }
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(top = BucketLogSpacing.xs),
+        ) {
+            FilterChip(
+                selected = categoryFilter == null,
+                onClick = { onCategorySelect(null) },
+                label = { Text(stringResource(Res.string.home_category_filter_all)) },
+            )
+            Category.entries.forEach { category ->
+                FilterChip(
+                    selected = categoryFilter == category,
+                    onClick = { onCategorySelect(if (categoryFilter == category) null else category) },
+                    label = { Text(stringResource(category.labelRes())) },
+                )
+            }
+        }
     }
 }
 

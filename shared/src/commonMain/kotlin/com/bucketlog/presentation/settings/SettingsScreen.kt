@@ -59,10 +59,13 @@ import bucketlog.shared.generated.resources.settings_backup_export
 import bucketlog.shared.generated.resources.settings_backup_restore
 import bucketlog.shared.generated.resources.settings_backup_section
 import bucketlog.shared.generated.resources.settings_data_section
+import bucketlog.shared.generated.resources.settings_due_soon
 import bucketlog.shared.generated.resources.settings_hour_format
 import bucketlog.shared.generated.resources.settings_notification_hour
 import bucketlog.shared.generated.resources.settings_nudge
 import bucketlog.shared.generated.resources.settings_reset_all
+import bucketlog.shared.generated.resources.settings_rollover
+import bucketlog.shared.generated.resources.settings_year_end_recap
 import bucketlog.shared.generated.resources.settings_theme_dark
 import bucketlog.shared.generated.resources.settings_theme_light
 import bucketlog.shared.generated.resources.settings_theme_section
@@ -77,7 +80,7 @@ private val HOUR_OPTIONS = listOf(9, 12, 18, 20)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel, onBack: (() -> Unit)? = null) {
+fun SettingsScreen(viewModel: SettingsViewModel, onBack: (() -> Unit)? = null, onRolloverClick: () -> Unit = {}) {
     val state by viewModel.uiState.collectAsState()
 
     val exportLauncher = rememberBackupExporter { success ->
@@ -147,6 +150,18 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: (() -> Unit)? = null) {
                 enabled = state.notificationsEnabled,
                 onCheckedChange = { viewModel.onIntent(SettingsIntent.SetNudgeEnabled(it)) },
             )
+            SettingsRow(
+                label = stringResource(Res.string.settings_due_soon),
+                checked = state.dueSoonEnabled,
+                enabled = state.notificationsEnabled,
+                onCheckedChange = { viewModel.onIntent(SettingsIntent.SetDueSoonEnabled(it)) },
+            )
+            SettingsRow(
+                label = stringResource(Res.string.settings_year_end_recap),
+                checked = state.yearEndRecapEnabled,
+                enabled = state.notificationsEnabled,
+                onCheckedChange = { viewModel.onIntent(SettingsIntent.SetYearEndRecapEnabled(it)) },
+            )
 
             Text(
                 text = stringResource(Res.string.settings_notification_hour),
@@ -198,6 +213,12 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: (() -> Unit)? = null) {
                 label = stringResource(Res.string.settings_data_section),
                 modifier = Modifier.padding(bottom = 4.dp),
             )
+            OutlinedButton(
+                onClick = onRolloverClick,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            ) {
+                Text(stringResource(Res.string.settings_rollover))
+            }
             OutlinedButton(
                 onClick = { viewModel.onIntent(SettingsIntent.RequestReset) },
                 enabled = !state.isResetting,

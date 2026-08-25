@@ -40,11 +40,15 @@ import com.bucketlog.presentation.goaldetail.GoalDetailScreen
 import com.bucketlog.presentation.home.HomeScreen
 import com.bucketlog.presentation.onboarding.OnboardingScreen
 import com.bucketlog.presentation.onboarding.OnboardingViewModel
+import com.bucketlog.presentation.rollover.RolloverScreen
 import com.bucketlog.presentation.search.SearchScreen
 import com.bucketlog.presentation.settings.SettingsScreen
 import com.bucketlog.presentation.theme.BucketLogTheme
 import com.bucketlog.presentation.theme.ThemeMode
 import com.bucketlog.presentation.theme.ThemeModeStore
+import kotlin.time.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -65,6 +69,8 @@ private sealed interface Screen {
     /** [from]으로 돌아가야 뒤로가기가 진입 경로(홈/보관함/검색)에 맞게 동작한다.
      *  [focusCheckIn]은 스마트 넛지 딥링크(focus=checkin)로 들어왔을 때만 true. */
     data class GoalDetail(val goalId: String, val from: Screen, val focusCheckIn: Boolean = false) : Screen
+    /** G-12 연말 이월 — 설정 메뉴 / 12월 홈 배너 / N-05 알림 딥링크(bucketlog://retrospect/{year}) 세 경로로 들어온다. */
+    data class Rollover(val year: Int, val from: Screen = Home) : Screen
 }
 
 /** 홈/보관함/검색/설정 — 하단 탭으로 묶이는 화면들. 이 화면들 사이에는 "뒤로가기"가 없다. */
@@ -86,6 +92,8 @@ fun App() {
         var screen by remember { mutableStateOf<Screen>(Screen.Loading) }
         val addGoalViewModel: AddGoalViewModel = koinViewModel()
         val onboardingViewModel: OnboardingViewModel = koinViewModel()
+        // G-12 연말 이월 진입점(설정 메뉴/12월 홈 배너)에서 대상 연도로 쓴다.
+        val thisYear = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()).year }
 
         val shouldShowOnboarding by onboardingViewModel.shouldShowOnboarding.collectAsState()
         LaunchedEffect(shouldShowOnboarding) {
@@ -103,6 +111,9 @@ fun App() {
             parseArchiveMonthDeepLink(uri)?.let { month ->
                 screen = Screen.Archive(targetMonth = month)
             }
+            parseRolloverDeepLink(uri)?.let { year ->
+                screen = Screen.Rollover(year)
+            }
             DeepLinkHolder.consume()
         }
 
@@ -112,6 +123,7 @@ fun App() {
             screen = when (val s = screen) {
                 is Screen.GoalDetail -> s.from
                 is Screen.AddGoal -> s.returnTo
+                is Screen.Rollover -> s.from
                 else -> Screen.Home
             }
         }
@@ -143,6 +155,10 @@ fun App() {
                 },
                 focusCheckIn = current.focusCheckIn,
             )
+            is Screen.Rollover -> RolloverScreen(
+                viewModel = koinViewModel(key = "rollover_${current.year}") { parametersOf(current.year) },
+                onBack = { screen = current.from },
+            )
             else -> Scaffold(
                 bottomBar = {
                     BottomNav(
@@ -163,6 +179,7 @@ fun App() {
                             viewModel = koinViewModel(),
                             onGoalClick = { goalId -> screen = Screen.GoalDetail(goalId, from = Screen.Home) },
                             onNotificationsClick = { screen = Screen.Settings },
+                            onRolloverClick = { year -> screen = Screen.Rollover(year, from = Screen.Home) },
                         )
                         is Screen.Archive -> ArchiveScreen(
                             viewModel = koinViewModel(),
@@ -173,7 +190,10 @@ fun App() {
                             viewModel = koinViewModel(),
                             onGoalClick = { goalId -> screen = Screen.GoalDetail(goalId, from = Screen.Search) },
                         )
-                        Screen.Settings -> SettingsScreen(viewModel = koinViewModel())
+                        Screen.Settings -> SettingsScreen(
+                            viewModel = koinViewModel(),
+                            onRolloverClick = { screen = Screen.Rollover(thisYear, from = Screen.Settings) },
+                        )
                     }
                 }
             }

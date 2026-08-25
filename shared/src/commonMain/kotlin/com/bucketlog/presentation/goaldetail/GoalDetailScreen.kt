@@ -89,6 +89,7 @@ import bucketlog.shared.generated.resources.info_archive_reason_label
 import bucketlog.shared.generated.resources.info_bucket_year_label
 import bucketlog.shared.generated.resources.info_category_label
 import bucketlog.shared.generated.resources.info_created_label
+import bucketlog.shared.generated.resources.info_due_date_label
 import bucketlog.shared.generated.resources.info_no_note
 import bucketlog.shared.generated.resources.info_note_label
 import bucketlog.shared.generated.resources.info_target_count_label
@@ -384,6 +385,10 @@ private fun GoalInfoTab(goal: Goal) {
             label = stringResource(Res.string.info_bucket_year_label),
             value = goal.bucketYear?.let { stringResource(Res.string.year_chip, it) } ?: stringResource(Res.string.goal_bucket_someday),
         )
+        // G-09. 없으면 아예 표시하지 않는다 — 마감일은 참고선일 뿐, 없는 걸 강조할 이유가 없다.
+        goal.dueDate?.let {
+            InfoRow(label = stringResource(Res.string.info_due_date_label), value = it.toString())
+        }
         InfoRow(
             label = stringResource(Res.string.info_created_label),
             value = goal.createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString(),

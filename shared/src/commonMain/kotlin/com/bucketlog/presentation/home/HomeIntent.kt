@@ -10,5 +10,9 @@ sealed interface HomeIntent {
     /** H-06 빈 상태 프리셋 제안 — 탭하면 바로 추가된다. */
     data class AddPresetGoal(val title: String, val category: Category) : HomeIntent
 
+    /** G-11 정렬·필터. */
+    data class SelectSortOption(val option: HomeSortOption) : HomeIntent
+    data class SelectCategoryFilter(val category: Category?) : HomeIntent
+
     data object DismissError : HomeIntent
 }

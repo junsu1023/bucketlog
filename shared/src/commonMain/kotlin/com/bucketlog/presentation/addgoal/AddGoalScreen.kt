@@ -12,6 +12,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
@@ -22,10 +24,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -38,6 +44,9 @@ import bucketlog.shared.generated.resources.goal_bucket_someday
 import bucketlog.shared.generated.resources.goal_bucket_this_year
 import bucketlog.shared.generated.resources.goal_bucket_year_label
 import bucketlog.shared.generated.resources.goal_category_label
+import bucketlog.shared.generated.resources.goal_due_date_clear
+import bucketlog.shared.generated.resources.goal_due_date_label
+import bucketlog.shared.generated.resources.goal_due_date_unset
 import bucketlog.shared.generated.resources.goal_note_label
 import bucketlog.shared.generated.resources.goal_photo_label
 import bucketlog.shared.generated.resources.goal_reminder_interval_biweekly
@@ -61,6 +70,12 @@ import com.bucketlog.platform.rememberCameraCapture
 import com.bucketlog.platform.rememberPhotoPicker
 import com.bucketlog.presentation.common.PhotoAttachRow
 import com.bucketlog.presentation.common.labelRes
+import kotlin.time.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.todayIn
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -174,6 +189,53 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
                         onClick = { viewModel.onIntent(AddGoalIntent.BucketYearChanged(null)) },
                         label = { Text(stringResource(Res.string.goal_bucket_someday)) },
                     )
+                }
+            }
+
+            // G-09: 선택 입력. "계약이 아니라 참고선"(docs/NOTIFICATIONS.md) — 안 정해도 저장 가능.
+            Column {
+                Text(stringResource(Res.string.goal_due_date_label), style = MaterialTheme.typography.labelLarge)
+                var showDueDatePicker by remember { mutableStateOf(false) }
+                androidx.compose.foundation.layout.Row(
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 4.dp),
+                ) {
+                    TextButton(onClick = { showDueDatePicker = true }) {
+                        Text(state.dueDate?.toString() ?: stringResource(Res.string.goal_due_date_unset))
+                    }
+                    if (state.dueDate != null) {
+                        TextButton(onClick = { viewModel.onIntent(AddGoalIntent.DueDateChanged(null)) }) {
+                            Text(stringResource(Res.string.goal_due_date_clear))
+                        }
+                    }
+                }
+                if (showDueDatePicker) {
+                    // Material3 DatePicker의 selectedDateMillis는 UTC 자정 기준이다 — 기기 로컬 타임존으로
+                    // 변환하면 UTC보다 뒤쪽 타임존에서 하루 밀려 보인다(오늘이 아니라 어제가 선택된 것처럼
+                    // 보이는 버그였음). 초기값도 저장 시 되돌리는 방식과 똑같이 UTC 자정으로 맞춘다.
+                    val datePickerState = rememberDatePickerState(
+                        initialSelectedDateMillis = (state.dueDate ?: Clock.System.todayIn(TimeZone.currentSystemDefault()))
+                            .atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
+                    )
+                    DatePickerDialog(
+                        onDismissRequest = { showDueDatePicker = false },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    datePickerState.selectedDateMillis?.let { millis ->
+                                        val date = Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.UTC).date
+                                        viewModel.onIntent(AddGoalIntent.DueDateChanged(date))
+                                    }
+                                    showDueDatePicker = false
+                                },
+                            ) { Text(stringResource(Res.string.save)) }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDueDatePicker = false }) { Text(stringResource(Res.string.cancel)) }
+                        },
+                    ) {
+                        DatePicker(state = datePickerState)
+                    }
                 }
             }
 

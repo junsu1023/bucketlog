@@ -6,6 +6,8 @@ sealed interface SettingsIntent {
     data class SetThemeMode(val mode: ThemeMode) : SettingsIntent
     data class SetNotificationsEnabled(val enabled: Boolean) : SettingsIntent
     data class SetNudgeEnabled(val enabled: Boolean) : SettingsIntent
+    data class SetDueSoonEnabled(val enabled: Boolean) : SettingsIntent
+    data class SetYearEndRecapEnabled(val enabled: Boolean) : SettingsIntent
     data class SetNotificationHour(val hour: Int) : SettingsIntent
 
     // 백업/복원(M-02)

@@ -53,7 +53,7 @@ class NotificationBudgetTest {
     }
 
     @Test
-    fun `조용한 시간(21시 이후)엔 다음날 9시로 미뤄진다`() = runBlocking {
+    fun `조용한 시간 21시 이후엔 다음날 9시로 미뤄진다`() = runBlocking {
         val settings = FakeSettingsStore()
         var scheduled: LocalNotification? = null
         val budget = NotificationBudget(settings) { scheduled = it }
@@ -65,7 +65,7 @@ class NotificationBudgetTest {
     }
 
     @Test
-    fun `조용한 시간(9시 이전)엔 같은 날 9시로 미뤄진다`() = runBlocking {
+    fun `조용한 시간 9시 이전엔 같은 날 9시로 미뤄진다`() = runBlocking {
         val settings = FakeSettingsStore()
         var scheduled: LocalNotification? = null
         val budget = NotificationBudget(settings) { scheduled = it }
