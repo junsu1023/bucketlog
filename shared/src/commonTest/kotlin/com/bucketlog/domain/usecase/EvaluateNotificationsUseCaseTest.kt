@@ -17,16 +17,16 @@ import com.bucketlog.platform.LocalNotification
 import com.bucketlog.platform.NotificationType
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
 
 class EvaluateNotificationsUseCaseTest {
 
-    private val now = LocalDateTime(2026, 8, 17, 12, 0).toInstant(TimeZone.currentSystemDefault())
+    // usecase 내부가 Clock.System.now()의 실제 현재 시각을 기준으로 판정하므로, 픽스처의 기준점도
+    // 리터럴 날짜 대신 실행 시점의 실제 시각으로 잡는다 — 세션이 며칠 걸려도 안 깨지도록.
+    private val now = Clock.System.now()
 
     private fun goal(id: String, reminderLastSentAt: Instant? = null, createdAt: Instant = now - 200.days) = Goal(
         id = id,
@@ -81,8 +81,9 @@ class EvaluateNotificationsUseCaseTest {
             budget,
             settings,
         ) { "넛지" }
-        // 이 테스트의 now(2026-08-17)는 12월이 아니고 픽스처 목표엔 dueDate가 없어서
-        // 연말회고/마감임박은 항상 false를 반환한다 — 기존 3종 우선순위 테스트에 영향 없다.
+        // 픽스처 목표엔 dueDate가 없어서 마감임박은 항상 false. 연말회고는 실제 오늘이 12월이면
+        // true가 나올 수 있어 이 테스트만 12월엔 깨질 수 있음(같은 한계가 ScheduleYearEndRecapUseCase
+        // 자체에도 있다, docs/NOTIFICATIONS.md §6 참고) — 그 외 11개월은 기존 3종 우선순위 그대로.
         val yearEndRecap = ScheduleYearEndRecapUseCase(budget, settings, { "버킷로그" }, { "" }, { "" })
         val dueSoon = ScheduleDueSoonUseCase(goalRepository, budget, settings) { "" }
         return EvaluateNotificationsUseCase(yearEndRecap, dueSoon, recap, reminders, nudge)
