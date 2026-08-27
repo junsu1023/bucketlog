@@ -370,34 +370,42 @@ E-04 작업분), `App.kt`의 중복 `else` 분기, `SearchViewModel`의 `flatMap
 ## 14. 홈 화면 위젯 (Phase 1, Android 우선 구현)
 
 `docs/ROADMAP.md`에 Phase 1 대표 기능으로 계획돼 있던 위젯을 Phase 0 중 Android부터 먼저
-구현했다. 애초 계획("진행 중 목표 1~3개 + 남은 일수")을 유저에게 추천 후 다듬어서, 한 번에
-하나만 보여주는 위젯 3종으로 바꿨다 — 여러 목표를 리스트로 나열하면 홈 화면에 상시 체크리스트가
-떠 있는 셈이 되어 CLAUDE.md 절대 규칙 1번(스트릭·습관 트래커 금지)과 같은 종류의 문제가 생기기
-때문. Jetpack Glance로 구현(Compose Multiplatform과 별개 트리 — androidApp 모듈에 위치).
+구현했다. 최초 버전은 타입별 위젯 3종(오늘의 기억/지금 어때요/마감 임박)이었으나, 사용자가 제공한
+목업(마스코트 "루미" 포함)을 바탕으로 **크기별 위젯 3종**으로 전면 재설계했다 — Todo 위젯처럼
+"오늘 할 일이 또 있구나"가 아니라 "맞다, 나 이거 해보고 싶었지"가 떠오르게 하는 것이 핵심 기준.
+Jetpack Glance로 구현(Compose Multiplatform과 별개 트리 — androidApp 모듈에 위치).
 
-- [x] ✅ **오늘의 기억** — H-07 작년 오늘 로직을 그대로 재사용(`GetThrowbackUseCase`, 도메인
-      계층에 presentation 의존 없이 새로 둠). 대상 없으면 "아직 기록이 없어요" 빈 상태. 실기기에서
-      배경색(#FFF8E8)·빈 상태 문구·탭 시 앱 진입까지 확인
-- [x] ✅ **지금 어때요** — N-02 스마트 넛지의 `PickNudgeTargetUseCase`를 알림 없이 순수 조회만
-      재사용. 대상 없으면 "방치된 목표가 없어요. 잘 챙기고 있네요." 실기기 확인
-- [x] ✅ **마감 임박** — N-04용으로 있던 선정 로직을 `PickDueSoonGoalUseCase`로 분리해 재사용
-      (`ScheduleDueSoonUseCase`는 NotificationBudget에 실제 알림을 예약하는 부수효과가 있어
-      위젯이 그대로 갖다 쓰면 안 됨 — 이번에 분리하면서 발견). 대상 없으면 "마감이 임박한 목표가
-      없어요." 실기기 확인
-- [x] ✅ **설정 화면 "홈 화면 위젯" 섹션** — 위젯 3종 각각 "추가" 버튼 → `AppWidgetManager.
-      requestPinAppWidget`으로 시스템 고정 다이얼로그 호출. 길게 눌러 위젯 목록에서 찾는 것보다
-      발견성이 훨씬 좋아 permanent 기능으로 유지. iOS는 위젯 익스텐션이 없어 no-op
-      (`rememberWidgetPinner` expect/actual)
+- [x] ✅ **오늘의 한 걸음(Small, 2x2)** — `PickRecommendedGoalUseCase`(신규, 알림의 30일 정체
+      기준 없이 항상 하나를 추천하는 순수 조회)로 진행 중 목표 하나 + 카테고리 파스텔 배경 +
+      마스코트 + "기록하기" CTA. 대상 없으면 "올해 하고 싶은 것을 하나 추가해볼까요?" 빈 상태.
+      실기기에서 배경색·문구·탭 시 목표 상세 진입까지 확인
+- [x] ✅ **2026년의 나(Medium, 4x2)** — `GetYearSummaryUseCase`(신규)로 연도/완료-전체 개수 +
+      원형 진행률(Glance는 커스텀 드로잉 미지원이라 `Canvas`로 비트맵을 미리 그려 얹음) +
+      "다음으로 해볼까요?" 다음 목표 카드. 완료 표현은 "N개 완료"가 아니라 "N개의 추억을
+      만들었어요"로 성취 압박을 피함. 실기기에서 진행률 링 렌더링까지 확인
+- [x] ✅ **오늘의 추억(Large, 4x4)** — H-07 작년 오늘 로직(`GetThrowbackUseCase`, 사진 썸네일 경로
+      + 메모까지 확장)을 재사용해 사진(있으면)과 메모를 나란히 보여준다. 사진은 원본이 아니라
+      썸네일(~320px)만 읽어 로딩 비용을 최소화(`loadThumbnailBitmap`). 사진 카드는
+      `ContentScale.Crop`으로 항상 프레임을 꽉 채움(기본값 Fit이었을 때 세로로 긴 이미지에서
+      레터박스가 생기는 걸 실기기 검증 중 발견해 수정). 대상 없으면 "아직 오늘의 추억이
+      없어요." 빈 상태. 실기기에서 사진+메모 카드·달력 배지·탭 시 목표 상세 진입까지 확인
+- [x] ✅ **기존 타입별 위젯 3종 제거** — 지금 어때요/마감 임박 위젯 UI는 삭제했지만, 그 뒤에
+      있던 알림용 usecase(`PickNudgeTargetUseCase`/`PickDueSoonGoalUseCase`)는 N-02/N-04
+      알림이 계속 쓰므로 그대로 유지
+- [x] ✅ **마스코트 "루미"** — 실제 일러스트 준비 전까지 간단한 벡터 플레이스홀더
+      (`ic_mascot_rumi`)로 우선 구현, 추후 실제 아트로 교체 예정
+- [x] ✅ **설정 화면 "홈 화면 위젯" 섹션** — 위젯 3종(Small/Medium/Large) 각각 "추가" 버튼 →
+      `AppWidgetManager.requestPinAppWidget`으로 시스템 고정 다이얼로그 호출. iOS는 위젯
+      익스텐션이 없어 no-op(`rememberWidgetPinner` expect/actual)
 - [x] ✅ **위젯 자동 갱신** — `BucketLogApplication.onCreate()`에서 `GoalRepository.observeAll()`
       + `EntryRepository.observeLastRecordedAt()`을 구독해 목표/기록이 바뀔 때마다 위젯 3종을
       전부 갱신(`observeAndRefreshWidgets`, 500ms 디바운스). 30분 주기 자동 갱신도 병행
       (`updatePeriodMillis`)
 - [x] ✅ **실기기 검증** — 위젯 피커에 3종 모두 정확한 라벨/설명으로 노출되는 것,
-      `requestPinAppWidget` 다이얼로그 → 실제 홈 화면 고정(`dumpsys appwidget`으로 바인딩 확인) →
-      각 위젯이 서로 다른 올바른 빈 상태 문구로 렌더링되는 것, 위젯 탭 시 앱이 정상 실행되는 것까지
-      전부 확인. (참고: 위젯을 길게 눌러 드래그로 배치하는 건 `adb input swipe`/`draganddrop`
-      /단계별 `motionevent`로 여러 번 시도했지만 이 런처에서 재현이 안 돼 실패 — 대신
-      `requestPinAppWidget` 경로로 검증함)
+      `requestPinAppWidget` 다이얼로그 → 실제 홈 화면 고정 → 각 위젯이 사진/진행률 링/추천 목표를
+      포함해 의도한 대로 렌더링되는 것, 위젯 탭 시 앱이 정상 실행되는 것까지 전부 확인. (참고:
+      위젯을 길게 눌러 드래그로 배치하는 건 이 런처에서 재현이 안 돼 `requestPinAppWidget`
+      경로로 검증함)
 - [ ] iOS 위젯(WidgetKit) — 미구현. Xcode에 Widget Extension 타깃 추가 + 앱/위젯 양쪽에 App
       Group 설정(Team ID 필요) 후 진행 예정
 
