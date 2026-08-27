@@ -33,6 +33,45 @@
             </intent-filter>
         </activity>
 
+        <!-- 홈 화면 위젯(Phase 1) "오늘의 기억" — docs/ROADMAP.md -->
+        <receiver
+            android:name=".widget.ThrowbackWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_throwback_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/throwback_widget_info" />
+        </receiver>
+
+        <!-- 홈 화면 위젯(Phase 1) "지금 어때요" — docs/ROADMAP.md -->
+        <receiver
+            android:name=".widget.NudgeWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_nudge_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/nudge_widget_info" />
+        </receiver>
+
+        <!-- 홈 화면 위젯(Phase 1) "마감 임박" — docs/ROADMAP.md -->
+        <receiver
+            android:name=".widget.DueSoonWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_due_soon_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/due_soon_widget_info" />
+        </receiver>
+
         <!-- 카메라 촬영 결과를 임시로 담는 파일을 시스템 카메라 앱과 공유하기 위한 FileProvider -->
         <provider
             android:name="androidx.core.content.FileProvider"

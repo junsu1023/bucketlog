@@ -50,7 +50,7 @@ class ScheduleDueSoonUseCaseTest {
     private fun useCase(repo: FakeGoalRepository, captured: MutableList<LocalNotification>): ScheduleDueSoonUseCase {
         val settings = FakeSettingsStore()
         val budget = NotificationBudget(settings) { captured += it }
-        return ScheduleDueSoonUseCase(repo, budget, settings) { title -> "due:$title" }
+        return ScheduleDueSoonUseCase(PickDueSoonGoalUseCase(repo), budget, settings) { title -> "due:$title" }
     }
 
     @Test

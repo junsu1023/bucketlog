@@ -22,7 +22,9 @@ import com.bucketlog.domain.usecase.CompleteGoalUseCase
 import com.bucketlog.domain.usecase.DeleteGoalUseCase
 import com.bucketlog.domain.usecase.EvaluateNotificationsUseCase
 import com.bucketlog.domain.usecase.ExportBackupUseCase
+import com.bucketlog.domain.usecase.GetThrowbackUseCase
 import com.bucketlog.domain.usecase.ObserveGoalOverviewsUseCase
+import com.bucketlog.domain.usecase.PickDueSoonGoalUseCase
 import com.bucketlog.domain.usecase.PickNudgeTargetUseCase
 import com.bucketlog.domain.usecase.DeleteEntryUseCase
 import com.bucketlog.domain.usecase.ResetAllDataUseCase
@@ -94,6 +96,8 @@ val appModule = module {
     factory { AddProgressEntryUseCase(get(), get(), get()) }
     factory { ObserveGoalOverviewsUseCase(get(), get()) }
     factory { PickNudgeTargetUseCase(get(), get()) }
+    factory { PickDueSoonGoalUseCase(get()) }
+    factory { GetThrowbackUseCase(get()) }
     factory {
         ScheduleNudgeUseCase(get(), get(), get(), get(), get()) { days ->
             getString(Res.string.nudge_notification_body, days)
@@ -120,6 +124,8 @@ val appModule = module {
             getString(Res.string.due_soon_notification_body, title)
         }
     }
+    // 위 ScheduleDueSoonUseCase(get(), get(), get())의 첫 get()이 PickDueSoonGoalUseCase로 타입
+    // 추론된다 — Koin factory가 이미 위에 등록돼 있어 파라미터 하나가 늘어도 그대로 동작한다.
     factory {
         ScheduleYearEndRecapUseCase(
             notificationBudget = get(),

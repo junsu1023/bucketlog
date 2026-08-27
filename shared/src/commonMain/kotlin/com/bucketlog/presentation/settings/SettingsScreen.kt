@@ -13,6 +13,7 @@ import androidx.compose.material.icons.outlined.CloudUpload
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -65,7 +66,13 @@ import bucketlog.shared.generated.resources.settings_notification_hour
 import bucketlog.shared.generated.resources.settings_nudge
 import bucketlog.shared.generated.resources.settings_reset_all
 import bucketlog.shared.generated.resources.settings_rollover
+import bucketlog.shared.generated.resources.settings_widget_due_soon
+import bucketlog.shared.generated.resources.settings_widget_nudge
+import bucketlog.shared.generated.resources.settings_widget_section
+import bucketlog.shared.generated.resources.settings_widget_throwback
 import bucketlog.shared.generated.resources.settings_year_end_recap
+import com.bucketlog.platform.WidgetKind
+import com.bucketlog.platform.rememberWidgetPinner
 import bucketlog.shared.generated.resources.settings_theme_dark
 import bucketlog.shared.generated.resources.settings_theme_light
 import bucketlog.shared.generated.resources.settings_theme_section
@@ -177,6 +184,29 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: (() -> Unit)? = null, o
                         label = { Text(stringResource(Res.string.settings_hour_format, hour)) },
                     )
                 }
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+
+            SectionHeader(icon = Icons.Outlined.Widgets, label = stringResource(Res.string.settings_widget_section))
+            val pinWidget = rememberWidgetPinner()
+            OutlinedButton(
+                onClick = { pinWidget(WidgetKind.THROWBACK) },
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            ) {
+                Text(stringResource(Res.string.settings_widget_throwback))
+            }
+            OutlinedButton(
+                onClick = { pinWidget(WidgetKind.NUDGE) },
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            ) {
+                Text(stringResource(Res.string.settings_widget_nudge))
+            }
+            OutlinedButton(
+                onClick = { pinWidget(WidgetKind.DUE_SOON) },
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            ) {
+                Text(stringResource(Res.string.settings_widget_due_soon))
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))

@@ -1,17 +1,11 @@
 package com.bucketlog.domain.usecase
 
-import com.bucketlog.domain.model.GoalStatus
-import com.bucketlog.domain.repository.GoalRepository
 import com.bucketlog.notification.NotificationBudget
 import com.bucketlog.notification.NotificationSettingsKeys
 import com.bucketlog.notification.SettingsStore
 import com.bucketlog.platform.LocalNotification
 import com.bucketlog.platform.NotificationType
 import kotlin.time.Clock
-import kotlinx.coroutines.flow.first
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.daysUntil
-import kotlinx.datetime.todayIn
 
 /**
  * N-04 마감 임박. docs/NOTIFICATIONS.md §2 — 마감 7일 전 1회, 대상은 그중 마감이 가장 가까운 것 하나.
@@ -26,20 +20,14 @@ import kotlinx.datetime.todayIn
  * work REPLACE 정책, NotificationScheduler.android.kt 참고).
  */
 class ScheduleDueSoonUseCase(
-    private val goalRepository: GoalRepository,
+    private val pickDueSoonGoal: PickDueSoonGoalUseCase,
     private val notificationBudget: NotificationBudget,
     private val settings: SettingsStore,
     private val dueSoonBody: suspend (title: String) -> String,
 ) {
     suspend operator fun invoke(): Boolean {
-        val zone = TimeZone.currentSystemDefault()
         val now = Clock.System.now()
-        val today = Clock.System.todayIn(zone)
-
-        val target = goalRepository.observeAll().first()
-            .filter { it.status == GoalStatus.IN_PROGRESS && it.dueDate != null }
-            .filter { goal -> today.daysUntil(goal.dueDate!!) in 0..7 }
-            .minByOrNull { it.dueDate!! } ?: return false
+        val target = pickDueSoonGoal() ?: return false
 
         val preferredHour = settings.getLong(
             NotificationSettingsKeys.NOTIFICATION_HOUR,

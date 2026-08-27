@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Glance는 실제 콘텐츠를 코드에서 그리므로 이 레이아웃은 AppWidgetProviderInfo가 요구하는
+     initialLayout 자리를 채우는 용도일 뿐이다 — 실제로 보이는 시간은 아주 짧다. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:padding="16dp"
+    android:text="@string/widget_loading" />

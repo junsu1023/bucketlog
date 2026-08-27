@@ -180,6 +180,12 @@
     <string name="home_rollover_banner">%1$d년이 얼마 남지 않았어요 — 연말 정리 해볼까요?</string>
     <string name="settings_rollover">연말 정리</string>
 
+    <!-- 홈 화면 위젯(Phase 1) -->
+    <string name="settings_widget_section">홈 화면 위젯</string>
+    <string name="settings_widget_throwback">오늘의 기억 위젯 추가</string>
+    <string name="settings_widget_nudge">지금 어때요 위젯 추가</string>
+    <string name="settings_widget_due_soon">마감 임박 위젯 추가</string>
+
     <!-- 온보딩 -->
     <string name="onboarding_title">뭘 해보고 싶으세요?</string>
     <string name="onboarding_subtitle">몇 개 골라보세요. 나중에 언제든 추가할 수 있어요.</string>

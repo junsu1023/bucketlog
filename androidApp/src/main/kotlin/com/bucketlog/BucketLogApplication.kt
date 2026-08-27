@@ -11,6 +11,7 @@ import com.bucketlog.platform.MainActivityClassHolder
 import com.bucketlog.platform.NotificationPermissionBridge
 import com.bucketlog.platform.NotificationScheduler
 import com.bucketlog.platform.ensureNotificationChannel
+import com.bucketlog.widget.observeAndRefreshWidgets
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,5 +41,8 @@ class BucketLogApplication : Application() {
         CoroutineScope(Dispatchers.Default).launch {
             KoinPlatformTools.defaultContext().get().get<EvaluateNotificationsUseCase>().invoke()
         }
+
+        // 홈 화면 위젯(Phase 1) — 목표/기록이 바뀔 때마다 위젯 3종을 갱신한다.
+        observeAndRefreshWidgets(this, CoroutineScope(Dispatchers.Default))
     }
 }

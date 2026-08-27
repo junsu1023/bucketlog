@@ -85,7 +85,7 @@ class EvaluateNotificationsUseCaseTest {
         // true가 나올 수 있어 이 테스트만 12월엔 깨질 수 있음(같은 한계가 ScheduleYearEndRecapUseCase
         // 자체에도 있다, docs/NOTIFICATIONS.md §6 참고) — 그 외 11개월은 기존 3종 우선순위 그대로.
         val yearEndRecap = ScheduleYearEndRecapUseCase(budget, settings, { "버킷로그" }, { "" }, { "" })
-        val dueSoon = ScheduleDueSoonUseCase(goalRepository, budget, settings) { "" }
+        val dueSoon = ScheduleDueSoonUseCase(PickDueSoonGoalUseCase(goalRepository), budget, settings) { "" }
         return EvaluateNotificationsUseCase(yearEndRecap, dueSoon, recap, reminders, nudge)
     }
 
