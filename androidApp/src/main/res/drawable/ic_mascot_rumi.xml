@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  마스코트 "루미"의 임시 플레이스홀더. 실제 일러스트 에셋이 준비되면 이 벡터를 통째로
+  교체한다(같은 리소스 이름 유지) — 위젯 코드는 R.drawable.ic_mascot_rumi만 참조하므로
+  교체 시 다른 파일을 건드릴 필요 없음.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 귀 -->
+    <path
+        android:fillColor="#FFFDF6E3"
+        android:pathData="M22,34 L40,26 L34,48 Z" />
+    <path
+        android:fillColor="#FFFDF6E3"
+        android:pathData="M86,34 L68,26 L74,48 Z" />
+    <path
+        android:fillColor="#FFF3D9A6"
+        android:pathData="M27,35 L37,31 L34,43 Z" />
+    <path
+        android:fillColor="#FFF3D9A6"
+        android:pathData="M81,35 L71,31 L74,43 Z" />
+
+    <!-- 얼굴 -->
+    <path
+        android:fillColor="#FFFDF6E3"
+        android:pathData="M54,20 m-34,0 a34,34 0 1,0 68,0 a34,34 0 1,0 -68,0" />
+
+    <!-- 볼터치 -->
+    <path
+        android:fillColor="#FFF3B6AE"
+        android:fillAlpha="0.55"
+        android:pathData="M33,58 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0" />
+    <path
+        android:fillColor="#FFF3B6AE"
+        android:fillAlpha="0.55"
+        android:pathData="M75,58 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0" />
+
+    <!-- 눈 -->
+    <path
+        android:fillColor="#FF2B2B28"
+        android:pathData="M43,48 m-3.4,0 a3.4,3.4 0 1,0 6.8,0 a3.4,3.4 0 1,0 -6.8,0" />
+    <path
+        android:fillColor="#FF2B2B28"
+        android:pathData="M65,48 m-3.4,0 a3.4,3.4 0 1,0 6.8,0 a3.4,3.4 0 1,0 -6.8,0" />
+
+    <!-- 입 -->
+    <path
+        android:strokeColor="#FF2B2B28"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:pathData="M48,62 Q54,68 60,62" />
+</vector>

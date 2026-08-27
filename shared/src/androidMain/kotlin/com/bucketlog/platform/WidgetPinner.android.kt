@@ -15,9 +15,9 @@ actual fun rememberWidgetPinner(): (WidgetKind) -> Unit {
     return { kind ->
         val appWidgetManager = context.getSystemService(AppWidgetManager::class.java)
         val receiverClassName = when (kind) {
-            WidgetKind.THROWBACK -> "$WIDGET_PACKAGE.ThrowbackWidgetReceiver"
-            WidgetKind.NUDGE -> "$WIDGET_PACKAGE.NudgeWidgetReceiver"
-            WidgetKind.DUE_SOON -> "$WIDGET_PACKAGE.DueSoonWidgetReceiver"
+            WidgetKind.SMALL_STEP -> "$WIDGET_PACKAGE.SmallStepWidgetReceiver"
+            WidgetKind.YEAR_PROGRESS -> "$WIDGET_PACKAGE.YearProgressWidgetReceiver"
+            WidgetKind.TODAY_MEMORY -> "$WIDGET_PACKAGE.TodayMemoryWidgetReceiver"
         }
         val provider = ComponentName(context.packageName, receiverClassName)
         if (appWidgetManager?.isRequestPinAppWidgetSupported == true) {

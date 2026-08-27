@@ -182,9 +182,9 @@
 
     <!-- 홈 화면 위젯(Phase 1) -->
     <string name="settings_widget_section">홈 화면 위젯</string>
-    <string name="settings_widget_throwback">오늘의 기억 위젯 추가</string>
-    <string name="settings_widget_nudge">지금 어때요 위젯 추가</string>
-    <string name="settings_widget_due_soon">마감 임박 위젯 추가</string>
+    <string name="settings_widget_small_step">오늘의 한 걸음 위젯 추가</string>
+    <string name="settings_widget_year_progress">올해의 나 위젯 추가</string>
+    <string name="settings_widget_today_memory">오늘의 추억 위젯 추가</string>
 
     <!-- 온보딩 -->
     <string name="onboarding_title">뭘 해보고 싶으세요?</string>

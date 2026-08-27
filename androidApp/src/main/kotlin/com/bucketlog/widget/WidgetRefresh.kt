@@ -29,9 +29,9 @@ fun observeAndRefreshWidgets(context: Context, scope: CoroutineScope) {
         ) { _, _ -> Unit }
             .debounce(500)
             .collect {
-                ThrowbackWidget().updateAll(context)
-                NudgeWidget().updateAll(context)
-                DueSoonWidget().updateAll(context)
+                SmallStepWidget().updateAll(context)
+                YearProgressWidget().updateAll(context)
+                TodayMemoryWidget().updateAll(context)
             }
     }
 }

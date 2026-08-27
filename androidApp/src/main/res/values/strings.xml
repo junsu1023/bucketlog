@@ -3,20 +3,30 @@
 
     <!-- 홈 화면 위젯(Phase 1). Glance는 shared의 CMP 문자열 리소스를 못 읽어 여기 따로 둔다. -->
     <string name="widget_loading">불러오는 중…</string>
-    <string name="widget_throwback_label">오늘의 기억</string>
-    <string name="widget_throwback_year_ago">1년 전 오늘, %1$s</string>
-    <string name="widget_throwback_month_ago">한 달 전 오늘, %1$s</string>
-    <string name="widget_throwback_empty">아직 기록이 없어요. 앱을 열어 첫 기록을 남겨보세요.</string>
-    <string name="widget_throwback_description">오늘의 기억</string>
 
-    <string name="widget_nudge_label">지금 어때요?</string>
-    <string name="widget_nudge_body">%1$s · 마지막 기록 후 %2$d일</string>
-    <string name="widget_nudge_empty">방치된 목표가 없어요. 잘 챙기고 있네요.</string>
-    <string name="widget_nudge_description">지금 어때요</string>
+    <!-- Small(2x2) "오늘의 한 걸음" -->
+    <string name="widget_small_step_label">✨ 오늘의 한 걸음</string>
+    <string name="widget_small_step_cta">기록하기 →</string>
+    <string name="widget_small_step_empty_title">올해 하고 싶은 것을\n하나 추가해볼까요?</string>
+    <string name="widget_small_step_description">오늘의 한 걸음</string>
 
-    <string name="widget_due_soon_label">마감 임박</string>
-    <string name="widget_due_soon_body">%1$s · D-%2$d</string>
-    <string name="widget_due_soon_body_today">%1$s · 오늘 마감</string>
-    <string name="widget_due_soon_empty">마감이 임박한 목표가 없어요.</string>
-    <string name="widget_due_soon_description">마감 임박</string>
+    <!-- Medium(4x2) "N년의 나" -->
+    <string name="widget_year_progress_title">%1$d년의 나</string>
+    <string name="widget_year_progress_subtitle">작은 것들이 모여 추억이 돼요</string>
+    <string name="widget_year_progress_count">%1$d / %2$d</string>
+    <string name="widget_year_progress_completed_label">추억을 만들었어요!</string>
+    <string name="widget_year_progress_next_label">다음으로 해볼까요?</string>
+    <string name="widget_year_progress_footer">작은 한 걸음이 멋진 한 해를 만들어요 ✨</string>
+    <string name="widget_year_progress_empty">아직 %1$d년 목표가 없어요.\n하나 적어볼까요?</string>
+    <string name="widget_year_progress_description">2026년의 나</string>
+
+    <!-- Large(4x4) "오늘의 추억" -->
+    <string name="widget_today_memory_title">오늘의 추억</string>
+    <string name="widget_today_memory_year_ago">1년 전 오늘</string>
+    <string name="widget_today_memory_month_ago">한 달 전 오늘</string>
+    <string name="widget_today_memory_date_format">%1$04d.%2$02d.%3$02d</string>
+    <string name="widget_today_memory_calendar_format">%1$d.%2$d</string>
+    <string name="widget_today_memory_empty_title">아직 오늘의 추억이 없어요.</string>
+    <string name="widget_today_memory_empty_body">올해 첫 번째 추억을 만들어볼까요?</string>
+    <string name="widget_today_memory_description">오늘의 추억</string>
 </resources>

@@ -66,10 +66,10 @@ import bucketlog.shared.generated.resources.settings_notification_hour
 import bucketlog.shared.generated.resources.settings_nudge
 import bucketlog.shared.generated.resources.settings_reset_all
 import bucketlog.shared.generated.resources.settings_rollover
-import bucketlog.shared.generated.resources.settings_widget_due_soon
-import bucketlog.shared.generated.resources.settings_widget_nudge
 import bucketlog.shared.generated.resources.settings_widget_section
-import bucketlog.shared.generated.resources.settings_widget_throwback
+import bucketlog.shared.generated.resources.settings_widget_small_step
+import bucketlog.shared.generated.resources.settings_widget_today_memory
+import bucketlog.shared.generated.resources.settings_widget_year_progress
 import bucketlog.shared.generated.resources.settings_year_end_recap
 import com.bucketlog.platform.WidgetKind
 import com.bucketlog.platform.rememberWidgetPinner
@@ -191,22 +191,22 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: (() -> Unit)? = null, o
             SectionHeader(icon = Icons.Outlined.Widgets, label = stringResource(Res.string.settings_widget_section))
             val pinWidget = rememberWidgetPinner()
             OutlinedButton(
-                onClick = { pinWidget(WidgetKind.THROWBACK) },
+                onClick = { pinWidget(WidgetKind.SMALL_STEP) },
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             ) {
-                Text(stringResource(Res.string.settings_widget_throwback))
+                Text(stringResource(Res.string.settings_widget_small_step))
             }
             OutlinedButton(
-                onClick = { pinWidget(WidgetKind.NUDGE) },
+                onClick = { pinWidget(WidgetKind.YEAR_PROGRESS) },
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             ) {
-                Text(stringResource(Res.string.settings_widget_nudge))
+                Text(stringResource(Res.string.settings_widget_year_progress))
             }
             OutlinedButton(
-                onClick = { pinWidget(WidgetKind.DUE_SOON) },
+                onClick = { pinWidget(WidgetKind.TODAY_MEMORY) },
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             ) {
-                Text(stringResource(Res.string.settings_widget_due_soon))
+                Text(stringResource(Res.string.settings_widget_today_memory))
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))

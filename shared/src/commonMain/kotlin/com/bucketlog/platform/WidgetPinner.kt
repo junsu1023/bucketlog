@@ -2,7 +2,7 @@ package com.bucketlog.platform
 
 import androidx.compose.runtime.Composable
 
-enum class WidgetKind { THROWBACK, NUDGE, DUE_SOON }
+enum class WidgetKind { SMALL_STEP, YEAR_PROGRESS, TODAY_MEMORY }
 
 /**
  * 홈 화면 위젯 3종(Phase 1, docs/ROADMAP.md)을 길게 눌러 찾는 대신 앱 안에서 바로 고정 요청한다 —

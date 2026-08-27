@@ -23,9 +23,11 @@ import com.bucketlog.domain.usecase.DeleteGoalUseCase
 import com.bucketlog.domain.usecase.EvaluateNotificationsUseCase
 import com.bucketlog.domain.usecase.ExportBackupUseCase
 import com.bucketlog.domain.usecase.GetThrowbackUseCase
+import com.bucketlog.domain.usecase.GetYearSummaryUseCase
 import com.bucketlog.domain.usecase.ObserveGoalOverviewsUseCase
 import com.bucketlog.domain.usecase.PickDueSoonGoalUseCase
 import com.bucketlog.domain.usecase.PickNudgeTargetUseCase
+import com.bucketlog.domain.usecase.PickRecommendedGoalUseCase
 import com.bucketlog.domain.usecase.DeleteEntryUseCase
 import com.bucketlog.domain.usecase.ResetAllDataUseCase
 import com.bucketlog.domain.usecase.RestoreBackupUseCase
@@ -98,6 +100,8 @@ val appModule = module {
     factory { PickNudgeTargetUseCase(get(), get()) }
     factory { PickDueSoonGoalUseCase(get()) }
     factory { GetThrowbackUseCase(get()) }
+    factory { PickRecommendedGoalUseCase(get(), get()) }
+    factory { GetYearSummaryUseCase(get()) }
     factory {
         ScheduleNudgeUseCase(get(), get(), get(), get(), get()) { days ->
             getString(Res.string.nudge_notification_body, days)
