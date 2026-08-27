@@ -367,6 +367,42 @@ E-04 작업분), `App.kt`의 중복 `else` 분기, `SearchViewModel`의 `flatMap
 
 ---
 
+## 14. 홈 화면 위젯 (Phase 1, Android 우선 구현)
+
+`docs/ROADMAP.md`에 Phase 1 대표 기능으로 계획돼 있던 위젯을 Phase 0 중 Android부터 먼저
+구현했다. 애초 계획("진행 중 목표 1~3개 + 남은 일수")을 유저에게 추천 후 다듬어서, 한 번에
+하나만 보여주는 위젯 3종으로 바꿨다 — 여러 목표를 리스트로 나열하면 홈 화면에 상시 체크리스트가
+떠 있는 셈이 되어 CLAUDE.md 절대 규칙 1번(스트릭·습관 트래커 금지)과 같은 종류의 문제가 생기기
+때문. Jetpack Glance로 구현(Compose Multiplatform과 별개 트리 — androidApp 모듈에 위치).
+
+- [x] ✅ **오늘의 기억** — H-07 작년 오늘 로직을 그대로 재사용(`GetThrowbackUseCase`, 도메인
+      계층에 presentation 의존 없이 새로 둠). 대상 없으면 "아직 기록이 없어요" 빈 상태. 실기기에서
+      배경색(#FFF8E8)·빈 상태 문구·탭 시 앱 진입까지 확인
+- [x] ✅ **지금 어때요** — N-02 스마트 넛지의 `PickNudgeTargetUseCase`를 알림 없이 순수 조회만
+      재사용. 대상 없으면 "방치된 목표가 없어요. 잘 챙기고 있네요." 실기기 확인
+- [x] ✅ **마감 임박** — N-04용으로 있던 선정 로직을 `PickDueSoonGoalUseCase`로 분리해 재사용
+      (`ScheduleDueSoonUseCase`는 NotificationBudget에 실제 알림을 예약하는 부수효과가 있어
+      위젯이 그대로 갖다 쓰면 안 됨 — 이번에 분리하면서 발견). 대상 없으면 "마감이 임박한 목표가
+      없어요." 실기기 확인
+- [x] ✅ **설정 화면 "홈 화면 위젯" 섹션** — 위젯 3종 각각 "추가" 버튼 → `AppWidgetManager.
+      requestPinAppWidget`으로 시스템 고정 다이얼로그 호출. 길게 눌러 위젯 목록에서 찾는 것보다
+      발견성이 훨씬 좋아 permanent 기능으로 유지. iOS는 위젯 익스텐션이 없어 no-op
+      (`rememberWidgetPinner` expect/actual)
+- [x] ✅ **위젯 자동 갱신** — `BucketLogApplication.onCreate()`에서 `GoalRepository.observeAll()`
+      + `EntryRepository.observeLastRecordedAt()`을 구독해 목표/기록이 바뀔 때마다 위젯 3종을
+      전부 갱신(`observeAndRefreshWidgets`, 500ms 디바운스). 30분 주기 자동 갱신도 병행
+      (`updatePeriodMillis`)
+- [x] ✅ **실기기 검증** — 위젯 피커에 3종 모두 정확한 라벨/설명으로 노출되는 것,
+      `requestPinAppWidget` 다이얼로그 → 실제 홈 화면 고정(`dumpsys appwidget`으로 바인딩 확인) →
+      각 위젯이 서로 다른 올바른 빈 상태 문구로 렌더링되는 것, 위젯 탭 시 앱이 정상 실행되는 것까지
+      전부 확인. (참고: 위젯을 길게 눌러 드래그로 배치하는 건 `adb input swipe`/`draganddrop`
+      /단계별 `motionevent`로 여러 번 시도했지만 이 런처에서 재현이 안 돼 실패 — 대신
+      `requestPinAppWidget` 경로로 검증함)
+- [ ] iOS 위젯(WidgetKit) — 미구현. Xcode에 Widget Extension 타깃 추가 + 앱/위젯 양쪽에 App
+      Group 설정(Team ID 필요) 후 진행 예정
+
+---
+
 ## 참고: 이 문서 사용법
 
 - 체크박스는 사람이 직접 눌러보고 확인한 뒤 체크하는 용도입니다. 코드 존재 여부만으로 자동 체크하지 않았습니다.

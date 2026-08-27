@@ -77,14 +77,21 @@
   `:shared:allTests`(iOS 시뮬레이터 타깃 포함)와 `xcodebuild`+iOS 시뮬레이터 실제 실행까지
   전부 확인 완료 — 온보딩 화면이 정상 렌더링되는 것까지 확인. 탭 단위 인터랙션 자동화는
   터미널 보조 접근성 권한이 필요해 이번엔 생략(공유 로직은 Android에서 이미 상세 검증됨).
-  `test.md` §11 참고 |
+  `test.md` §11 참고. 이후 Phase 1 대표 기능으로 로드맵에 있던 **홈 화면 위젯을 Android부터
+  앞당겨 구현** — 여러 목표를 리스트로 보여주는 대신(스트릭/체크리스트처럼 보일 위험, 절대 규칙
+  1번과 충돌) 한 번에 하나만 보여주는 위젯 3종(오늘의 기억/지금 어때요/마감 임박, Jetpack Glance)
+  + 설정 화면 "위젯 추가" 버튼(`requestPinAppWidget`)으로 구현. 기존 H-07/N-02/N-04 선정
+  로직을 그대로 재사용(마감 임박은 알림 부수효과가 있는 `ScheduleDueSoonUseCase`에서
+  `PickDueSoonGoalUseCase`를 순수 함수로 분리해 재사용). 실기기에서 위젯 3종 전부 고정→렌더링→
+  탭 진입까지 확인. iOS 위젯(WidgetKit)은 미구현(`test.md` §14 참고) |
 | 앱 이름 | **가칭** BucketLog / 버킷로그 |
 | 백엔드 | **없음** (MVP는 로컬 전용. Phase 1에 도입) |
 | 로그인 | **없음** (Phase 1) |
 | 다음 작업 | MVP-SCOPE.md의 P0/P1 기능은 전부 구현됨. 남은 건 (1) 남은 버그 있는지 계속 확인
-  (2) 스토어 제출 준비(개발자 계정·서명키·스토어 리스팅 등 사용자가 직접 해야 하는 외부 작업)뿐 —
-  알림 테스트 날짜 드리프트 문제(`ScheduleGoalRemindersUseCaseTest`/`EvaluateNotificationsUseCaseTest`)는
-  해결 완료, iOS 컴파일·시뮬레이터 실행 확인도 완료(`test.md` §11) |
+  (2) 스토어 제출 준비(개발자 계정·서명키·스토어 리스팅 등 사용자가 직접 해야 하는 외부 작업)
+  (3) iOS 위젯(WidgetKit) — Xcode에 Widget Extension 타깃 + App Group(Team ID 필요) 설정 후
+  진행. 알림 테스트 날짜 드리프트 문제는 해결 완료, iOS 컴파일·시뮬레이터 실행 확인도 완료
+  (`test.md` §11) |
 
 > 미확정 항목에 대해 코드를 생성해야 하면 **임의로 결정하지 말고 먼저 물어보세요.**
 
