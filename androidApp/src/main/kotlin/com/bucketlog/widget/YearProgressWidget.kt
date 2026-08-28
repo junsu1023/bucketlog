@@ -92,7 +92,7 @@ private fun YearProgressContent(context: Context, summary: YearSummary, nextGoal
                     modifier = GlanceModifier.padding(top = 2.dp),
                 )
             }
-            WidgetMascotImage(size = 36.dp)
+            WidgetMascotImage(resId = WidgetMascot.GOOD, size = 36.dp)
         }
 
         Row(

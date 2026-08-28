@@ -150,7 +150,7 @@ private fun TodayMemoryContent(pick: ThrowbackPick, photoBitmap: Bitmap?) {
                 style = TextStyle(color = ColorProvider(WidgetColors.onSurfaceVariant), fontSize = 12.sp),
                 modifier = GlanceModifier.defaultWeight(),
             )
-            WidgetMascotImage(size = 32.dp)
+            WidgetMascotImage(resId = WidgetMascot.MEMORY, size = 32.dp)
         }
     }
 }

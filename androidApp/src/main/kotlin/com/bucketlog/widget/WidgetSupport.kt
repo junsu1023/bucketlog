@@ -55,6 +55,14 @@ object WidgetColors {
 
 val WidgetCardRadius = 20.dp
 
+/** 루미 포즈 — 상황에 맞는 표정을 골라 "관리자"가 아니라 "옆에서 응원하는 친구" 톤을 유지한다. */
+object WidgetMascot {
+    val THINKING = R.drawable.ic_mascot_rumi_thinking
+    val CHEER = R.drawable.ic_mascot_rumi_cheer
+    val GOOD = R.drawable.ic_mascot_rumi_good
+    val MEMORY = R.drawable.ic_mascot_rumi_memory
+}
+
 /** 위젯을 탭하면 목표 상세의 퀵 체크인 필드로 바로 들어간다 — 딥링크는 기존 알림과 동일한 규칙. */
 fun goalCheckInDeepLink(goalId: String): String = "bucketlog://goal/$goalId?focus=checkin"
 
@@ -84,7 +92,7 @@ fun WidgetEmptyState(title: String, body: String? = null) {
         verticalAlignment = Alignment.Vertical.CenterVertically,
         horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
     ) {
-        WidgetMascotImage(size = 40.dp)
+        WidgetMascotImage(resId = WidgetMascot.THINKING, size = 40.dp)
         Text(
             text = title,
             style = TextStyle(
@@ -108,11 +116,11 @@ fun WidgetEmptyState(title: String, body: String? = null) {
     }
 }
 
-/** 마스코트 "루미". 실제 일러스트 준비 전까지는 간단한 벡터 플레이스홀더(ic_mascot_rumi)를 쓴다. */
+/** 마스코트 "루미". [WidgetMascot]의 포즈 중 상황에 맞는 것을 호출부가 고른다. */
 @Composable
-fun WidgetMascotImage(size: androidx.compose.ui.unit.Dp) {
+fun WidgetMascotImage(resId: Int, size: androidx.compose.ui.unit.Dp) {
     Image(
-        provider = ImageProvider(R.drawable.ic_mascot_rumi),
+        provider = ImageProvider(resId),
         contentDescription = null,
         modifier = GlanceModifier.size(size),
     )

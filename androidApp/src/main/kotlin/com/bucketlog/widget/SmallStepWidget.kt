@@ -98,7 +98,7 @@ private fun SmallStepContent(goalId: String, title: String, background: Color) {
                     .defaultWeight()
                     .clickable(actionStartActivity(goalDeepLinkIntent(context, goalCheckInDeepLink(goalId)))),
             )
-            WidgetMascotImage(size = 30.dp)
+            WidgetMascotImage(resId = WidgetMascot.CHEER, size = 30.dp)
         }
     }
 }
