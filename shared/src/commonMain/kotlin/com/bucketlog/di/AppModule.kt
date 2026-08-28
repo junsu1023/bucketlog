@@ -2,9 +2,12 @@ package com.bucketlog.di
 
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.app_name
+import bucketlog.shared.generated.resources.due_soon_notification_body
 import bucketlog.shared.generated.resources.goal_reminder_notification_body
 import bucketlog.shared.generated.resources.monthly_recap_notification_body
 import bucketlog.shared.generated.resources.nudge_notification_body
+import bucketlog.shared.generated.resources.year_end_recap_notification_end_body
+import bucketlog.shared.generated.resources.year_end_recap_notification_mid_body
 import com.bucketlog.data.local.AppDatabase
 import com.bucketlog.data.local.DatabaseFactory
 import com.bucketlog.data.repository.EntryRepositoryImpl
@@ -19,15 +22,23 @@ import com.bucketlog.domain.usecase.CompleteGoalUseCase
 import com.bucketlog.domain.usecase.DeleteGoalUseCase
 import com.bucketlog.domain.usecase.EvaluateNotificationsUseCase
 import com.bucketlog.domain.usecase.ExportBackupUseCase
+import com.bucketlog.domain.usecase.GetThrowbackUseCase
+import com.bucketlog.domain.usecase.GetYearSummaryUseCase
 import com.bucketlog.domain.usecase.ObserveGoalOverviewsUseCase
+import com.bucketlog.domain.usecase.PickDueSoonGoalUseCase
 import com.bucketlog.domain.usecase.PickNudgeTargetUseCase
+import com.bucketlog.domain.usecase.PickRecommendedGoalUseCase
 import com.bucketlog.domain.usecase.DeleteEntryUseCase
 import com.bucketlog.domain.usecase.ResetAllDataUseCase
 import com.bucketlog.domain.usecase.RestoreBackupUseCase
 import com.bucketlog.domain.usecase.RestoreGoalUseCase
+import com.bucketlog.domain.usecase.RolloverGoalsUseCase
+import com.bucketlog.domain.usecase.ScheduleDueSoonUseCase
 import com.bucketlog.domain.usecase.ScheduleGoalRemindersUseCase
 import com.bucketlog.domain.usecase.ScheduleMonthlyRecapUseCase
 import com.bucketlog.domain.usecase.ScheduleNudgeUseCase
+import com.bucketlog.domain.usecase.ScheduleYearEndRecapUseCase
+import com.bucketlog.domain.usecase.SearchGoalsUseCase
 import com.bucketlog.domain.usecase.UpdateEntryUseCase
 import com.bucketlog.notification.AppSettingsStore
 import com.bucketlog.notification.NotificationBudget
@@ -42,6 +53,8 @@ import com.bucketlog.presentation.archive.ArchiveViewModel
 import com.bucketlog.presentation.goaldetail.GoalDetailViewModel
 import com.bucketlog.presentation.home.HomeViewModel
 import com.bucketlog.presentation.onboarding.OnboardingViewModel
+import com.bucketlog.presentation.rollover.RolloverViewModel
+import com.bucketlog.presentation.search.SearchViewModel
 import com.bucketlog.presentation.settings.SettingsViewModel
 import com.bucketlog.presentation.theme.ThemeModeStore
 import org.jetbrains.compose.resources.getString
@@ -79,11 +92,16 @@ val appModule = module {
     factory { DeleteGoalUseCase(get()) }
     factory { CompleteGoalUseCase(get(), get(), get(), get()) }
     factory { ArchiveGoalUseCase(get()) }
+    factory { RolloverGoalsUseCase(get(), get()) }
     factory { RestoreGoalUseCase(get(), get()) }
     factory { AddCheckInEntryUseCase(get()) }
     factory { AddProgressEntryUseCase(get(), get(), get()) }
     factory { ObserveGoalOverviewsUseCase(get(), get()) }
     factory { PickNudgeTargetUseCase(get(), get()) }
+    factory { PickDueSoonGoalUseCase(get()) }
+    factory { GetThrowbackUseCase(get()) }
+    factory { PickRecommendedGoalUseCase(get(), get()) }
+    factory { GetYearSummaryUseCase(get()) }
     factory {
         ScheduleNudgeUseCase(get(), get(), get(), get(), get()) { days ->
             getString(Res.string.nudge_notification_body, days)
@@ -105,18 +123,36 @@ val appModule = module {
             getString(Res.string.goal_reminder_notification_body)
         }
     }
-    factory { EvaluateNotificationsUseCase(get(), get(), get()) }
+    factory {
+        ScheduleDueSoonUseCase(get(), get(), get()) { title ->
+            getString(Res.string.due_soon_notification_body, title)
+        }
+    }
+    // 위 ScheduleDueSoonUseCase(get(), get(), get())의 첫 get()이 PickDueSoonGoalUseCase로 타입
+    // 추론된다 — Koin factory가 이미 위에 등록돼 있어 파라미터 하나가 늘어도 그대로 동작한다.
+    factory {
+        ScheduleYearEndRecapUseCase(
+            notificationBudget = get(),
+            settings = get(),
+            recapTitle = { getString(Res.string.app_name) },
+            midMonthBody = { year -> getString(Res.string.year_end_recap_notification_mid_body, year) },
+            yearEndBody = { year -> getString(Res.string.year_end_recap_notification_end_body, year) },
+        )
+    }
+    factory { EvaluateNotificationsUseCase(get(), get(), get(), get(), get()) }
     factory { ExportBackupUseCase(get(), get(), get(), get()) }
     factory { RestoreBackupUseCase(get(), get(), get(), get()) }
     factory { ResetAllDataUseCase(get()) }
     factory { UpdateEntryUseCase(get()) }
     factory { DeleteEntryUseCase(get()) }
+    factory { SearchGoalsUseCase(get(), get()) }
 
     viewModelOf(::HomeViewModel)
     viewModelOf(::AddGoalViewModel)
     viewModelOf(::ArchiveViewModel)
     viewModelOf(::OnboardingViewModel)
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::SearchViewModel)
 
     // goalId는 화면 진입 시점의 런타임 파라미터라 viewModelOf(생성자 참조)로는 주입할 수 없다.
     viewModel { params ->
@@ -135,6 +171,8 @@ val appModule = module {
             deleteEntry = get(),
         )
     }
+    // year도 GoalDetailViewModel의 goalId와 같은 이유로 런타임 파라미터.
+    viewModel { params -> RolloverViewModel(year = params.get(), goalRepository = get(), rolloverGoals = get()) }
 }
 
 /** 플랫폼 진입점(Android Application / iOS MainViewController)에서 한 번만 호출한다. */

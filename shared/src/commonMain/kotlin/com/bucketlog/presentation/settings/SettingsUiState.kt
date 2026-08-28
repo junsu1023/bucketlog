@@ -8,6 +8,8 @@ data class SettingsUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val notificationsEnabled: Boolean = true,
     val nudgeEnabled: Boolean = true,
+    val dueSoonEnabled: Boolean = true,
+    val yearEndRecapEnabled: Boolean = true,
     val notificationHour: Int = NotificationSettingsKeys.DEFAULT_NOTIFICATION_HOUR,
     val isLoading: Boolean = true,
     val isBackupBusy: Boolean = false,

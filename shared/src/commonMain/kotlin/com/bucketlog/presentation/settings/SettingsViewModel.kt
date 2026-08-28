@@ -8,6 +8,7 @@ import com.bucketlog.domain.usecase.RestoreBackupUseCase
 import com.bucketlog.domain.usecase.RestoreResult
 import com.bucketlog.notification.NotificationSettingsKeys
 import com.bucketlog.notification.SettingsStore
+import com.bucketlog.platform.NotificationType
 import com.bucketlog.presentation.theme.ThemeModeStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +34,11 @@ class SettingsViewModel(
                 themeMode = themeModeStore.mode.value,
                 notificationsEnabled = settings.getBoolean(NotificationSettingsKeys.NOTIFICATIONS_ENABLED, true),
                 nudgeEnabled = settings.getBoolean(NotificationSettingsKeys.NUDGE_ENABLED, true),
+                dueSoonEnabled = settings.getBoolean(NotificationSettingsKeys.typeEnabledKey(NotificationType.DUE_SOON), true),
+                yearEndRecapEnabled = settings.getBoolean(
+                    NotificationSettingsKeys.typeEnabledKey(NotificationType.YEAR_END_RECAP),
+                    true,
+                ),
                 notificationHour = settings.getLong(
                     NotificationSettingsKeys.NOTIFICATION_HOUR,
                     NotificationSettingsKeys.DEFAULT_NOTIFICATION_HOUR.toLong(),
@@ -55,6 +61,14 @@ class SettingsViewModel(
             is SettingsIntent.SetNudgeEnabled -> {
                 _uiState.update { it.copy(nudgeEnabled = intent.enabled) }
                 persistBoolean(NotificationSettingsKeys.NUDGE_ENABLED, intent.enabled)
+            }
+            is SettingsIntent.SetDueSoonEnabled -> {
+                _uiState.update { it.copy(dueSoonEnabled = intent.enabled) }
+                persistBoolean(NotificationSettingsKeys.typeEnabledKey(NotificationType.DUE_SOON), intent.enabled)
+            }
+            is SettingsIntent.SetYearEndRecapEnabled -> {
+                _uiState.update { it.copy(yearEndRecapEnabled = intent.enabled) }
+                persistBoolean(NotificationSettingsKeys.typeEnabledKey(NotificationType.YEAR_END_RECAP), intent.enabled)
             }
             is SettingsIntent.SetNotificationHour -> {
                 _uiState.update { it.copy(notificationHour = intent.hour) }

@@ -1,5 +1,10 @@
 package com.bucketlog.presentation.onboarding
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -9,22 +14,31 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.bucketlog.presentation.common.Hairline
+import com.bucketlog.presentation.common.MonoMeta
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.cancel
 import bucketlog.shared.generated.resources.error_generic
@@ -43,19 +57,22 @@ import com.bucketlog.presentation.common.labelRes
 import com.bucketlog.presentation.common.presetGoals
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OnboardingScreen(viewModel: OnboardingViewModel, onCustomInput: () -> Unit, onDone: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            // edge-to-edge에서 Scaffold가 bottomBar 내부 인셋을 자동 처리하지 않는다 —
-            // 3버튼 내비게이션 모드에서 "시작하기" 버튼이 가려지는 걸 막는다.
-            Surface(tonalElevation = 3.dp, modifier = Modifier.navigationBarsPadding()) {
+            Column(modifier = Modifier.navigationBarsPadding()) {
+                Hairline()
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(horizontal = 20.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     TextButton(onClick = onCustomInput) { Text(stringResource(Res.string.onboarding_custom_input)) }
                     Button(onClick = onDone, modifier = Modifier.weight(1f)) {
@@ -70,14 +87,18 @@ fun OnboardingScreen(viewModel: OnboardingViewModel, onCustomInput: () -> Unit, 
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(horizontal = 20.dp),
         ) {
-            Text(stringResource(Res.string.onboarding_title), style = MaterialTheme.typography.headlineSmall)
+            Text(
+                text = stringResource(Res.string.onboarding_title),
+                style = MaterialTheme.typography.headlineSmall.copy(fontSize = 30.sp, lineHeight = 38.sp),
+                modifier = Modifier.padding(top = 40.dp),
+            )
             Text(
                 text = stringResource(Res.string.onboarding_subtitle),
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.titleMedium.copy(fontStyle = FontStyle.Italic),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = 10.dp),
             )
 
             Category.entries.forEach { category ->
@@ -91,6 +112,7 @@ fun OnboardingScreen(viewModel: OnboardingViewModel, onCustomInput: () -> Unit, 
                     )
                 }
             }
+            androidx.compose.foundation.layout.Spacer(Modifier.size(24.dp))
         }
     }
 
@@ -134,20 +156,54 @@ private fun CategoryPresetSection(
     addedTitles: Set<String>,
     onPresetClick: (String) -> Unit,
 ) {
-    Text(
+    MonoMeta(
         text = stringResource(category.labelRes()),
-        style = MaterialTheme.typography.labelLarge,
-        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
+        modifier = Modifier.padding(top = 28.dp, bottom = 10.dp),
     )
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         presets.forEach { preset ->
             val title = stringResource(preset.titleRes)
             val added = title in addedTitles
-            FilterChip(
-                selected = added,
-                onClick = { onPresetClick(title) },
-                label = { Text(if (added) "$title · ${stringResource(Res.string.onboarding_added)}" else title) },
+            PresetChip(title = title, added = added, onClick = { onPresetClick(title) })
+        }
+    }
+}
+
+/** 온보딩 프리셋 — 담긴 것은 강조색으로 채워지고 체크가 붙는다. 나머지 화면의 PillChip과 같은 언어. */
+@Composable
+private fun PresetChip(title: String, added: Boolean, onClick: () -> Unit) {
+    val bg by animateColorAsState(
+        if (added) MaterialTheme.colorScheme.primary else Color.Transparent,
+        animationSpec = tween(220),
+        label = "presetBg",
+    )
+    val fg by animateColorAsState(
+        if (added) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        animationSpec = tween(220),
+        label = "presetFg",
+    )
+    val shape = RoundedCornerShape(16.dp)
+    Row(
+        modifier = Modifier
+            .clip(shape)
+            .background(bg)
+            .then(
+                if (added) Modifier
+                else Modifier.border(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.16f), shape),
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (added) {
+            Icon(
+                Icons.Filled.Check,
+                contentDescription = stringResource(Res.string.onboarding_added),
+                tint = fg,
+                modifier = Modifier.size(15.dp),
             )
         }
+        Text(text = title, style = MaterialTheme.typography.bodyMedium, color = fg)
     }
 }

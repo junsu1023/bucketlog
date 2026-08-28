@@ -6,28 +6,38 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CloudUpload
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import com.bucketlog.presentation.common.Hairline
+import com.bucketlog.presentation.common.MonoMeta
+import com.bucketlog.presentation.common.PillChip
+import com.bucketlog.presentation.common.ScreenHeader
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.back
@@ -46,14 +56,24 @@ import bucketlog.shared.generated.resources.reset_confirm_body
 import bucketlog.shared.generated.resources.reset_confirm_title
 import bucketlog.shared.generated.resources.reset_result_message
 import bucketlog.shared.generated.resources.settings_all_notifications
+import bucketlog.shared.generated.resources.settings_notifications_section
 import bucketlog.shared.generated.resources.settings_backup_export
 import bucketlog.shared.generated.resources.settings_backup_restore
 import bucketlog.shared.generated.resources.settings_backup_section
 import bucketlog.shared.generated.resources.settings_data_section
+import bucketlog.shared.generated.resources.settings_due_soon
 import bucketlog.shared.generated.resources.settings_hour_format
 import bucketlog.shared.generated.resources.settings_notification_hour
 import bucketlog.shared.generated.resources.settings_nudge
 import bucketlog.shared.generated.resources.settings_reset_all
+import bucketlog.shared.generated.resources.settings_rollover
+import bucketlog.shared.generated.resources.settings_widget_section
+import bucketlog.shared.generated.resources.settings_widget_small_step
+import bucketlog.shared.generated.resources.settings_widget_today_memory
+import bucketlog.shared.generated.resources.settings_widget_year_progress
+import bucketlog.shared.generated.resources.settings_year_end_recap
+import com.bucketlog.platform.WidgetKind
+import com.bucketlog.platform.rememberWidgetPinner
 import bucketlog.shared.generated.resources.settings_theme_dark
 import bucketlog.shared.generated.resources.settings_theme_light
 import bucketlog.shared.generated.resources.settings_theme_section
@@ -68,7 +88,7 @@ private val HOUR_OPTIONS = listOf(9, 12, 18, 20)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
+fun SettingsScreen(viewModel: SettingsViewModel, onBack: (() -> Unit)? = null, onRolloverClick: () -> Unit = {}) {
     val state by viewModel.uiState.collectAsState()
 
     val exportLauncher = rememberBackupExporter { success ->
@@ -91,42 +111,38 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(Res.string.settings_title)) },
-                navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(Res.string.back)) } },
-            )
-        },
-    ) { padding ->
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()),
         ) {
-            Text(
-                text = stringResource(Res.string.settings_theme_section),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(bottom = 8.dp),
-            )
+        ScreenHeader(
+            title = stringResource(Res.string.settings_title),
+            onBack = onBack,
+            backLabel = stringResource(Res.string.back),
+        )
+        Column(modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 40.dp)) {
+            SectionHeader(icon = Icons.Outlined.DarkMode, label = stringResource(Res.string.settings_theme_section))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(
+                PillChip(
+                    label = stringResource(Res.string.settings_theme_system),
                     selected = state.themeMode == ThemeMode.SYSTEM,
                     onClick = { viewModel.onIntent(SettingsIntent.SetThemeMode(ThemeMode.SYSTEM)) },
-                    label = { Text(stringResource(Res.string.settings_theme_system)) },
                 )
-                FilterChip(
+                PillChip(
+                    label = stringResource(Res.string.settings_theme_light),
                     selected = state.themeMode == ThemeMode.LIGHT,
                     onClick = { viewModel.onIntent(SettingsIntent.SetThemeMode(ThemeMode.LIGHT)) },
-                    label = { Text(stringResource(Res.string.settings_theme_light)) },
                 )
-                FilterChip(
+                PillChip(
+                    label = stringResource(Res.string.settings_theme_dark),
                     selected = state.themeMode == ThemeMode.DARK,
                     onClick = { viewModel.onIntent(SettingsIntent.SetThemeMode(ThemeMode.DARK)) },
-                    label = { Text(stringResource(Res.string.settings_theme_dark)) },
                 )
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+            Hairline(modifier = Modifier.padding(vertical = 24.dp))
 
+            SectionHeader(icon = Icons.Outlined.Notifications, label = stringResource(Res.string.settings_notifications_section))
             SettingsRow(
                 label = stringResource(Res.string.settings_all_notifications),
                 checked = state.notificationsEnabled,
@@ -138,29 +154,63 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                 enabled = state.notificationsEnabled,
                 onCheckedChange = { viewModel.onIntent(SettingsIntent.SetNudgeEnabled(it)) },
             )
+            SettingsRow(
+                label = stringResource(Res.string.settings_due_soon),
+                checked = state.dueSoonEnabled,
+                enabled = state.notificationsEnabled,
+                onCheckedChange = { viewModel.onIntent(SettingsIntent.SetDueSoonEnabled(it)) },
+            )
+            SettingsRow(
+                label = stringResource(Res.string.settings_year_end_recap),
+                checked = state.yearEndRecapEnabled,
+                enabled = state.notificationsEnabled,
+                onCheckedChange = { viewModel.onIntent(SettingsIntent.SetYearEndRecapEnabled(it)) },
+            )
 
-            Text(
+            MonoMeta(
                 text = stringResource(Res.string.settings_notification_hour),
-                style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 HOUR_OPTIONS.forEach { hour ->
-                    FilterChip(
+                    PillChip(
+                        label = stringResource(Res.string.settings_hour_format, hour),
                         selected = state.notificationHour == hour,
                         enabled = state.notificationsEnabled,
                         onClick = { viewModel.onIntent(SettingsIntent.SetNotificationHour(hour)) },
-                        label = { Text(stringResource(Res.string.settings_hour_format, hour)) },
                     )
                 }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+            Hairline(modifier = Modifier.padding(vertical = 24.dp))
 
-            Text(
-                text = stringResource(Res.string.settings_backup_section),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(bottom = 12.dp),
+            SectionHeader(icon = Icons.Outlined.Widgets, label = stringResource(Res.string.settings_widget_section))
+            val pinWidget = rememberWidgetPinner()
+            OutlinedButton(
+                onClick = { pinWidget(WidgetKind.SMALL_STEP) },
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            ) {
+                Text(stringResource(Res.string.settings_widget_small_step))
+            }
+            OutlinedButton(
+                onClick = { pinWidget(WidgetKind.YEAR_PROGRESS) },
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            ) {
+                Text(stringResource(Res.string.settings_widget_year_progress))
+            }
+            OutlinedButton(
+                onClick = { pinWidget(WidgetKind.TODAY_MEMORY) },
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            ) {
+                Text(stringResource(Res.string.settings_widget_today_memory))
+            }
+
+            Hairline(modifier = Modifier.padding(vertical = 24.dp))
+
+            SectionHeader(
+                icon = Icons.Outlined.CloudUpload,
+                label = stringResource(Res.string.settings_backup_section),
+                modifier = Modifier.padding(bottom = 4.dp),
             )
             Button(
                 onClick = { viewModel.onIntent(SettingsIntent.ExportBackup) },
@@ -182,13 +232,19 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                 }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+            Hairline(modifier = Modifier.padding(vertical = 24.dp))
 
-            Text(
-                text = stringResource(Res.string.settings_data_section),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(bottom = 12.dp),
+            SectionHeader(
+                icon = Icons.Outlined.Storage,
+                label = stringResource(Res.string.settings_data_section),
+                modifier = Modifier.padding(bottom = 4.dp),
             )
+            OutlinedButton(
+                onClick = onRolloverClick,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            ) {
+                Text(stringResource(Res.string.settings_rollover))
+            }
             OutlinedButton(
                 onClick = { viewModel.onIntent(SettingsIntent.RequestReset) },
                 enabled = !state.isResetting,
@@ -202,6 +258,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                     CircularProgressIndicator()
                 }
             }
+        }
         }
     }
 
@@ -274,6 +331,24 @@ private fun backupResultText(result: BackupResultMessage): String = when (result
         stringResource(Res.string.backup_result_restore_success, result.goalCount, result.entryCount)
     BackupResultMessage.RestoreSchemaTooNew -> stringResource(Res.string.backup_result_restore_schema_too_new)
     BackupResultMessage.RestoreFailed -> stringResource(Res.string.backup_result_restore_failed)
+}
+
+/** docs/DESIGN.md — 설정 각 섹션 제목 앞에 아이콘을 둔 리스트형 헤더. */
+@Composable
+private fun SectionHeader(icon: ImageVector, label: String, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp),
+        )
+        MonoMeta(text = label)
+    }
 }
 
 @Composable

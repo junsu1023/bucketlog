@@ -41,6 +41,7 @@ class AddGoalViewModel(
             is AddGoalIntent.TargetCountChanged ->
                 _uiState.update { it.copy(targetCountText = intent.value.filter(Char::isDigit)) }
             is AddGoalIntent.BucketYearChanged -> _uiState.update { it.copy(bucketYear = intent.value) }
+            is AddGoalIntent.DueDateChanged -> _uiState.update { it.copy(dueDate = intent.value) }
             is AddGoalIntent.AddPhotos ->
                 _uiState.update { it.copy(photoBytes = (it.photoBytes + intent.photoBytes).take(5)) }
             AddGoalIntent.ClearPhotos -> _uiState.update { it.copy(photoBytes = emptyList()) }
@@ -72,6 +73,7 @@ class AddGoalViewModel(
             type = goal.type,
             targetCountText = goal.targetCount?.toString().orEmpty(),
             bucketYear = goal.bucketYear,
+            dueDate = goal.dueDate,
             editingGoalId = goal.id,
             reminderEnabled = goal.reminderRule?.enabled ?: false,
             reminderInterval = goal.reminderRule?.interval ?: ReminderInterval.WEEKLY,
@@ -101,6 +103,7 @@ class AddGoalViewModel(
                         type = state.type,
                         targetCount = if (state.type == GoalType.REPEATABLE) state.targetCountText.toIntOrNull() else null,
                         bucketYear = state.bucketYear,
+                        dueDate = state.dueDate,
                         reminderRule = if (state.reminderEnabled) {
                             ReminderRule(interval = state.reminderInterval, enabled = true)
                         } else {
@@ -126,6 +129,7 @@ class AddGoalViewModel(
                     type = state.type,
                     targetCount = if (state.type == GoalType.REPEATABLE) state.targetCountText.toIntOrNull() else null,
                     bucketYear = state.bucketYear,
+                    dueDate = state.dueDate,
                 )
                 // 사진은 Goal이 아니라 Entry에 붙는다(docs/DATA-MODEL.md) — 목표 생성 직후
                 // 첫 진행 기록(E-02)을 하나 만들어 사진을 담는다. 카운트는 올리지 않는다.

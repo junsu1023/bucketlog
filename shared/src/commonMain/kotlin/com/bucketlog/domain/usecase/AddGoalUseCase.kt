@@ -7,8 +7,9 @@ import com.bucketlog.domain.model.GoalType
 import com.bucketlog.domain.repository.GoalRepository
 import com.bucketlog.domain.util.newId
 import kotlin.time.Clock
+import kotlinx.datetime.LocalDate
 
-/** MVP-SCOPE.md G-01~G-04: 제목 + 유형 + 카테고리 + (반복형이면) 목표 횟수 + 버킷 연도. */
+/** MVP-SCOPE.md G-01~G-04, G-09: 제목 + 유형 + 카테고리 + (반복형이면) 목표 횟수 + 버킷 연도 + 마감일(선택). */
 class AddGoalUseCase(private val goalRepository: GoalRepository) {
     suspend operator fun invoke(
         title: String,
@@ -17,6 +18,7 @@ class AddGoalUseCase(private val goalRepository: GoalRepository) {
         type: GoalType,
         targetCount: Int?,
         bucketYear: Int?,
+        dueDate: LocalDate? = null,
     ): Goal {
         require(title.isNotBlank()) { "title must not be blank" }
         require(type == GoalType.ONE_TIME || (targetCount != null && targetCount > 0)) {
@@ -31,7 +33,7 @@ class AddGoalUseCase(private val goalRepository: GoalRepository) {
             targetCount = if (type == GoalType.REPEATABLE) targetCount else null,
             status = GoalStatus.IN_PROGRESS,
             bucketYear = bucketYear,
-            dueDate = null,
+            dueDate = dueDate,
             coverEntryId = null,
             reminderRule = null,
             createdAt = Clock.System.now(),

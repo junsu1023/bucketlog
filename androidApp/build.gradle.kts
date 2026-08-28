@@ -18,6 +18,14 @@ dependencies {
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
+
+    // 홈 화면 위젯(Phase 1, docs/ROADMAP.md). Glance는 androidApp에서 직접 그린다 —
+    // Compose Multiplatform 화면 트리와 별개(App Widget Host가 구동하는 별도 프로세스/트리).
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+    // shared가 kotlinx-datetime을 implementation으로만 물고 있어 Goal.dueDate(LocalDate) 같은
+    // 타입을 위젯 코드에서 직접 다루려면 여기서도 명시적으로 있어야 한다.
+    implementation(libs.kotlinx.datetime)
 }
 
 android {

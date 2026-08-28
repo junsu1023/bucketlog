@@ -13,16 +13,16 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
 
 class ScheduleGoalRemindersUseCaseTest {
 
-    private val now = LocalDateTime(2026, 8, 17, 12, 0).toInstant(TimeZone.currentSystemDefault())
+    // usecase 내부가 Clock.System.now()의 실제 현재 시각을 기준으로 판정하므로, 픽스처의 기준점도
+    // 리터럴 날짜 대신 실행 시점의 실제 시각으로 잡는다 — 세션이 며칠 걸려도 안 깨지도록.
+    private val now = Clock.System.now()
 
     private fun goal(
         id: String,
@@ -92,7 +92,7 @@ class ScheduleGoalRemindersUseCaseTest {
     }
 
     @Test
-    fun `리마인더를 켜지 않은(reminderRule null) 목표는 제외한다`() = runBlocking {
+    fun `리마인더를 켜지 않은 목표는 제외한다`() = runBlocking {
         val repo = FakeGoalRepository(listOf(goal("g1", interval = null, reminderLastSentAt = now - 30.days)))
         val captured = mutableListOf<LocalNotification>()
 

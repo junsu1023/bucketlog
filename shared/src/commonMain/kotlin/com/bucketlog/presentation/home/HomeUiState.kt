@@ -1,9 +1,11 @@
 package com.bucketlog.presentation.home
 
+import com.bucketlog.domain.model.Category
 import com.bucketlog.domain.usecase.GoalOverview
 
 data class HomeUiState(
     val yearFilter: BucketYearFilter,
+    val thisYear: Int = 0,
     val availableYears: List<Int> = emptyList(),
     val overviews: List<GoalOverview> = emptyList(),
     val summaryTotal: Int = 0,
@@ -12,9 +14,16 @@ data class HomeUiState(
     val existingTitles: Set<String> = emptySet(),
     val checkInDrafts: Map<String, String> = emptyMap(),
     val throwback: ThrowbackBanner? = null,
+    /** G-11 정렬. */
+    val sortOption: HomeSortOption = HomeSortOption.RECENT,
+    /** G-11 카테고리 필터. null이면 전체. */
+    val categoryFilter: Category? = null,
     val isLoading: Boolean = true,
     val hasError: Boolean = false,
 )
+
+/** G-11 정렬·필터 — 최신순 / 마감임박순. */
+enum class HomeSortOption { RECENT, DUE_SOON }
 
 /** H-05 연도 전환 — 데이터에 실제 존재하는 연도만 동적으로 보여주고, "언젠가"는 항상 마지막에 고정한다. */
 sealed interface BucketYearFilter {
