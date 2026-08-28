@@ -1,8 +1,27 @@
 package com.bucketlog
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Folder
@@ -10,10 +29,8 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -21,8 +38,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.bucketlog.presentation.theme.BucketLogMotion
 import bucketlog.shared.generated.resources.Res
 import bucketlog.shared.generated.resources.add_goal_fab
 import bucketlog.shared.generated.resources.archive_nav_button
@@ -49,6 +72,7 @@ import com.bucketlog.presentation.theme.ThemeModeStore
 import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -201,38 +225,109 @@ fun App() {
     }
 }
 
+/**
+ * 재설계 하단 내비 — Material NavigationBar 대신 화면 위에 떠 있는 알약형 바.
+ * 선택 탭 뒤로 gooey 블롭이 스프링으로 늘어졌다 뭉치며 이동하고, 가운데 "+"는 살짝 띄운 강조색 원.
+ * 이 앱은 탭이 서로 형제라(뒤로가기 없음) 인디케이터가 위치를 알려주는 유일한 단서다.
+ */
 @Composable
 private fun BottomNav(current: Screen, onSelect: (Screen) -> Unit, onAddGoal: () -> Unit) {
-    NavigationBar {
-        NavigationBarItem(
-            selected = current is Screen.Home,
-            onClick = { onSelect(Screen.Home) },
-            icon = { Icon(Icons.Outlined.Home, contentDescription = null) },
-            label = { Text(stringResource(Res.string.home_nav_button)) },
-        )
-        NavigationBarItem(
-            selected = current is Screen.Archive,
-            onClick = { onSelect(Screen.Archive()) },
-            icon = { Icon(Icons.Outlined.Folder, contentDescription = null) },
-            label = { Text(stringResource(Res.string.archive_nav_button)) },
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = onAddGoal,
-            icon = { Icon(Icons.Outlined.Add, contentDescription = stringResource(Res.string.add_goal_fab)) },
-            label = null,
-        )
-        NavigationBarItem(
-            selected = current is Screen.Search,
-            onClick = { onSelect(Screen.Search) },
-            icon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-            label = { Text(stringResource(Res.string.search_nav_button)) },
-        )
-        NavigationBarItem(
-            selected = current is Screen.Settings,
-            onClick = { onSelect(Screen.Settings) },
-            icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
-            label = { Text(stringResource(Res.string.settings_nav_button)) },
-        )
+    // 슬롯 순서: 홈 · 보관함 · (+) · 검색 · 설정 → 블롭은 탭 슬롯(0,1,3,4)에만 뜬다.
+    val blobSlot = when {
+        current is Screen.Home -> 0
+        current is Screen.Archive -> 1
+        current is Screen.Search -> 3
+        current is Screen.Settings -> 4
+        else -> 0
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 380.dp)
+                .height(62.dp)
+                .clip(RoundedCornerShape(50))
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .border(
+                    BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)),
+                    RoundedCornerShape(50),
+                ),
+        ) {
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                val slotWidth: Dp = maxWidth / 5
+                val blobSize = 44.dp
+                val blobX by animateDpAsState(
+                    targetValue = slotWidth * blobSlot + (slotWidth - blobSize) / 2,
+                    animationSpec = BucketLogMotion.indicator(),
+                    label = "navBlob",
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .offset(x = blobX)
+                        .size(blobSize)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)),
+                )
+                Row(modifier = Modifier.fillMaxSize()) {
+                    NavSlot(slotWidth, Icons.Outlined.Home, current is Screen.Home, Res.string.home_nav_button) { onSelect(Screen.Home) }
+                    NavSlot(slotWidth, Icons.Outlined.Folder, current is Screen.Archive, Res.string.archive_nav_button) { onSelect(Screen.Archive()) }
+                    AddSlot(slotWidth, onAddGoal)
+                    NavSlot(slotWidth, Icons.Outlined.Search, current is Screen.Search, Res.string.search_nav_button) { onSelect(Screen.Search) }
+                    NavSlot(slotWidth, Icons.Outlined.Settings, current is Screen.Settings, Res.string.settings_nav_button) { onSelect(Screen.Settings) }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun NavSlot(
+    width: Dp,
+    icon: ImageVector,
+    selected: Boolean,
+    labelRes: StringResource,
+    onClick: () -> Unit,
+) {
+    val tint by animateColorAsState(
+        if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+        label = "navTint",
+    )
+    Box(
+        modifier = Modifier
+            .width(width)
+            .fillMaxHeight()
+            .clip(CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(icon, contentDescription = stringResource(labelRes), tint = tint, modifier = Modifier.size(22.dp))
+    }
+}
+
+@Composable
+private fun AddSlot(width: Dp, onClick: () -> Unit) {
+    Box(modifier = Modifier.width(width).fillMaxHeight(), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier
+                .size(46.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary)
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                Icons.Outlined.Add,
+                contentDescription = stringResource(Res.string.add_goal_fab),
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(22.dp),
+            )
+        }
     }
 }

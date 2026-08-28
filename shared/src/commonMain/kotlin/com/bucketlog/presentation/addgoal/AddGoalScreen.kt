@@ -2,12 +2,14 @@ package com.bucketlog.presentation.addgoal
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -15,17 +17,18 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import com.bucketlog.presentation.common.MonoMeta
+import com.bucketlog.presentation.common.PillChip
+import com.bucketlog.presentation.common.ScreenHeader
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -96,31 +99,27 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
 
     val isEditMode = state.editingGoalId != null
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(stringResource(if (isEditMode) Res.string.edit_goal_title else Res.string.add_goal_title))
-                },
-                navigationIcon = { TextButton(onClick = onCancel) { Text(stringResource(Res.string.cancel)) } },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
+        Column(modifier = Modifier.fillMaxWidth().padding(padding)) {
+            ScreenHeader(
+                title = stringResource(if (isEditMode) Res.string.edit_goal_title else Res.string.add_goal_title),
+                onBack = onCancel,
+                backLabel = stringResource(Res.string.cancel),
             )
-        },
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(state = rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(state = rememberScrollState())
+                    .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
             OutlinedTextField(
                 value = state.title,
                 onValueChange = { viewModel.onIntent(AddGoalIntent.TitleChanged(it)) },
                 label = { Text(stringResource(Res.string.goal_title_label)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                shape = RoundedCornerShape(12.dp),
             )
 
             OutlinedTextField(
@@ -128,36 +127,37 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
                 onValueChange = { viewModel.onIntent(AddGoalIntent.NoteChanged(it)) },
                 label = { Text(stringResource(Res.string.goal_note_label)) },
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
             )
 
             Column {
-                Text(stringResource(Res.string.goal_category_label), style = MaterialTheme.typography.labelLarge)
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+                MonoMeta(stringResource(Res.string.goal_category_label))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 10.dp)) {
                     items(Category.entries) { category ->
-                        FilterChip(
+                        PillChip(
+                            label = stringResource(category.labelRes()),
                             selected = state.category == category,
                             onClick = { viewModel.onIntent(AddGoalIntent.CategoryChanged(category)) },
-                            label = { Text(stringResource(category.labelRes())) },
                         )
                     }
                 }
             }
 
             Column {
-                Text(stringResource(Res.string.goal_type_label), style = MaterialTheme.typography.labelLarge)
-                androidx.compose.foundation.layout.Row(
+                MonoMeta(stringResource(Res.string.goal_type_label))
+                Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.padding(top = 10.dp),
                 ) {
-                    FilterChip(
+                    PillChip(
+                        label = stringResource(Res.string.goal_type_one_time),
                         selected = state.type == GoalType.ONE_TIME,
                         onClick = { viewModel.onIntent(AddGoalIntent.TypeChanged(GoalType.ONE_TIME)) },
-                        label = { Text(stringResource(Res.string.goal_type_one_time)) },
                     )
-                    FilterChip(
+                    PillChip(
+                        label = stringResource(Res.string.goal_type_repeatable),
                         selected = state.type == GoalType.REPEATABLE,
                         onClick = { viewModel.onIntent(AddGoalIntent.TypeChanged(GoalType.REPEATABLE)) },
-                        label = { Text(stringResource(Res.string.goal_type_repeatable)) },
                     )
                 }
             }
@@ -169,35 +169,36 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
                     label = { Text(stringResource(Res.string.goal_target_count_label)) },
                     modifier = Modifier.wrapContentWidth(),
                     singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
             }
 
             Column {
-                Text(stringResource(Res.string.goal_bucket_year_label), style = MaterialTheme.typography.labelLarge)
-                androidx.compose.foundation.layout.Row(
+                MonoMeta(stringResource(Res.string.goal_bucket_year_label))
+                Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.padding(top = 10.dp),
                 ) {
-                    FilterChip(
+                    PillChip(
+                        label = stringResource(Res.string.goal_bucket_this_year),
                         selected = state.bucketYear == viewModel.thisYear,
                         onClick = { viewModel.onIntent(AddGoalIntent.BucketYearChanged(viewModel.thisYear)) },
-                        label = { Text(stringResource(Res.string.goal_bucket_this_year)) },
                     )
-                    FilterChip(
+                    PillChip(
+                        label = stringResource(Res.string.goal_bucket_someday),
                         selected = state.bucketYear == null,
                         onClick = { viewModel.onIntent(AddGoalIntent.BucketYearChanged(null)) },
-                        label = { Text(stringResource(Res.string.goal_bucket_someday)) },
                     )
                 }
             }
 
             // G-09: 선택 입력. "계약이 아니라 참고선"(docs/NOTIFICATIONS.md) — 안 정해도 저장 가능.
             Column {
-                Text(stringResource(Res.string.goal_due_date_label), style = MaterialTheme.typography.labelLarge)
+                MonoMeta(stringResource(Res.string.goal_due_date_label))
                 var showDueDatePicker by remember { mutableStateOf(false) }
-                androidx.compose.foundation.layout.Row(
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(top = 4.dp),
                 ) {
                     TextButton(onClick = { showDueDatePicker = true }) {
@@ -242,7 +243,7 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
             // 사진은 Goal이 아니라 Entry에 붙는 개념이라(docs/DATA-MODEL.md) 수정 모드에서는 안 보여준다.
             if (!isEditMode) {
                 Column {
-                    Text(stringResource(Res.string.goal_photo_label), style = MaterialTheme.typography.labelLarge)
+                    MonoMeta(stringResource(Res.string.goal_photo_label))
                     PhotoAttachRow(
                         photoCount = state.photoBytes.size,
                         onCameraClick = launchCamera,
@@ -255,36 +256,36 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
             // N-03 목표별 리마인더 — 생성 시점엔 컨텍스트가 약해 수정 모드에서만 노출한다.
             if (isEditMode) {
                 Column {
-                    androidx.compose.foundation.layout.Row(
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(stringResource(Res.string.goal_reminder_label), style = MaterialTheme.typography.labelLarge)
+                        MonoMeta(stringResource(Res.string.goal_reminder_label))
                         Switch(
                             checked = state.reminderEnabled,
                             onCheckedChange = { viewModel.onIntent(AddGoalIntent.ReminderEnabledChanged(it)) },
                         )
                     }
                     if (state.reminderEnabled) {
-                        androidx.compose.foundation.layout.Row(
+                        Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.padding(top = 8.dp),
+                            modifier = Modifier.padding(top = 10.dp),
                         ) {
-                            FilterChip(
+                            PillChip(
+                                label = stringResource(Res.string.goal_reminder_interval_weekly),
                                 selected = state.reminderInterval == ReminderInterval.WEEKLY,
                                 onClick = { viewModel.onIntent(AddGoalIntent.ReminderIntervalChanged(ReminderInterval.WEEKLY)) },
-                                label = { Text(stringResource(Res.string.goal_reminder_interval_weekly)) },
                             )
-                            FilterChip(
+                            PillChip(
+                                label = stringResource(Res.string.goal_reminder_interval_biweekly),
                                 selected = state.reminderInterval == ReminderInterval.BIWEEKLY,
                                 onClick = { viewModel.onIntent(AddGoalIntent.ReminderIntervalChanged(ReminderInterval.BIWEEKLY)) },
-                                label = { Text(stringResource(Res.string.goal_reminder_interval_biweekly)) },
                             )
-                            FilterChip(
+                            PillChip(
+                                label = stringResource(Res.string.goal_reminder_interval_monthly),
                                 selected = state.reminderInterval == ReminderInterval.MONTHLY,
                                 onClick = { viewModel.onIntent(AddGoalIntent.ReminderIntervalChanged(ReminderInterval.MONTHLY)) },
-                                label = { Text(stringResource(Res.string.goal_reminder_interval_monthly)) },
                             )
                         }
                     }
@@ -294,9 +295,10 @@ fun AddGoalScreen(viewModel: AddGoalViewModel, onSaved: () -> Unit, onCancel: ()
             Button(
                 onClick = { viewModel.onIntent(AddGoalIntent.Save) },
                 enabled = state.canSave && !state.isSaving,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             ) {
                 Text(stringResource(Res.string.save))
+            }
             }
         }
     }

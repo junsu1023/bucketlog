@@ -1,11 +1,14 @@
 package com.bucketlog.presentation.goaldetail
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -17,8 +20,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,17 +36,15 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -111,7 +114,15 @@ import bucketlog.shared.generated.resources.tab_records
 import bucketlog.shared.generated.resources.timeline_empty
 import bucketlog.shared.generated.resources.timeline_goal_created
 import bucketlog.shared.generated.resources.year_chip
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.bucketlog.presentation.common.MonoMeta
+import com.bucketlog.presentation.common.photoFallbackBrush
+import com.bucketlog.presentation.theme.BucketLogMotion
 import com.bucketlog.domain.model.Category
 import com.bucketlog.domain.model.EntryKind
 import com.bucketlog.domain.model.Goal
@@ -169,20 +180,6 @@ private fun GoalDetailContent(
     var showShareCard by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(goal?.title.orEmpty(), maxLines = 1) },
-                navigationIcon = {
-                    TextButton(onClick = onBack) { Text(stringResource(Res.string.back)) }
-                },
-                actions = {
-                    if (goal != null) {
-                        TextButton(onClick = { onEditClick(goal) }) { Text(stringResource(Res.string.action_edit)) }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-            )
-        },
         bottomBar = {
             if (goal != null) {
                 GoalDetailBottomBar(
@@ -194,26 +191,29 @@ private fun GoalDetailContent(
                 )
             }
         },
+        containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
         if (goal == null) return@Scaffold
 
         var selectedTab by remember { mutableStateOf(0) }
 
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            CategoryBadgeRow(goal = goal)
+        // 재설계: Scaffold의 상단 인셋만 무시하고(히어로 사진이 상태바 뒤까지 꽉 차야 함) 하단 인셋은 존중.
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = padding.calculateBottomPadding()),
+        ) {
+            val createdDate = goal.createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).date
+            GoalHero(
+                goal = goal,
+                photoPath = state.timeline.flatMap { it.photos }.firstOrNull()?.displayPath,
+                metaText = "${createdDate.year}.${createdDate.monthNumber.toString().padStart(2, '0')}" +
+                    " · " + stringResource(Res.string.entry_count, state.timeline.size),
+                onBack = onBack,
+                onEditClick = { onEditClick(goal) },
+            )
 
-            TabRow(selectedTabIndex = selectedTab) {
-                Tab(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-                    text = { Text(stringResource(Res.string.tab_records)) },
-                )
-                Tab(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    text = { Text(stringResource(Res.string.tab_info)) },
-                )
-            }
+            GoalTabs(selectedTab = selectedTab, onSelect = { selectedTab = it })
 
             if (selectedTab == 1) {
                 GoalInfoTab(goal = goal)
@@ -279,17 +279,16 @@ private fun GoalDetailContent(
                 ) {
                     groupedByMonth.forEach { (yearMonth, entriesInMonth) ->
                         item(key = "month-${yearMonth.first}-${yearMonth.second}") {
-                            Text(
+                            MonoMeta(
                                 text = "${yearMonth.first}.${yearMonth.second.toString().padStart(2, '0')}",
-                                style = MaterialTheme.typography.labelLarge.merge(MonoLabel()),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+                                modifier = Modifier.padding(top = 12.dp, bottom = 6.dp),
                             )
                         }
                         items(entriesInMonth, key = { it.entry.id }) { timelineEntry ->
                             TimelineNode(
                                 timelineEntry = timelineEntry,
                                 retrospect = goal.retrospect,
+                                modifier = Modifier.animateItem(),
                                 onPhotoClick = { index ->
                                     viewerRequest = PhotoViewerRequest(
                                         displayPaths = timelineEntry.photos.map { it.displayPath },
@@ -349,18 +348,174 @@ private fun GoalDetailContent(
     }
 }
 
-/** 목표 상세 상단, 탭 위에 얹는 카테고리 배지 한 줄. */
+/**
+ * 재설계 히어로 헤더 — 대표 사진(없으면 절제된 그라디언트)이 상태바 뒤까지 꽉 차고,
+ * 아래쪽 스크림 위에 세리프 제목 + 카테고리 배지 + 모노 메타. 진입 시 살짝 확대→정착(공유요소 느낌).
+ */
 @Composable
-private fun CategoryBadgeRow(goal: Goal) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        shape = MaterialTheme.shapes.small,
-        modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
+private fun GoalHero(
+    goal: Goal,
+    photoPath: String?,
+    metaText: String,
+    onBack: () -> Unit,
+    onEditClick: () -> Unit,
+) {
+    var appeared by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { appeared = true }
+    val scale by animateFloatAsState(
+        targetValue = if (appeared) 1f else 1.06f,
+        animationSpec = BucketLogMotion.enter(),
+        label = "heroScale",
+    )
+    val fade by animateFloatAsState(
+        targetValue = if (appeared) 1f else 0f,
+        animationSpec = BucketLogMotion.enter(),
+        label = "heroFade",
+    )
+
+    Box(modifier = Modifier.fillMaxWidth().height(292.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                    alpha = fade
+                }
+                .background(photoFallbackBrush(goal.id.hashCode())),
+        ) {
+            if (photoPath != null) {
+                AsyncImage(
+                    model = photoPath,
+                    contentDescription = goal.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
+            }
+        }
+        // 하단 스크림 — 제목이 사진 어디에 올라와도 읽힌다.
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        0f to Color.Black.copy(alpha = 0.42f),
+                        0.28f to Color.Transparent,
+                        0.55f to Color.Transparent,
+                        1f to Color.Black.copy(alpha = 0.74f),
+                    ),
+                ),
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(
+                    Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = stringResource(Res.string.back),
+                    tint = Color.White,
+                )
+            }
+            TextButton(onClick = onEditClick) {
+                Text(stringResource(Res.string.action_edit), color = Color.White)
+            }
+        }
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 20.dp, end = 20.dp, bottom = 18.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(Color.Black.copy(alpha = 0.42f), MaterialTheme.shapes.small)
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    text = stringResource(goal.category.labelRes()),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White,
+                )
+            }
+            Text(
+                text = goal.title,
+                style = MaterialTheme.typography.titleLarge.copy(fontSize = 24.sp, lineHeight = 31.sp),
+                color = Color.White,
+                modifier = Modifier.padding(top = 10.dp),
+            )
+            MonoMeta(
+                text = metaText,
+                color = Color.White.copy(alpha = 0.82f),
+                modifier = Modifier.padding(top = 6.dp),
+            )
+        }
+    }
+}
+
+/**
+ * 재설계 탭 — Material TabRow 대신 두 라벨 + 스프링 인디케이터.
+ * 인디케이터가 이동 방향으로 늘어났다 뭉치는 gooey 감(§Motion, ref: curved TabRow).
+ */
+@Composable
+private fun GoalTabs(selectedTab: Int, onSelect: (Int) -> Unit) {
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+    ) {
+        val half = maxWidth / 2
+        val indicatorX by animateDpAsState(
+            targetValue = if (selectedTab == 0) 0.dp else half,
+            animationSpec = BucketLogMotion.indicator(),
+            label = "tabIndicator",
+        )
+        Column {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                TabLabel(
+                    text = stringResource(Res.string.tab_records),
+                    selected = selectedTab == 0,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onSelect(0) },
+                )
+                TabLabel(
+                    text = stringResource(Res.string.tab_info),
+                    selected = selectedTab == 1,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onSelect(1) },
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .offset(x = indicatorX)
+                        .width(half)
+                        .height(2.dp)
+                        .background(MaterialTheme.colorScheme.primary),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TabLabel(text: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Box(
+        modifier = modifier.clickable(onClick = onClick).padding(vertical = 14.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = stringResource(goal.category.labelRes()),
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -499,10 +654,11 @@ private fun TimelineNode(
     onPhotoClick: (index: Int) -> Unit,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val entry = timelineEntry.entry
 
-    Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+    Row(modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
         TimelineRail(
             // docs/DESIGN.md §5.2 — 노드 크기는 성과가 아니라 "기록의 중요도"를 나타낸다.
             nodeSize = when (entry.kind) {

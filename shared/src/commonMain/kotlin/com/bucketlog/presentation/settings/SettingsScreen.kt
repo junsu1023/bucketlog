@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -19,8 +20,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -28,9 +27,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import com.bucketlog.presentation.common.Hairline
+import com.bucketlog.presentation.common.MonoMeta
+import com.bucketlog.presentation.common.PillChip
+import com.bucketlog.presentation.common.ScreenHeader
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -110,40 +111,36 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: (() -> Unit)? = null, o
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(Res.string.settings_title)) },
-                navigationIcon = {
-                    onBack?.let { back -> TextButton(onClick = back) { Text(stringResource(Res.string.back)) } }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-            )
-        },
-    ) { padding ->
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()),
         ) {
+        ScreenHeader(
+            title = stringResource(Res.string.settings_title),
+            onBack = onBack,
+            backLabel = stringResource(Res.string.back),
+        )
+        Column(modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 40.dp)) {
             SectionHeader(icon = Icons.Outlined.DarkMode, label = stringResource(Res.string.settings_theme_section))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(
+                PillChip(
+                    label = stringResource(Res.string.settings_theme_system),
                     selected = state.themeMode == ThemeMode.SYSTEM,
                     onClick = { viewModel.onIntent(SettingsIntent.SetThemeMode(ThemeMode.SYSTEM)) },
-                    label = { Text(stringResource(Res.string.settings_theme_system)) },
                 )
-                FilterChip(
+                PillChip(
+                    label = stringResource(Res.string.settings_theme_light),
                     selected = state.themeMode == ThemeMode.LIGHT,
                     onClick = { viewModel.onIntent(SettingsIntent.SetThemeMode(ThemeMode.LIGHT)) },
-                    label = { Text(stringResource(Res.string.settings_theme_light)) },
                 )
-                FilterChip(
+                PillChip(
+                    label = stringResource(Res.string.settings_theme_dark),
                     selected = state.themeMode == ThemeMode.DARK,
                     onClick = { viewModel.onIntent(SettingsIntent.SetThemeMode(ThemeMode.DARK)) },
-                    label = { Text(stringResource(Res.string.settings_theme_dark)) },
                 )
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+            Hairline(modifier = Modifier.padding(vertical = 24.dp))
 
             SectionHeader(icon = Icons.Outlined.Notifications, label = stringResource(Res.string.settings_notifications_section))
             SettingsRow(
@@ -170,23 +167,22 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: (() -> Unit)? = null, o
                 onCheckedChange = { viewModel.onIntent(SettingsIntent.SetYearEndRecapEnabled(it)) },
             )
 
-            Text(
+            MonoMeta(
                 text = stringResource(Res.string.settings_notification_hour),
-                style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 HOUR_OPTIONS.forEach { hour ->
-                    FilterChip(
+                    PillChip(
+                        label = stringResource(Res.string.settings_hour_format, hour),
                         selected = state.notificationHour == hour,
                         enabled = state.notificationsEnabled,
                         onClick = { viewModel.onIntent(SettingsIntent.SetNotificationHour(hour)) },
-                        label = { Text(stringResource(Res.string.settings_hour_format, hour)) },
                     )
                 }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+            Hairline(modifier = Modifier.padding(vertical = 24.dp))
 
             SectionHeader(icon = Icons.Outlined.Widgets, label = stringResource(Res.string.settings_widget_section))
             val pinWidget = rememberWidgetPinner()
@@ -209,7 +205,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: (() -> Unit)? = null, o
                 Text(stringResource(Res.string.settings_widget_today_memory))
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+            Hairline(modifier = Modifier.padding(vertical = 24.dp))
 
             SectionHeader(
                 icon = Icons.Outlined.CloudUpload,
@@ -236,7 +232,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: (() -> Unit)? = null, o
                 }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+            Hairline(modifier = Modifier.padding(vertical = 24.dp))
 
             SectionHeader(
                 icon = Icons.Outlined.Storage,
@@ -262,6 +258,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: (() -> Unit)? = null, o
                     CircularProgressIndicator()
                 }
             }
+        }
         }
     }
 
@@ -344,8 +341,13 @@ private fun SectionHeader(icon: ImageVector, label: String, modifier: Modifier =
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(text = label, style = MaterialTheme.typography.labelLarge)
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp),
+        )
+        MonoMeta(text = label)
     }
 }
 

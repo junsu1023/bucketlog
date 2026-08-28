@@ -9,20 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -41,10 +32,11 @@ import bucketlog.shared.generated.resources.rollover_subtitle
 import bucketlog.shared.generated.resources.rollover_title
 import com.bucketlog.domain.model.Goal
 import com.bucketlog.domain.usecase.RolloverDecision
-import com.bucketlog.presentation.theme.BucketLogSpacing
+import com.bucketlog.presentation.common.Hairline
+import com.bucketlog.presentation.common.PillChip
+import com.bucketlog.presentation.common.ScreenHeader
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RolloverScreen(viewModel: RolloverViewModel, onBack: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
@@ -53,24 +45,18 @@ fun RolloverScreen(viewModel: RolloverViewModel, onBack: () -> Unit) {
         if (state.done) onBack()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(Res.string.rollover_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(Res.string.back))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-            )
-        },
-    ) { padding ->
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            ScreenHeader(
+                title = stringResource(Res.string.rollover_title),
+                onBack = onBack,
+                backLabel = stringResource(Res.string.back),
+            )
             Text(
                 text = stringResource(Res.string.rollover_subtitle, state.year),
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = BucketLogSpacing.lg, vertical = BucketLogSpacing.sm),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
             )
 
             if (state.goals.isEmpty()) {
@@ -78,26 +64,26 @@ fun RolloverScreen(viewModel: RolloverViewModel, onBack: () -> Unit) {
                     text = stringResource(Res.string.rollover_empty, state.year),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(BucketLogSpacing.lg),
+                    modifier = Modifier.padding(horizontal = 20.dp),
                 )
             } else {
                 LazyColumn(
                     modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(horizontal = BucketLogSpacing.lg, vertical = BucketLogSpacing.sm),
-                    verticalArrangement = Arrangement.spacedBy(BucketLogSpacing.md),
+                    contentPadding = PaddingValues(horizontal = 20.dp),
                 ) {
-                    items(state.goals, key = { it.id }) { goal ->
+                    itemsIndexed(state.goals, key = { _, g -> g.id }) { index, goal ->
                         RolloverGoalRow(
                             goal = goal,
                             decision = state.decisions[goal.id] ?: RolloverDecision.KEEP,
                             onSelect = { onIntentDecision(viewModel, goal.id, it) },
                         )
+                        if (index < state.goals.lastIndex) Hairline()
                     }
                 }
                 Button(
                     onClick = { viewModel.onIntent(RolloverIntent.Confirm) },
                     enabled = !state.isSaving,
-                    modifier = Modifier.fillMaxWidth().padding(BucketLogSpacing.lg),
+                    modifier = Modifier.fillMaxWidth().padding(20.dp),
                 ) {
                     Text(stringResource(Res.string.rollover_confirm))
                 }
@@ -113,34 +99,33 @@ private fun onIntentDecision(viewModel: RolloverViewModel, goalId: String, decis
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RolloverGoalRow(goal: Goal, decision: RolloverDecision, onSelect: (RolloverDecision) -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(BucketLogSpacing.md)) {
-            Text(text = goal.title, style = MaterialTheme.typography.titleMedium)
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(top = BucketLogSpacing.sm),
-            ) {
-                FilterChip(
-                    selected = decision == RolloverDecision.NEXT_YEAR,
-                    onClick = { onSelect(RolloverDecision.NEXT_YEAR) },
-                    label = { Text(stringResource(Res.string.rollover_option_next_year)) },
-                )
-                FilterChip(
-                    selected = decision == RolloverDecision.SOMEDAY,
-                    onClick = { onSelect(RolloverDecision.SOMEDAY) },
-                    label = { Text(stringResource(Res.string.rollover_option_someday)) },
-                )
-                FilterChip(
-                    selected = decision == RolloverDecision.ARCHIVE,
-                    onClick = { onSelect(RolloverDecision.ARCHIVE) },
-                    label = { Text(stringResource(Res.string.rollover_option_archive)) },
-                )
-                FilterChip(
-                    selected = decision == RolloverDecision.KEEP,
-                    onClick = { onSelect(RolloverDecision.KEEP) },
-                    label = { Text(stringResource(Res.string.rollover_option_keep)) },
-                )
-            }
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp)) {
+        Text(text = goal.title, style = MaterialTheme.typography.titleMedium)
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(top = 12.dp),
+        ) {
+            PillChip(
+                label = stringResource(Res.string.rollover_option_next_year),
+                selected = decision == RolloverDecision.NEXT_YEAR,
+                onClick = { onSelect(RolloverDecision.NEXT_YEAR) },
+            )
+            PillChip(
+                label = stringResource(Res.string.rollover_option_someday),
+                selected = decision == RolloverDecision.SOMEDAY,
+                onClick = { onSelect(RolloverDecision.SOMEDAY) },
+            )
+            PillChip(
+                label = stringResource(Res.string.rollover_option_archive),
+                selected = decision == RolloverDecision.ARCHIVE,
+                onClick = { onSelect(RolloverDecision.ARCHIVE) },
+            )
+            PillChip(
+                label = stringResource(Res.string.rollover_option_keep),
+                selected = decision == RolloverDecision.KEEP,
+                onClick = { onSelect(RolloverDecision.KEEP) },
+            )
         }
     }
 }
