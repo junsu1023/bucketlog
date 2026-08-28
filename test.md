@@ -392,8 +392,11 @@ Jetpack Glance로 구현(Compose Multiplatform과 별개 트리 — androidApp �
 - [x] ✅ **기존 타입별 위젯 3종 제거** — 지금 어때요/마감 임박 위젯 UI는 삭제했지만, 그 뒤에
       있던 알림용 usecase(`PickNudgeTargetUseCase`/`PickDueSoonGoalUseCase`)는 N-02/N-04
       알림이 계속 쓰므로 그대로 유지
-- [x] ✅ **마스코트 "루미"** — 실제 일러스트 준비 전까지 간단한 벡터 플레이스홀더
-      (`ic_mascot_rumi`)로 우선 구현, 추후 실제 아트로 교체 예정
+- [x] ✅ **마스코트 "루미"** — 처음엔 간단한 벡터 플레이스홀더로 구현했다가, 이후 사용자가
+      제공한 루미 벡터 세트(lumi_path_svg_android_vector_set)에서 상황에 맞는 포즈를 골라
+      실제 아트로 교체(`WidgetMascot` object로 포즈 관리). Small은 cheer(응원), Medium은
+      good(엄지척), Large는 memory(추억), 공용 빈 상태는 thinking(고민) 포즈. 실기기에서
+      4개 포즈 전부 렌더링 확인
 - [x] ✅ **설정 화면 "홈 화면 위젯" 섹션** — 위젯 3종(Small/Medium/Large) 각각 "추가" 버튼 →
       `AppWidgetManager.requestPinAppWidget`으로 시스템 고정 다이얼로그 호출. iOS는 위젯
       익스텐션이 없어 no-op(`rememberWidgetPinner` expect/actual)

@@ -86,18 +86,20 @@
   절대 규칙 1번과 충돌). 기존 도메인 계층을 재사용(신규: `PickRecommendedGoalUseCase`,
   `GetYearSummaryUseCase`; 기존 확장: `GetThrowbackUseCase`에 사진/메모 필드 추가). 지금
   어때요/마감 임박 위젯 UI는 제거했지만 그 알림용 usecase(`PickNudgeTargetUseCase`/
-  `PickDueSoonGoalUseCase`)는 N-02/N-04 알림이 계속 사용하므로 유지. 마스코트는 실제 아트
-  전 벡터 플레이스홀더. 설정 화면 "위젯 추가" 버튼(`requestPinAppWidget`)으로 고정, 실기기에서
-  3종 전부 고정→렌더링(사진 카드는 `ContentScale.Crop`으로 항상 프레임을 꽉 채움)→탭 진입까지
-  확인. iOS 위젯(WidgetKit)은 미구현(`test.md` §14 참고) |
+  `PickDueSoonGoalUseCase`)는 N-02/N-04 알림이 계속 사용하므로 유지. 설정 화면 "위젯 추가"
+  버튼(`requestPinAppWidget`)으로 고정, 실기기에서 3종 전부 고정→렌더링(사진 카드는
+  `ContentScale.Crop`으로 항상 프레임을 꽉 채움)→탭 진입까지 확인. 이후 사용자가 제공한 루미
+  벡터 세트(lumi_path_svg_android_vector_set)로 벡터 플레이스홀더를 실제 아트로 교체 —
+  Small은 cheer, Medium은 good, Large는 memory, 공용 빈 상태는 thinking 포즈. 실기기에서
+  4개 포즈 전부 렌더링 확인. iOS 위젯(WidgetKit)은 미구현(`test.md` §14 참고) |
 | 앱 이름 | **가칭** BucketLog / 버킷로그 |
 | 백엔드 | **없음** (MVP는 로컬 전용. Phase 1에 도입) |
 | 로그인 | **없음** (Phase 1) |
 | 다음 작업 | MVP-SCOPE.md의 P0/P1 기능은 전부 구현됨. 남은 건 (1) 남은 버그 있는지 계속 확인
   (2) 스토어 제출 준비(개발자 계정·서명키·스토어 리스팅 등 사용자가 직접 해야 하는 외부 작업)
   (3) iOS 위젯(WidgetKit) — Xcode에 Widget Extension 타깃 + App Group(Team ID 필요) 설정 후
-  진행 (4) 위젯 마스코트 "루미" 실제 아트로 교체(현재 벡터 플레이스홀더). 알림 테스트 날짜
-  드리프트 문제는 해결 완료, iOS 컴파일·시뮬레이터 실행 확인도 완료 (`test.md` §11) |
+  진행. 알림 테스트 날짜 드리프트 문제는 해결 완료, iOS 컴파일·시뮬레이터 실행 확인도 완료
+  (`test.md` §11) |
 
 > 미확정 항목에 대해 코드를 생성해야 하면 **임의로 결정하지 말고 먼저 물어보세요.**
 
